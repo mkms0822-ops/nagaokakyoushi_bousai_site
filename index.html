@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DWA防災情報センター｜長岡京市認定 市民活動団体</title>
+<meta name="description" content="長岡京市認定 市民活動団体 DWA防災情報センター。タップで助かる、災害時デジタル後方支援。防災マップ・緊急対応マニュアル・SOSビーコンを提供します。">
+<style>
+  :root{
+    --ink:#16212b; --sub:#5b6b78; --line:#e2e8ee; --bg:#eef2f5; --panel:#ffffff;
+    --brand:#e3392e; --brand2:#1f6f8b; --accent:#d1541f;
+    --menu-w:300px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;color:var(--ink);background:var(--bg)}
+  body{min-height:100vh;min-height:100dvh}
+
+  /* トップバー */
+  .bar{position:sticky;top:0;z-index:1200;display:flex;align-items:center;gap:10px;
+    padding:10px 16px;background:rgba(255,255,255,.92);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+  .bar .mark{font-size:20px}
+  .bar .name{font-size:15px;font-weight:800;letter-spacing:.02em;line-height:1.2}
+  .bar .name small{display:block;font-size:10.5px;color:var(--sub);font-weight:600;margin-top:1px}
+  .burger{margin-left:auto;display:inline-flex;flex-direction:column;justify-content:center;gap:4px;
+    width:44px;height:40px;border:1.5px solid var(--line);border-radius:9px;background:#fff;cursor:pointer;padding:0 10px}
+  .burger span{display:block;height:2.5px;background:var(--ink);border-radius:2px;transition:.25s}
+  .burger.open span:nth-child(1){transform:translateY(6.5px) rotate(45deg)}
+  .burger.open span:nth-child(2){opacity:0}
+  .burger.open span:nth-child(3){transform:translateY(-6.5px) rotate(-45deg)}
+
+  /* ヒーロー（ポスター） */
+  .hero{display:flex;justify-content:center;padding:20px 16px 8px}
+  .hero img{width:100%;max-width:560px;height:auto;border-radius:14px;box-shadow:0 10px 34px rgba(20,40,60,.22);display:block}
+
+  /* 主要導線ボタン */
+  .quick{max-width:560px;margin:14px auto 0;padding:0 16px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .q{display:flex;align-items:center;gap:9px;padding:14px;border-radius:12px;text-decoration:none;font-weight:800;font-size:14px;border:1.5px solid var(--line);background:#fff;color:var(--ink);transition:.15s}
+  .q:active{transform:scale(.98)}
+  .q .qi{font-size:20px}
+  .q.map{background:#eaf3f6;border-color:#a9d0dc;color:#155}
+  .q.sos{background:var(--brand);border-color:var(--brand);color:#fff;grid-column:1 / -1;justify-content:center;font-size:16px}
+  .q.manual{background:#fff4e6;border-color:#f0c185;color:#9a5410}
+  .q.near{background:#eaf0fb;border-color:#accbf0;color:#234f9e}
+
+  .tagline{max-width:560px;margin:18px auto 40px;padding:0 20px;text-align:center;color:var(--sub);font-size:13px;line-height:1.9}
+  .tagline .en{font-size:15px;font-weight:800;color:var(--brand2);letter-spacing:.02em}
+
+  footer{border-top:1px solid var(--line);background:#fff;padding:18px 16px 40px;text-align:center;color:var(--sub);font-size:11.5px;line-height:1.8}
+  footer a{color:var(--brand2);text-decoration:none}
+
+  /* メニュー */
+  .scrim{position:fixed;inset:0;background:rgba(10,20,30,.42);opacity:0;visibility:hidden;transition:.25s;z-index:1400}
+  .scrim.open{opacity:1;visibility:visible}
+  .menu{position:fixed;top:0;right:0;height:100%;width:var(--menu-w);max-width:86%;background:#fff;z-index:1500;
+    transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);box-shadow:-6px 0 26px rgba(0,0,0,.22);
+    display:flex;flex-direction:column;overflow-y:auto}
+  .menu.open{transform:translateX(0)}
+  .menu .mhead{padding:18px 18px 14px;border-bottom:1px solid var(--line)}
+  .menu .mhead .t{font-size:15px;font-weight:800}
+  .menu .mhead .s{font-size:11px;color:var(--sub);margin-top:3px;line-height:1.5}
+  .menu nav{padding:8px 0;flex:1}
+  .menu a.mi{display:flex;align-items:center;gap:12px;padding:14px 18px;text-decoration:none;color:var(--ink);font-size:14.5px;font-weight:700;border-bottom:1px solid #f2f5f8}
+  .menu a.mi:hover{background:#f6f9fb}
+  .menu a.mi .ic{font-size:19px;width:24px;text-align:center}
+  .menu a.mi .sub{display:block;font-size:11px;color:var(--sub);font-weight:500;margin-top:2px}
+  .menu a.mi.emg{color:var(--brand)}
+  .menu .mfoot{padding:16px 18px 24px;border-top:1px solid var(--line);font-size:11px;color:var(--sub);line-height:1.7}
+
+  @media(min-width:720px){
+    .hero img{max-width:460px}
+  }
+</style>
+</head>
+<body>
+  <div class="bar">
+    <span class="mark">🛡️</span>
+    <div class="name">DWA防災情報センター<small>長岡京市認定 市民活動団体</small></div>
+    <button class="burger" id="burger" aria-label="メニューを開く" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+
+  <main>
+    <div class="hero">
+      <img src="hero.jpg" alt="DWA防災情報センター｜防災システムの構築、タップで助かる災害時デジタル後方支援。長岡京市勝竜寺城公園">
+    </div>
+
+    <div class="quick">
+      <a class="q sos" href="https://bousai0111.info/#sos">🆘 SOSビーコンを発信</a>
+      <a class="q map" href="map.html"><span class="qi">🗺️</span>防災マップ</a>
+      <a class="q near" href="https://bousai0111.info/#near"><span class="qi">📍</span>近くを探す</a>
+      <a class="q manual" href="https://bousai0111.info/Manual.html"><span class="qi">📖</span>緊急対応<br>マニュアル</a>
+      <a class="q" href="https://bousai0111.info/drill.html"><span class="qi">🚨</span>デジタル<br>避難訓練</a>
+    </div>
+
+    <p class="tagline">
+      <span class="en">One for all, all for one.</span><br>
+      一人はみんなのために、皆は一人のために<br>
+      タップで助かる、災害時デジタル後方支援。
+    </p>
+  </main>
+
+  <footer>
+    長岡京市認定 市民活動団体　DWA防災情報センター<br>
+    DISASTER PREVENTION・EARTHQUAKE MONITOR LIVE<br>
+    <a href="privacy.html">プライバシーポリシー</a>　·　<a href="map.html">防災マップ</a>
+  </footer>
+
+  <!-- メニュー -->
+  <div class="scrim" id="scrim" onclick="toggleMenu()"></div>
+  <aside class="menu" id="menu" aria-hidden="true">
+    <div class="mhead">
+      <div class="t">メニュー</div>
+      <div class="s">災害への備えと、いざというときの行動を、この一か所から。</div>
+    </div>
+    <nav>
+      <a class="mi emg" href="https://bousai0111.info/#sos"><span class="ic">🆘</span><span>SOSビーコン<span class="sub">助けを求める信号を発信</span></span></a>
+      <a class="mi" href="map.html"><span class="ic">🗺️</span><span>防災マップ<span class="sub">避難所・危険箇所・病院・備蓄</span></span></a>
+      <a class="mi" href="https://bousai0111.info/#near"><span class="ic">📍</span><span>近くを探す<span class="sub">現在地の近くの避難所</span></span></a>
+      <a class="mi" href="https://bousai0111.info/Manual.html"><span class="ic">📖</span><span>緊急対応マニュアル<span class="sub">いざというときの手順</span></span></a>
+      <a class="mi" href="https://bousai0111.info/drill.html"><span class="ic">🚨</span><span>デジタル避難訓練<span class="sub">オンラインで参加する訓練</span></span></a>
+      <a class="mi" href="privacy.html"><span class="ic">🔒</span><span>プライバシーポリシー<span class="sub">個人情報の取り扱い</span></span></a>
+    </nav>
+    <div class="mfoot">
+      長岡京市認定 市民活動団体<br>DWA防災情報センター
+    </div>
+  </aside>
+
+<script>
+  function toggleMenu(){
+    const m=document.getElementById('menu'), s=document.getElementById('scrim'), b=document.getElementById('burger');
+    const open=m.classList.toggle('open'); s.classList.toggle('open',open); b.classList.toggle('open',open);
+    m.setAttribute('aria-hidden', open?'false':'true');
+    document.body.style.overflow = open?'hidden':'';
+  }
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ const m=document.getElementById('menu'); if(m.classList.contains('open')) toggleMenu(); }});
+</script>
+</body>
+</html>

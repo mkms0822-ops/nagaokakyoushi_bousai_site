@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>長岡京市 防災マップ｜避難所・危険箇所</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<style>
+  :root{
+    --ink:#1a2733; --sub:#5a6b7a; --line:#dfe6ec; --bg:#eef2f5; --panel:#ffffff;
+    --emg:#e3392e; --gen:#1f7a4d; --wel:#8a5cc4; --pol:#2456b8; --fire:#d1541f; --hall:#4a4a4a;
+    --chip-bg:#ffffff; --item-hover:#f6f9fb; --item-line:#f0f4f7; --note-bg:#f8fafb; --haz-bg:#ffffff;
+  }
+  html[data-theme="dark"]{
+    --ink:#e6edf3; --sub:#9fb0c0; --line:#2a3642; --bg:#0f151b; --panel:#161d25;
+    --chip-bg:#1c2530; --item-hover:#1c2530; --item-line:#222c37; --note-bg:#12181f; --haz-bg:#161d25;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;color:var(--ink);background:var(--bg)}
+  #app{display:flex;flex-direction:column;height:100vh;height:100dvh}
+  header{background:var(--panel);border-bottom:1px solid var(--line);padding:10px 14px;display:flex;align-items:center;gap:10px;z-index:1000}
+  header .logo{font-size:20px}
+  header h1{font-size:16px;margin:0;font-weight:800;letter-spacing:.02em}
+  header .sub{font-size:11px;color:var(--sub);margin-top:1px}
+  header .htitle{flex-shrink:0}
+  .hbtns{display:flex;align-items:center;gap:6px;margin-left:14px;flex-wrap:wrap}
+  .hbtn{display:inline-flex;align-items:center;gap:5px;border:1.5px solid var(--line);background:var(--chip-bg);color:var(--ink);border-radius:8px;padding:7px 11px;font-size:12.5px;font-weight:700;cursor:pointer;text-decoration:none;transition:.15s;white-space:nowrap;font-family:inherit}
+  .hbtn:hover{border-color:var(--sub)}
+  .hbtn:active{transform:scale(.96)}
+  .hbtn.urgent{background:#fff4e6;border-color:#f0a94b;color:#b5620a}
+  .hbtn.sos{background:var(--emg);border-color:var(--emg);color:#fff}
+  .hbtn.near{background:#e8f0ff;border-color:#7aa2e8;color:#204a9e}
+  html[data-theme="dark"] .hbtn.urgent{background:#3a2a10;color:#f0b96a}
+  html[data-theme="dark"] .hbtn.near{background:#16233c;color:#8fb2f0}
+  .hsep{width:1px;height:24px;background:var(--line);margin:0 2px}
+  .leaflet-popup-content-wrapper,.leaflet-popup-tip{background:var(--panel);color:var(--ink)}
+  html[data-theme="dark"] .pop .pa{color:var(--sub)}
+  @media print{
+    header .hbtns,#menuBtn,.leaflet-control-zoom,#closeSide{display:none !important}
+    #side{width:300px}
+    .filters,.haz{display:none}
+    #app{height:auto}
+    #map{min-height:70vh}
+  }
+  #main{flex:1;display:flex;min-height:0}
+  #map{flex:1;min-height:0}
+  html[data-theme="dark"] .leaflet-tile-pane .leaflet-layer:first-child{filter:brightness(.75) invert(.92) hue-rotate(180deg) contrast(.9)}
+  #side{width:330px;background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;overflow:hidden}
+  .side-h{padding:12px 14px 8px;border-bottom:1px solid var(--line);display:flex;align-items:center}
+  .side-h .st{font-size:13px;font-weight:800}
+  .filters{padding:10px 12px;display:flex;flex-wrap:wrap;gap:6px;border-bottom:1px solid var(--line)}
+  .chip{border:1.5px solid var(--line);background:var(--chip-bg);color:var(--ink);border-radius:999px;padding:5px 11px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;user-select:none;transition:.15s}
+  .chip .dot{width:9px;height:9px;border-radius:50%}
+  .chip.off{opacity:.4}
+  .chip:active{transform:scale(.96)}
+  .haz{padding:10px 12px;border-bottom:1px solid var(--line)}
+  .haz .ht{font-size:11px;color:var(--sub);font-weight:700;margin-bottom:7px}
+  .haz label{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:4px 2px;cursor:pointer}
+  .haz input{width:16px;height:16px;accent-color:var(--emg)}
+  #list{flex:1;overflow-y:auto;padding:4px 0}
+  .item{padding:9px 14px;border-bottom:1px solid var(--item-line);cursor:pointer}
+  .item:hover{background:var(--item-hover)}
+  .item .n{font-size:13px;font-weight:700}
+  .item .a{font-size:11px;color:var(--sub);margin-top:2px}
+  .item .tags{margin-top:4px;display:flex;gap:4px;flex-wrap:wrap}
+  .tag{font-size:10px;font-weight:700;padding:1px 6px;border-radius:4px;color:#fff}
+  .tag.emg{background:var(--emg)} .tag.gen{background:var(--gen)} .tag.wel{background:var(--wel)}
+  .tag.stock{background:#b8860b}
+  .pop .pstock{margin-top:8px;font-size:12px;font-weight:700;color:#8a6400;background:#fdf5e0;padding:6px 8px;border-radius:5px;border:1px solid #f0d98a}
+  .status{padding:8px 14px;font-size:11px;color:var(--sub)}
+  .legend-note{padding:10px 14px;font-size:10.5px;color:var(--sub);line-height:1.6;border-top:1px solid var(--line);background:var(--note-bg)}
+  .legend-note a{color:var(--pol)}
+  .marker-pin{width:26px;height:26px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center}
+  .marker-pin span{transform:rotate(45deg);font-size:13px;line-height:1}
+  .leaflet-popup-content{margin:12px 14px;font-family:inherit}
+  .pop .pn{font-size:14px;font-weight:800;margin-bottom:4px}
+  .pop .pa{font-size:12px;color:var(--sub);line-height:1.5}
+  .pop .pk{margin-top:7px;display:flex;gap:4px;flex-wrap:wrap}
+  .pop .ptel{margin-top:8px;font-size:12px}
+  .pop .ptel a{color:var(--pol);font-weight:700;text-decoration:none}
+  .pop .pnote{margin-top:6px;font-size:11px;color:var(--sub);background:var(--note-bg);padding:5px 7px;border-radius:5px}
+  .pop .proute{margin-top:9px}
+  .pop .proute a{display:inline-block;background:var(--emg);color:#fff;font-size:12px;font-weight:700;padding:6px 12px;border-radius:6px;text-decoration:none}
+  #menuBtn{display:none}
+  @media(max-width:820px){
+    #side{position:fixed;top:0;right:0;height:100%;transform:translateX(100%);transition:.25s;z-index:2000;width:86%;max-width:340px;box-shadow:-4px 0 20px rgba(0,0,0,.2)}
+    #side.open{transform:translateX(0)}
+    #menuBtn{display:flex;margin-left:auto;background:var(--emg);color:#fff;border:0;border-radius:7px;padding:8px 12px;font-size:13px;font-weight:700;cursor:pointer;gap:5px;align-items:center}
+    #closeSide{display:block}
+    header{flex-wrap:wrap;gap:8px;padding:8px 10px}
+    header .htitle h1{font-size:14px}
+    #menuBtn{order:-1}
+    .hbtns{order:3;width:100%;margin-left:0;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px}
+    .hbtn span{display:none}
+    .hbtn.sos span,.hbtn.urgent span,.hbtn.near span{display:inline}
+    .hbtn{padding:8px 10px}
+    .hsep{display:none}
+  }
+  #closeSide{display:none;margin-left:auto;background:none;border:0;font-size:22px;cursor:pointer;color:var(--sub);line-height:1}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <a href="index.html" class="logo" style="text-decoration:none" title="ホームへ戻る">🗺️</a>
+    <div class="htitle">
+      <h1>長岡京市 防災マップ</h1>
+      <div class="sub">避難所・警察・消防・危険箇所</div>
+    </div>
+    <nav class="hbtns">
+      <a class="hbtn urgent" href="https://bousai0111.info/Manual.html" target="_blank" rel="noopener" title="緊急対応マニュアル">📖<span>マニュアル</span></a>
+      <a class="hbtn sos" href="https://bousai0111.info/#sos" target="_blank" rel="noopener" title="SOSビーコン">🆘<span>SOS</span></a>
+      <a class="hbtn near" href="https://bousai0111.info/#near" target="_blank" rel="noopener" title="近くを探す">📍<span>近くを探す</span></a>
+      <span class="hsep"></span>
+      <button class="hbtn" onclick="window.print()" title="印刷">🖨️<span>印刷</span></button>
+      <button class="hbtn" id="copyBtn" onclick="copyLink()" title="リンクをコピー">🔗<span>コピー</span></button>
+      <button class="hbtn" onclick="shareMap()" title="共有">📤<span>共有</span></button>
+      <button class="hbtn" id="themeBtn" onclick="toggleTheme()" title="ダーク・ライト切替">🌙<span>ダーク</span></button>
+    </nav>
+    <button id="menuBtn" onclick="document.getElementById('side').classList.toggle('open')">☰ 一覧・設定</button>
+  </header>
+  <div id="main">
+    <div id="map"></div>
+    <aside id="side">
+      <div class="side-h">
+        <div class="st">表示する施設</div>
+        <button id="closeSide" onclick="document.getElementById('side').classList.remove('open')">×</button>
+      </div>
+      <div class="filters" id="filters"></div>
+      <div class="haz">
+        <div class="ht">危険箇所レイヤー（国土地理院・重ねると正確に表示）</div>
+        <label><input type="checkbox" id="hz-dosha"> 土砂災害警戒区域（土石流・急傾斜地・地すべり）</label>
+        <label><input type="checkbox" id="hz-kozui"> 洪水浸水想定区域（想定最大規模）</label>
+      </div>
+      <div class="haz" style="border-top:none">
+        <div class="ht">備蓄倉庫</div>
+        <label><input type="checkbox" id="stockOnly"> 🍚 備蓄倉庫がある避難所だけ表示</label>
+      </div>
+      <div class="status" id="status">読み込み中…</div>
+      <div id="list"></div>
+      <div class="legend-note">
+        出典：避難所・施設は長岡京市および各機関の公表情報、位置は国土地理院ジオコーディングによる自動取得（誤差が出る場合があります）。危険箇所は国土地理院ハザードマップのタイルを重ねて表示しています。<br>
+        正確な区域・最新情報は必ず<a href="https://www.city.nagaokakyo.lg.jp/0000000329.html" target="_blank" rel="noopener">長岡京市 防災ハザードマップ</a>をご確認ください。
+      </div>
+    </aside>
+  </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+const DATA = {"shelters": [{"name": "神足小学校", "addr": "長岡京市神足3丁目2-1", "kinds": ["緊急", "一般"], "stock": true}, {"name": "長法寺小学校", "addr": "長岡京市長法寺川原谷31", "kinds": ["緊急", "一般"], "stock": true}, {"name": "長岡第三小学校", "addr": "長岡京市今里4丁目5-10", "kinds": ["緊急", "一般"], "stock": true}, {"name": "長岡第四小学校", "addr": "長岡京市友岡1丁目2-4", "kinds": ["緊急", "一般"], "stock": true}, {"name": "長岡第五小学校", "addr": "長岡京市下海印寺東山1", "kinds": ["緊急", "一般"], "stock": true}, {"name": "長岡第六小学校", "addr": "長岡京市長岡2丁目3-1", "kinds": ["緊急", "一般"], "stock": true}, {"name": "長岡第七小学校", "addr": "長岡京市今里北ノ町35", "kinds": ["緊急", "一般"], "stock": true}, {"name": "長岡第八小学校", "addr": "長岡京市勝竜寺29-1", "kinds": ["緊急", "一般"], "stock": true}, {"name": "長岡第九小学校", "addr": "長岡京市東神足2丁目17-1", "kinds": ["緊急", "一般"], "stock": true}, {"name": "長岡第十小学校", "addr": "長岡京市井ノ内玉ノ上22", "kinds": ["緊急", "一般"], "stock": true}, {"name": "長岡中学校", "addr": "長岡京市天神4丁目5-1", "kinds": ["緊急", "一般"], "stock": true}, {"name": "長岡第二中学校", "addr": "長岡京市今里5丁目20-1", "kinds": ["緊急", "一般"], "stock": true}, {"name": "長岡第三中学校", "addr": "長岡京市勝竜寺28-1", "kinds": ["緊急", "一般"], "stock": true}, {"name": "長岡第四中学校", "addr": "長岡京市下海印寺西山田1-1", "kinds": ["緊急", "一般"], "stock": true}, {"name": "乙訓高等学校", "addr": "長岡京市友岡1丁目1-1", "kinds": ["緊急", "一般"]}, {"name": "西乙訓高等学校", "addr": "長岡京市下海印寺西明寺41", "kinds": ["緊急", "一般"]}, {"name": "京都西山短期大学", "addr": "長岡京市粟生西条26", "kinds": ["一般"]}, {"name": "立命館中学校・高等学校", "addr": "長岡京市調子1丁目1-1", "kinds": ["緊急", "一般"]}, {"name": "開田保育所", "addr": "長岡京市神足3丁目2-20", "kinds": ["緊急", "福祉"]}, {"name": "滝ノ町保育所", "addr": "長岡京市滝ノ町2丁目2-26", "kinds": ["緊急", "福祉"]}, {"name": "新田保育所", "addr": "長岡京市長岡2丁目3-2", "kinds": ["緊急", "福祉"]}, {"name": "深田保育所", "addr": "長岡京市野添2丁目3-3", "kinds": ["緊急", "福祉"]}, {"name": "こうたり保育園", "addr": "長岡京市東神足2丁目17-2", "kinds": ["緊急", "福祉"]}, {"name": "友岡こども園", "addr": "長岡京市友岡3丁目8-18", "kinds": ["緊急", "福祉"]}, {"name": "海印寺こども園", "addr": "長岡京市奥海印寺坂ノ尻2-5", "kinds": ["緊急", "福祉"]}, {"name": "海印寺乳児園", "addr": "長岡京市奥海印寺三反畑10-2", "kinds": ["福祉"]}, {"name": "今里こども園", "addr": "長岡京市今里北ノ町35-2", "kinds": ["緊急", "福祉"]}, {"name": "きりしま保育園", "addr": "長岡京市神足森本13-1", "kinds": ["福祉"]}, {"name": "西山公園体育館", "addr": "長岡京市長法寺谷山1", "kinds": ["緊急", "一般"]}, {"name": "長岡京市スポーツセンター", "addr": "長岡京市神足下八ノ坪1", "kinds": ["一般"]}, {"name": "中央公民館", "addr": "長岡京市天神4丁目1-1", "kinds": ["緊急", "一般"]}, {"name": "多世代交流ふれあいセンター", "addr": "長岡京市長法寺谷山13-1", "kinds": ["一般"]}, {"name": "図書館", "addr": "長岡京市天神4丁目1-1", "kinds": ["一般"]}, {"name": "バンビオ", "addr": "長岡京市神足2丁目3-1", "kinds": ["一般"]}, {"name": "地域福祉センターきりしま苑", "addr": "長岡京市東神足2丁目15-2", "kinds": ["福祉"], "stock": true}, {"name": "健幸すぽっと（のびのび苑）", "addr": "長岡京市井ノ内朝日寺12", "kinds": ["福祉"]}, {"name": "乙訓ポニーの学校", "addr": "長岡京市井ノ内西ノ口17-8", "kinds": ["福祉"]}, {"name": "乙訓の里", "addr": "長岡京市下海印寺川向イ20-3", "kinds": ["福祉"]}, {"name": "乙訓若竹苑", "addr": "長岡京市井ノ内西ノ口17-8", "kinds": ["福祉"]}, {"name": "向日が丘支援学校", "addr": "長岡京市今里南平尾8-1", "kinds": ["福祉"]}, {"name": "乙訓楽苑", "addr": "長岡京市勝竜寺長黒1-3", "kinds": ["福祉"]}, {"name": "特別養護老人ホーム旭が丘ホーム", "addr": "長岡京市井ノ内朝日寺23", "kinds": ["福祉"]}, {"name": "特別養護老人ホーム竹の里ホーム", "addr": "長岡京市奥海印寺走田1-1", "kinds": ["福祉"]}, {"name": "特別養護老人ホーム天神の杜", "addr": "長岡京市天神2丁目3-10", "kinds": ["福祉"]}, {"name": "特別養護老人ホーム第二天神の杜", "addr": "長岡京市奥海印寺竹ノ下19", "kinds": ["福祉"]}, {"name": "老人保健施設アゼリアガーデン", "addr": "長岡京市友岡4丁目114", "kinds": ["福祉"]}, {"name": "介護老人保健施設マムフローラ", "addr": "長岡京市奥海印寺奥ノ院25-2", "kinds": ["福祉"]}, {"name": "チャーム長岡京", "addr": "長岡京市神足太田1-4", "kinds": ["福祉"]}, {"name": "介護老人保健施設 春風", "addr": "長岡京市久貝1丁目6-23", "kinds": ["福祉"]}, {"name": "介護複合施設今里", "addr": "長岡京市今里庄ノ渕32", "kinds": ["福祉"]}, {"name": "せんしゅんかい小規模多機能型居宅介護事業所あさつゆ", "addr": "長岡京市久貝2丁目15-17", "kinds": ["福祉"]}, {"name": "せんしゅんかいデイサービスセンター友岡", "addr": "長岡京市友岡川原29-11", "kinds": ["福祉"]}, {"name": "せんしゅんかいデイサービスセンター滝ノ町", "addr": "長岡京市滝ノ町2丁目9-7", "kinds": ["福祉"]}, {"name": "せんしゅんかいデイサービスセンター風車", "addr": "長岡京市馬場井料田4-7", "kinds": ["福祉"]}, {"name": "保育・高齢複合施設 友岡", "addr": "長岡京市友岡1丁目2-3", "kinds": ["福祉"]}, {"name": "地域密着型特別養護老人ホーム サニーリッジbio", "addr": "長岡京市井ノ内南内畑67-11", "kinds": ["福祉"]}], "fire": [{"name": "乙訓消防組合消防本部・長岡京消防署", "addr": "長岡京市神足芝本9", "tel": "075-954-0119"}, {"name": "長岡京消防署 東分署", "addr": "長岡京市天神4丁目2-1", "tel": "075-957-0119"}], "police": [{"name": "向日町警察署（本署）", "addr": "向日市上植野町上川原5", "tel": "075-921-0110", "note": "長岡京市の管轄警察署（市外）"}, {"name": "長岡京交番", "addr": "長岡京市開田3丁目3-4", "tel": "075-951-1238", "note": "市役所の向かい"}, {"name": "神足交番", "addr": "長岡京市神足1丁目602-4", "tel": ""}, {"name": "今里交番", "addr": "長岡京市今里庄ノ渕35-3", "tel": ""}, {"name": "海印寺交番", "addr": "長岡京市梅が丘3丁目50-1", "tel": "075-955-0057"}, {"name": "西山天王山交番", "addr": "長岡京市友岡4丁目22-11", "tel": "075-951-0110"}], "cityhall": {"name": "長岡京市役所", "addr": "長岡京市開田1丁目1-1", "tel": "075-951-2121"}, "temp": [{"name": "長岡公園", "addr": "長岡京市天神2丁目"}, {"name": "川原公園", "addr": "長岡京市今里川原"}, {"name": "新田公園", "addr": "長岡京市長岡1丁目"}, {"name": "野添公園", "addr": "長岡京市一文橋2丁目"}, {"name": "中開田公園", "addr": "長岡京市長岡1丁目"}, {"name": "八ノ坪公園", "addr": "長岡京市長岡3丁目"}, {"name": "今里大塚古墳公園", "addr": "長岡京市天神5丁目"}, {"name": "光明寺", "addr": "長岡京市粟生西条内"}, {"name": "神足公園", "addr": "長岡京市東神足2丁目"}, {"name": "三菱電機（株）", "addr": "長岡京市馬場図所1"}, {"name": "長岡天満宮", "addr": "長岡京市天神2丁目"}, {"name": "西山公園", "addr": "長岡京市長法寺"}, {"name": "勝竜寺城公園", "addr": "長岡京市勝竜寺13-1"}, {"name": "西代里山公園", "addr": "長岡京市奥海印寺西代"}, {"name": "調子馬ノ池公園", "addr": "長岡京市調子2丁目"}, {"name": "下海印寺西条公園", "addr": "長岡京市下海印寺西条"}, {"name": "こがねが丘ホタル公園", "addr": "長岡京市高台1丁目"}], "hospital": [{"name": "京都済生会病院", "addr": "長岡京市下海印寺下内田101", "tel": "075-955-0111", "lat": 34.916306, "lng": 135.6863, "note": "京都府指定の地域災害拠点病院／救急告示病院。乙訓地域唯一の公的総合病院（288床）。"}, {"name": "乙訓休日応急診療所", "addr": "長岡京市下海印寺下内田101 京都済生会病院内 別棟2階", "tel": "075-955-3320", "lat": 34.916306, "lng": 135.6863, "note": "休日の初期救急を担う診療所（内科・小児科等）。済生会病院の敷地内。"}], "shakyo": [{"name": "長岡京市社会福祉協議会", "addr": "長岡京市神足2丁目3-1 バンビオ1番館内", "tel": "075-963-5508", "note": "災害時に「災害ボランティアセンター」を立ち上げ、支援ニーズの受付とボランティアの調整を担う拠点。JR長岡京駅西口すぐ。"}]};
+
+const CATS = {
+  emg:{label:'緊急避難場所',color:'#e3392e',icon:'🏃'},
+  gen:{label:'一般避難所',color:'#1f7a4d',icon:'🏫'},
+  wel:{label:'福祉避難所',color:'#8a5cc4',icon:'♿'},
+  pol:{label:'警察・交番',color:'#2456b8',icon:'👮'},
+  fire:{label:'消防署',color:'#d1541f',icon:'🚒'},
+  hall:{label:'市役所',color:'#4a4a4a',icon:'🏛'},
+  temp:{label:'一時避難場所（公園・企業等）',color:'#0f9bb0',icon:'🌳'},
+  hosp:{label:'災害拠点病院・救急',color:'#c0143c',icon:'🏥'},
+  shakyo:{label:'社会福祉協議会（災害VC）',color:'#e08a00',icon:'🤝'}
+};
+
+const map = L.map('map',{zoomControl:true}).setView([34.926, 135.695], 14);
+L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png',{
+  attribution:"<a href='https://maps.gsi.go.jp/development/ichiran.html' target='_blank'>国土地理院</a>",
+  maxZoom:18
+}).addTo(map);
+
+// 土砂災害警戒区域は種別ごとに配信されるため、3種をまとめて1グループで扱う
+function hazGroup(urls,opacity){
+  return L.layerGroup(urls.map(u=>L.tileLayer(u,{opacity:opacity,maxZoom:17})));
+}
+const HAZ = {
+  'hz-dosha':hazGroup([
+    'https://disaportaldata.gsi.go.jp/raster/05_dosekiryukeikaikuiki/{z}/{x}/{y}.png',
+    'https://disaportaldata.gsi.go.jp/raster/05_kyukeishakeikaikuiki/{z}/{x}/{y}.png',
+    'https://disaportaldata.gsi.go.jp/raster/05_jisuberikeikaikuiki/{z}/{x}/{y}.png'
+  ],.7),
+  'hz-kozui':hazGroup(['https://disaportaldata.gsi.go.jp/raster/01_flood_l2_shinsuishin/{z}/{x}/{y}.png'],.6)
+};
+Object.keys(HAZ).forEach(id=>{
+  document.getElementById(id).addEventListener('change',e=>{
+    if(e.target.checked) HAZ[id].addTo(map); else map.removeLayer(HAZ[id]);
+  });
+});
+document.getElementById('stockOnly').addEventListener('change',e=>{ stockOnly=e.target.checked; render(); });
+
+function mkIcon(cat){
+  const c = CATS[cat];
+  return L.divIcon({className:'',html:'<div class="marker-pin" style="background:'+c.color+'"><span>'+c.icon+'</span></div>',
+    iconSize:[26,26],iconAnchor:[13,26],popupAnchor:[0,-24]});
+}
+function catsOf(s){
+  const r=[];
+  if(s.kinds){ if(s.kinds.includes('緊急'))r.push('emg'); if(s.kinds.includes('一般'))r.push('gen'); if(s.kinds.includes('福祉'))r.push('wel'); }
+  return r;
+}
+
+let points = [];
+DATA.shelters.forEach(s=>{
+  const cs = catsOf(s);
+  const primary = cs.includes('emg')?'emg':(cs.includes('gen')?'gen':'wel');
+  points.push({name:s.name,addr:s.addr,cat:primary,kinds:s.kinds||[],tel:'',stock:!!s.stock});
+});
+DATA.police.forEach(p=> points.push({name:p.name,addr:p.addr,cat:'pol',tel:p.tel||'',note:p.note||''}));
+DATA.fire.forEach(f=> points.push({name:f.name,addr:f.addr,cat:'fire',tel:f.tel||''}));
+if(DATA.cityhall) points.push({name:DATA.cityhall.name,addr:DATA.cityhall.addr,cat:'hall',tel:DATA.cityhall.tel||''});
+if(DATA.temp) DATA.temp.forEach(t=> points.push({name:t.name,addr:t.addr,cat:'temp',tel:'',note:'一時避難場所（火災・地震直後に一時的に身を寄せる屋外スペース）'}));
+if(DATA.hospital) DATA.hospital.forEach(h=> points.push({name:h.name,addr:h.addr,cat:'hosp',tel:h.tel||'',note:h.note||'',lat:h.lat,lng:h.lng}));
+if(DATA.shakyo) DATA.shakyo.forEach(x=> points.push({name:x.name,addr:x.addr,cat:'shakyo',tel:x.tel||'',note:x.note||''}));
+
+const active = {emg:true,gen:true,wel:true,pol:true,fire:true,hall:true,temp:true,hosp:true,shakyo:true};
+let stockOnly = false;
+
+const fEl = document.getElementById('filters');
+Object.keys(CATS).forEach(k=>{
+  const c=CATS[k];
+  const chip=document.createElement('div');
+  chip.className='chip'; chip.dataset.k=k;
+  chip.innerHTML='<span class="dot" style="background:'+c.color+'"></span>'+c.icon+' '+c.label;
+  chip.onclick=()=>{active[k]=!active[k]; chip.classList.toggle('off',!active[k]); render();};
+  fEl.appendChild(chip);
+});
+
+function popupHtml(p){
+  const kindTags = (p.kinds||[]).map(k=>{
+    const cls = k==='緊急'?'emg':(k==='一般'?'gen':'wel');
+    return '<span class="tag '+cls+'">'+k+'</span>';
+  }).join('');
+  const tel = p.tel?'<div class="ptel">☎ <a href="tel:'+p.tel.replace(/-/g,'')+'">'+p.tel+'</a></div>':'';
+  const note = p.note?'<div class="pnote">'+p.note+'</div>':'';
+  const stock = p.stock?'<div class="pstock">🍚 災害用備蓄倉庫あり（食料・水・生活必需品を配備）</div>':'';
+  const q = encodeURIComponent(p.addr+' '+p.name);
+  return '<div class="pop"><div class="pn">'+p.name+'</div><div class="pa">'+p.addr+'</div>'+
+    (kindTags?'<div class="pk">'+kindTags+'</div>':'')+tel+note+stock+
+    '<div class="proute"><a href="https://www.google.com/maps/dir/?api=1&destination='+q+'" target="_blank" rel="noopener">🧭 ここへの経路</a></div></div>';
+}
+
+let markers = [];
+function render(){
+  markers.forEach(m=>map.removeLayer(m.mk)); markers=[];
+  const listEl=document.getElementById('list'); listEl.innerHTML='';
+  points.forEach(p=>{
+    if(!p.lat||!active[p.cat]) return;
+    if(stockOnly && !p.stock) return;
+    const mk=L.marker([p.lat,p.lng],{icon:mkIcon(p.cat)}).bindPopup(popupHtml(p));
+    mk.addTo(map); markers.push({mk,p});
+    const it=document.createElement('div'); it.className='item';
+    const tags=(p.kinds||[]).map(k=>{const cls=k==='緊急'?'emg':(k==='一般'?'gen':'wel');return '<span class="tag '+cls+'">'+k+'</span>';}).join('');
+    const sb=p.stock?'<span class="tag stock">🍚備蓄</span>':'';
+    it.innerHTML='<div class="n">'+CATS[p.cat].icon+' '+p.name+'</div><div class="a">'+p.addr+'</div>'+((tags||sb)?'<div class="tags">'+tags+sb+'</div>':'');
+    it.onclick=()=>{map.setView([p.lat,p.lng],17); mk.openPopup(); if(window.innerWidth<=820)document.getElementById('side').classList.remove('open');};
+    listEl.appendChild(it);
+  });
+}
+
+async function geocode(q){
+  const url='https://msearch.gsi.go.jp/address-search/AddressSearch?q='+encodeURIComponent(q);
+  const r=await fetch(url); const j=await r.json();
+  if(j && j.length){
+    let best=j[0];
+    for(const f of j){ if(f.properties&&/長岡京|向日/.test(f.properties.title)){best=f;break;} }
+    return {lat:best.geometry.coordinates[1],lng:best.geometry.coordinates[0]};
+  }
+  return null;
+}
+async function geoAll(){
+  let done=0;
+  const st=document.getElementById('status');
+  for(const p of points){
+    if(p.lat && p.lng){ done++; continue; } // 既に座標があるものは取得不要
+    try{ const g=await geocode(p.addr); if(g){p.lat=g.lat;p.lng=g.lng;} }catch(e){}
+    done++;
+    if(done%5===0||done===points.length){ st.textContent='位置を取得中… '+done+'/'+points.length; render(); }
+    await new Promise(r=>setTimeout(r,120));
+  }
+  st.textContent='表示中：'+points.filter(p=>p.lat).length+'地点';
+  render();
+  const pts=points.filter(p=>p.lat).map(p=>[p.lat,p.lng]);
+  if(pts.length) map.fitBounds(pts,{padding:[40,40]});
+}
+// ── ヘッダー機能：コピー・共有・テーマ切替 ──
+function copyLink(){
+  const url=location.href;
+  const btn=document.getElementById('copyBtn');
+  const done=()=>{ const s=btn.querySelector('span'); const o=s?s.textContent:''; if(s){s.textContent='コピー済み';} btn.style.borderColor='var(--gen)'; setTimeout(()=>{if(s)s.textContent=o;btn.style.borderColor='';},1600); };
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(done).catch(()=>fallbackCopy(url,done));
+  }else fallbackCopy(url,done);
+}
+function fallbackCopy(text,cb){
+  const t=document.createElement('textarea'); t.value=text; t.style.position='fixed'; t.style.opacity='0';
+  document.body.appendChild(t); t.select();
+  try{ document.execCommand('copy'); if(cb)cb(); }catch(e){ prompt('このリンクをコピーしてください', text); }
+  document.body.removeChild(t);
+}
+async function shareMap(){
+  const data={title:'長岡京市 防災マップ', text:'長岡京市の避難所・危険箇所マップ', url:location.href};
+  if(navigator.share){ try{ await navigator.share(data); }catch(e){} }
+  else{ copyLink(); alert('お使いの環境は共有に対応していないため、リンクをコピーしました。'); }
+}
+function applyTheme(mode){
+  document.documentElement.setAttribute('data-theme',mode);
+  const btn=document.getElementById('themeBtn');
+  const s=btn.querySelector('span');
+  if(mode==='dark'){ btn.firstChild.textContent='☀️'; if(s)s.textContent='ライト'; }
+  else{ btn.firstChild.textContent='🌙'; if(s)s.textContent='ダーク'; }
+}
+function toggleTheme(){
+  const cur=document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';
+  applyTheme(cur==='dark'?'light':'dark');
+}
+// 端末設定に合わせて初期テーマを決定（保存はしない：Artifact制約）
+(function(){
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  applyTheme(prefersDark?'dark':'light');
+})();
+
+geoAll();
+</script>
+</body>
+</html>
