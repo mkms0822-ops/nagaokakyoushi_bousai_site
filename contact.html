@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>お問い合わせ｜防災情報センター</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700;900&family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #04080f;
+  --surface: #080f1e;
+  --surface2: #0c1628;
+  --accent: #ff2d2d;
+  --accent2: #ff8c00;
+  --safe: #00e87a;
+  --blue: #00b4ff;
+  --cyan: #00ffe0;
+  --text: #d8eaf8;
+  --muted: #4a6a8a;
+  --border: rgba(0,180,255,0.12);
+  --glow-blue: 0 0 24px rgba(0,180,255,0.25);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Noto Sans JP', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,180,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,180,255,0.03) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.06) 2px, rgba(0,0,0,0.06) 4px);
+  pointer-events: none;
+  z-index: 999;
+}
+
+header {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  background: rgba(4,8,15,0.96);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 28px;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-decoration: none;
+}
+.logo-mark {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.logo-ring {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  border: 2px solid var(--blue);
+  border-radius: 50%;
+  animation: spin 8s linear infinite;
+}
+.logo-ring2 {
+  position: absolute;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(0,180,255,0.3);
+  border-radius: 50%;
+  animation: spin 4s linear infinite reverse;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.logo-dot {
+  width: 12px;
+  height: 12px;
+  background: var(--blue);
+  border-radius: 50%;
+  box-shadow: 0 0 12px var(--blue);
+  position: relative;
+  z-index: 1;
+}
+.logo-text {
+  font-family: 'Orbitron', monospace;
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  color: var(--blue);
+  text-shadow: 0 0 20px rgba(0,180,255,0.5);
+}
+.logo-sub {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.18em;
+  display: block;
+  margin-top: 2px;
+}
+
+.back-btn {
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--blue);
+  background: rgba(0,180,255,0.08);
+  border: 1px solid rgba(0,180,255,0.25);
+  border-radius: 6px;
+  padding: 7px 16px;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.back-btn:hover { background: rgba(0,180,255,0.18); }
+
+main {
+  position: relative;
+  z-index: 1;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 60px 24px 100px;
+}
+
+.page-header {
+  text-align: center;
+  margin-bottom: 52px;
+  animation: fadeInUp 0.5s ease both;
+}
+.page-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.35em;
+  color: var(--cyan);
+  display: block;
+  margin-bottom: 14px;
+}
+.page-title {
+  font-family: 'Orbitron', monospace;
+  font-size: clamp(26px, 5vw, 38px);
+  font-weight: 900;
+  color: var(--text);
+  letter-spacing: 0.06em;
+  margin-bottom: 16px;
+  text-shadow: var(--glow-blue);
+}
+.page-desc {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.9;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.form-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 40px;
+  position: relative;
+  overflow: hidden;
+  animation: fadeInUp 0.55s ease 0.1s both;
+}
+.form-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--blue), var(--cyan), transparent);
+}
+
+.form-group { margin-bottom: 22px; }
+
+.form-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.required {
+  font-size: 10px;
+  color: var(--accent);
+  background: rgba(255,45,45,0.1);
+  border: 1px solid rgba(255,45,45,0.3);
+  border-radius: 3px;
+  padding: 1px 6px;
+  letter-spacing: 0.05em;
+}
+
+.form-input,
+.form-textarea,
+.form-select {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid rgba(0,180,255,0.2);
+  border-radius: 8px;
+  padding: 12px 16px;
+  color: var(--text);
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  -webkit-appearance: none;
+}
+.form-input:focus,
+.form-textarea:focus,
+.form-select:focus {
+  border-color: rgba(0,180,255,0.55);
+  box-shadow: 0 0 0 3px rgba(0,180,255,0.08);
+}
+.form-input::placeholder,
+.form-textarea::placeholder {
+  color: var(--muted);
+  font-size: 13px;
+}
+.form-textarea {
+  resize: vertical;
+  min-height: 140px;
+  line-height: 1.7;
+}
+.form-select {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%234a6a8a' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 40px;
+}
+.form-select option { background: var(--surface2); }
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.char-count {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  text-align: right;
+  margin-top: 5px;
+}
+.char-count.warn { color: var(--accent2); }
+.char-count.over { color: var(--accent); }
+
+.form-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 28px 0;
+}
+
+.privacy-box {
+  background: rgba(0,180,255,0.04);
+  border: 1px solid rgba(0,180,255,0.12);
+  border-radius: 8px;
+  padding: 14px 18px;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.9;
+  margin-bottom: 22px;
+}
+.privacy-box strong { color: var(--text); }
+
+.checkbox-wrap {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+  margin-bottom: 28px;
+  user-select: none;
+}
+.checkbox-wrap input[type="checkbox"] { display: none; }
+.checkbox-custom {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  background: var(--surface2);
+  border: 1px solid rgba(0,180,255,0.3);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
+  transition: all 0.2s;
+}
+.checkbox-wrap input:checked + .checkbox-custom {
+  background: var(--blue);
+  border-color: var(--blue);
+  box-shadow: 0 0 8px rgba(0,180,255,0.4);
+}
+.checkbox-custom::after {
+  content: '';
+  width: 5px;
+  height: 9px;
+  border: 2px solid white;
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg) translateY(-1px);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.checkbox-wrap input:checked + .checkbox-custom::after { opacity: 1; }
+.checkbox-label {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.6;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 15px;
+  background: rgba(0,180,255,0.1);
+  border: 1px solid rgba(0,180,255,0.4);
+  border-radius: 10px;
+  color: var(--blue);
+  font-family: 'Orbitron', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.submit-btn:hover:not(:disabled) {
+  background: rgba(0,180,255,0.2);
+  box-shadow: 0 0 28px rgba(0,180,255,0.2);
+}
+.submit-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.btn-icon { font-size: 16px; }
+
+.result-box {
+  display: none;
+  border-radius: 10px;
+  padding: 28px 24px;
+  text-align: center;
+  margin-top: 20px;
+}
+.result-box.success {
+  background: rgba(0,232,122,0.07);
+  border: 1px solid rgba(0,232,122,0.25);
+}
+.result-box.error {
+  background: rgba(255,45,45,0.07);
+  border: 1px solid rgba(255,45,45,0.25);
+}
+.result-icon { font-size: 36px; margin-bottom: 10px; }
+.result-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+.result-box.success .result-title { color: var(--safe); }
+.result-box.error   .result-title { color: var(--accent); }
+.result-msg { font-size: 13px; color: var(--muted); line-height: 1.8; }
+
+.info-section {
+  margin-top: 32px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  animation: fadeInUp 0.55s ease 0.2s both;
+}
+.info-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+}
+.info-card-title {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.info-card-val {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.7;
+}
+.info-card-val a {
+  color: var(--blue);
+  text-decoration: none;
+  word-break: break-all;
+}
+.info-card-val a:hover { text-decoration: underline; }
+
+.field-error {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  color: var(--accent);
+  margin-top: 6px;
+  display: none;
+}
+.form-input.invalid,
+.form-textarea.invalid,
+.form-select.invalid {
+  border-color: rgba(255,45,45,0.5);
+}
+
+@media (max-width: 560px) {
+  header { padding: 0 16px; }
+  .logo-text { font-size: 14px; }
+  .form-row { grid-template-columns: 1fr; }
+  .form-card { padding: 28px 20px; }
+  .info-section { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="index.html" class="logo">
+    <div class="logo-mark">
+      <div class="logo-ring"></div>
+      <div class="logo-ring2"></div>
+      <div class="logo-dot"></div>
+    </div>
+    <div>
+      <div class="logo-text">防災情報センター</div>
+      <span class="logo-sub">BOUSAI INFORMATION CENTER · CONTACT</span>
+    </div>
+  </a>
+  <a href="index.html" class="back-btn">← サイトに戻る</a>
+</header>
+
+<main>
+
+  <div class="page-header">
+    <span class="page-label">// CONTACT FORM</span>
+    <h1 class="page-title">お問い合わせ</h1>
+    <p class="page-desc">
+      防災情報センターへのご質問・ご意見・取材依頼などは<br>
+      下記フォームよりお送りください。通常2〜3営業日以内にご返信いたします。
+    </p>
+  </div>
+
+  <div class="form-card">
+    <form id="contactForm" novalidate>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="lastName">
+            お名前（姓）<span class="required">必須</span>
+          </label>
+          <input class="form-input" type="text" id="lastName" name="lastName"
+            placeholder="山田" autocomplete="family-name">
+          <div class="field-error" id="lastNameErr">姓を入力してください</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="firstName">
+            お名前（名）<span class="required">必須</span>
+          </label>
+          <input class="form-input" type="text" id="firstName" name="firstName"
+            placeholder="太郎" autocomplete="given-name">
+          <div class="field-error" id="firstNameErr">名を入力してください</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="email">
+          メールアドレス<span class="required">必須</span>
+        </label>
+        <input class="form-input" type="email" id="email" name="email"
+          placeholder="example@email.com" autocomplete="email">
+        <div class="field-error" id="emailErr">正しいメールアドレスを入力してください</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="category">
+          お問い合わせ種別<span class="required">必須</span>
+        </label>
+        <select class="form-select" id="category" name="category">
+          <option value="">選択してください</option>
+          <option value="general">一般的なご質問</option>
+          <option value="disaster">防災・避難情報について</option>
+          <option value="system">サイト・システムについて</option>
+          <option value="media">取材・メディア関係</option>
+          <option value="partnership">連携・協力のご相談</option>
+          <option value="other">その他</option>
+        </select>
+        <div class="field-error" id="categoryErr">種別を選択してください</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="subject">
+          件名<span class="required">必須</span>
+        </label>
+        <input class="form-input" type="text" id="subject" name="subject"
+          placeholder="お問い合わせの件名を入力してください" maxlength="100">
+        <div class="field-error" id="subjectErr">件名を入力してください</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="message">
+          お問い合わせ内容<span class="required">必須</span>
+        </label>
+        <textarea class="form-textarea" id="message" name="message"
+          placeholder="お問い合わせ内容を具体的にご記入ください。" maxlength="2000"
+          oninput="updateCount()"></textarea>
+        <div class="char-count" id="charCount">0 / 2000</div>
+        <div class="field-error" id="messageErr">お問い合わせ内容を入力してください（10文字以上）</div>
+      </div>
+
+      <hr class="form-divider">
+
+      <div class="privacy-box">
+        <strong>個人情報の取り扱いについて</strong><br>
+        ご入力いただいた個人情報は、お問い合わせへの回答および防災情報センターからのご連絡のみに使用いたします。
+        第三者への提供・開示は行いません。
+      </div>
+
+      <label class="checkbox-wrap">
+        <input type="checkbox" id="privacyCheck">
+        <span class="checkbox-custom"></span>
+        <span class="checkbox-label">個人情報の取り扱いに同意します</span>
+      </label>
+
+      <button class="submit-btn" type="submit" id="submitBtn" disabled>
+        <span class="btn-icon">📡</span>
+        <span>送信する</span>
+      </button>
+
+    </form>
+
+    <div class="result-box success" id="successBox">
+      <div class="result-icon">✅</div>
+      <div class="result-title">送信完了</div>
+      <div class="result-msg">
+        お問い合わせを受け付けました。<br>
+        通常2〜3営業日以内にご返信いたします。<br>
+        しばらくお待ちください。
+      </div>
+    </div>
+    <div class="result-box error" id="errorBox">
+      <div class="result-icon">⚠️</div>
+      <div class="result-title">送信失敗</div>
+      <div class="result-msg" id="errorMsg">
+        送信に失敗しました。しばらく後にもう一度お試しください。
+      </div>
+    </div>
+  </div>
+
+  <div class="info-section">
+    <div class="info-card">
+      <div class="info-card-title">// CONTACT EMAIL</div>
+      <div class="info-card-val">
+        <a href="mailto:dwa8791@bousai0111.info">dwa8791@bousai0111.info</a>
+      </div>
+    </div>
+    <div class="info-card">
+      <div class="info-card-title">// RESPONSE TIME</div>
+      <div class="info-card-val">
+        通常2〜3営業日以内<br>
+        <span style="font-size:12px; color:var(--muted);">※土日祝日は除く</span>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+function updateCount() {
+  const msg = document.getElementById('message');
+  const count = document.getElementById('charCount');
+  const len = msg.value.length;
+  count.textContent = len + ' / 2000';
+  count.className = 'char-count' + (len > 1800 ? ' warn' : '') + (len >= 2000 ? ' over' : '');
+}
+
+document.getElementById('privacyCheck').addEventListener('change', function() {
+  document.getElementById('submitBtn').disabled = !this.checked;
+});
+
+function validate() {
+  let ok = true;
+  const fields = [
+    { id: 'lastName',  errId: 'lastNameErr',  check: v => v.trim().length > 0 },
+    { id: 'firstName', errId: 'firstNameErr', check: v => v.trim().length > 0 },
+    { id: 'email',     errId: 'emailErr',     check: v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) },
+    { id: 'category',  errId: 'categoryErr',  check: v => v !== '' },
+    { id: 'subject',   errId: 'subjectErr',   check: v => v.trim().length > 0 },
+    { id: 'message',   errId: 'messageErr',   check: v => v.trim().length >= 10 },
+  ];
+  fields.forEach(f => {
+    const el = document.getElementById(f.id);
+    const err = document.getElementById(f.errId);
+    if (!f.check(el.value)) {
+      el.classList.add('invalid');
+      err.style.display = 'block';
+      ok = false;
+    } else {
+      el.classList.remove('invalid');
+      err.style.display = 'none';
+    }
+  });
+  return ok;
+}
+
+document.getElementById('contactForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  if (!validate()) return;
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="btn-icon">⏳</span><span>送信中...</span>';
+
+  const lastName    = document.getElementById('lastName').value.trim();
+  const firstName   = document.getElementById('firstName').value.trim();
+  const email       = document.getElementById('email').value.trim();
+  const category    = document.getElementById('category').value;
+  const subject     = document.getElementById('subject').value.trim();
+  const message     = document.getElementById('message').value.trim();
+
+  const categoryLabel = {
+    general:     '一般的なご質問',
+    disaster:    '防災・避難情報について',
+    system:      'サイト・システムについて',
+    media:       '取材・メディア関係',
+    partnership: '連携・協力のご相談',
+    other:       'その他'
+  }[category] || category;
+
+  const body =
+'【防災情報センター お問い合わせ】\n\n' +
+'■ お名前: ' + lastName + ' ' + firstName + '\n' +
+'■ メールアドレス: ' + email + '\n' +
+'■ 種別: ' + categoryLabel + '\n' +
+'■ 件名: ' + subject + '\n\n' +
+'■ 内容:\n' + message + '\n\n' +
+'---\n送信日時: ' + new Date().toLocaleString('ja-JP');
+
+  const mailtoLink =
+    'mailto:dwa8791@bousai0111.info' +
+    '?subject=' + encodeURIComponent('[防災情報センター] ' + subject) +
+    '&body='    + encodeURIComponent(body);
+
+  window.location.href = mailtoLink;
+
+  setTimeout(() => {
+    document.getElementById('successBox').style.display = 'block';
+    document.getElementById('contactForm').style.display = 'none';
+  }, 500);
+});
+
+['lastName','firstName','email','category','subject','message'].forEach(id => {
+  document.getElementById(id).addEventListener('input', function() {
+    this.classList.remove('invalid');
+    const err = document.getElementById(id + 'Err');
+    if (err) err.style.display = 'none';
+  });
+});
+</script>
+</body>
+</html>

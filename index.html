@@ -59,8 +59,6 @@
   .menu .mhead .t{font-size:15px;font-weight:800}
   .menu .mhead .s{font-size:11px;color:var(--sub);margin-top:3px;line-height:1.5}
   .menu nav{padding:8px 0;flex:1}
-  .menu .grp{padding:14px 18px 6px;font-size:11px;font-weight:800;color:var(--sub);letter-spacing:.04em;background:#f6f9fb;border-bottom:1px solid #eef2f6}
-  .menu a.mi .ex{font-size:10px;color:#9aa7b2;font-weight:700;margin-left:4px}
   .menu a.mi{display:flex;align-items:center;gap:12px;padding:14px 18px;text-decoration:none;color:var(--ink);font-size:14.5px;font-weight:700;border-bottom:1px solid #f2f5f8}
   .menu a.mi:hover{background:#f6f9fb}
   .menu a.mi .ic{font-size:19px;width:24px;text-align:center}
@@ -71,6 +69,46 @@
   @media(min-width:720px){
     .hero img{max-width:460px}
   }
+
+  /* ===== SOSビーコン（bousai0111.info本体より移植） ===== */
+  /* ===== SOSパネル ===== */
+  #sosPanel{ display:none; position:fixed; inset:0; z-index:99991;
+    background:rgba(10,12,16,.96); color:#eceff1; overflow-y:auto;
+    -webkit-overflow-scrolling:touch; font-family:inherit; }
+  #sosPanel.open{ display:block; }
+  .sos-wrap{ max-width:560px; margin:0 auto; padding:20px 16px 60px; }
+  .sos-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .sos-title{ font-size:18px; font-weight:800; color:#ff8a80; letter-spacing:1px; }
+  .sos-close{ background:none; border:1px solid #546e7a; color:#b0bec5;
+    border-radius:8px; padding:8px 14px; font-size:14px; cursor:pointer; }
+  .sos-sec{ background:#161b22; border:1px solid #30363d; border-radius:12px;
+    padding:16px 14px; margin-bottom:14px; }
+  .sos-sec h3{ margin:0 0 4px; font-size:14px; color:#80cbc4; font-weight:700; }
+  .sos-note{ font-size:12px; color:#90a4ae; line-height:1.6; margin:4px 0 10px; }
+  .sos-btn{ display:block; width:100%; padding:14px; margin:8px 0; border:none;
+    border-radius:10px; font-size:16px; font-weight:700; cursor:pointer; color:#fff; }
+  .sos-btn:active{ opacity:.85; }
+  .sos-btn.red{ background:#c62828; } .sos-btn.orange{ background:#e65100; }
+  .sos-btn.green{ background:#2e7d32; } .sos-btn.blue{ background:#1565c0; }
+  .sos-btn.gray{ background:#37474f; }
+  .sos-row{ display:flex; gap:8px; } .sos-row .sos-btn{ flex:1; }
+  .sos-status{ font-size:13px; color:#ffe082; min-height:1.4em; margin-top:6px; line-height:1.6; word-break:break-all; }
+  .sos-toggle{ display:flex; align-items:center; gap:8px; font-size:14px; color:#cfd8dc; margin:6px 0; }
+  .sos-toggle input{ width:20px; height:20px; }
+  .sos-lock-msg{ background:rgba(255,213,79,.12); border:1px solid rgba(255,213,79,.5);
+    color:#ffe082; border-radius:10px; padding:10px 12px; font-size:13px; line-height:1.6; margin-bottom:14px; }
+  .sos-btn.sos-locked{ background:#37474f !important; color:#90a4ae !important;
+    opacity:.55; pointer-events:none; }
+
+  /* ===== 点滅オーバーレイ ===== */
+  #sosFlash{ display:none; position:fixed; inset:0; z-index:99998; background:#000; }
+  #sosFlash.on{ background:#fff; }
+  #sosFlash.show{ display:block; }
+  #sosFlashStop{ display:none; position:fixed; left:50%; bottom:40px; transform:translateX(-50%);
+    z-index:99999; padding:16px 40px; font-size:18px; font-weight:800;
+    background:#c62828; color:#fff; border:3px solid #fff; border-radius:14px; cursor:pointer; }
+  #sosFlashStop.show{ display:block; }
+
 </style>
 </head>
 <body>
@@ -88,10 +126,10 @@
     </div>
 
     <div class="quick">
-      <a class="q sos" href="https://bousai0111.info/#sos">🆘 SOSビーコンを発信</a>
+      <button type="button" class="q sos" onclick="sosOpenPanel()">🆘 SOSビーコンを発信</button>
       <a class="q map" href="map.html"><span class="qi">🗺️</span>防災マップ</a>
       <a class="q near" href="https://bousai0111.info/#near"><span class="qi">📍</span>近くを探す</a>
-      <a class="q manual" href="https://bousai0111.info/Manual.html"><span class="qi">📖</span>緊急対応<br>マニュアル</a>
+      <a class="q manual" href="Manual.html"><span class="qi">📖</span>緊急対応<br>マニュアル</a>
       <a class="q" href="https://bousai0111.info/drill.html"><span class="qi">🚨</span>デジタル<br>避難訓練</a>
     </div>
 
@@ -105,7 +143,7 @@
   <footer>
     長岡京市認定 市民活動団体　DWA防災情報センター<br>
     DISASTER PREVENTION・EARTHQUAKE MONITOR LIVE<br>
-    <a href="privacy.html">プライバシーポリシー</a>　·　<a href="map.html">防災マップ</a>
+    <a href="privacy.html">プライバシーポリシー</a>　·　<a href="map.html">防災マップ</a>　·　<a href="contact.html">お問い合わせ</a>
   </footer>
 
   <!-- メニュー -->
@@ -116,27 +154,14 @@
       <div class="s">災害への備えと、いざというときの行動を、この一か所から。</div>
     </div>
     <nav>
-      <div class="grp">防災ツール</div>
-      <a class="mi emg" href="https://bousai0111.info/#sos"><span class="ic">🆘</span><span>SOSビーコン<span class="sub">助けを求める信号を発信</span></span></a>
+      <button type="button" class="mi emg" onclick="closeMenuThenSOS()"><span class="ic">🆘</span><span>SOSビーコン<span class="sub">助けを求める信号を発信</span></span></button>
       <a class="mi" href="map.html"><span class="ic">🗺️</span><span>防災マップ<span class="sub">避難所・危険箇所・病院・備蓄</span></span></a>
       <a class="mi" href="https://bousai0111.info/#near"><span class="ic">📍</span><span>近くを探す<span class="sub">現在地の近くの避難所</span></span></a>
-      <a class="mi" href="https://bousai0111.info/Manual.html"><span class="ic">📖</span><span>緊急対応マニュアル<span class="sub">いざというときの手順</span></span></a>
+      <a class="mi" href="Manual.html"><span class="ic">📖</span><span>緊急対応マニュアル<span class="sub">いざというときの手順</span></span></a>
       <a class="mi" href="https://bousai0111.info/drill.html"><span class="ic">🚨</span><span>デジタル避難訓練<span class="sub">オンラインで参加する訓練</span></span></a>
-
-      <div class="grp">セルフ診断</div>
-      <a class="mi" href="https://mkms0822-ops.github.io/anatano-bousai-shindan/" target="_blank" rel="noopener"><span class="ic">📝</span><span>あなたの防災意識診断<span class="sub">13の質問で備えと行動力をチェック</span></span></a>
-      <a class="mi" href="https://bousai0111.info/index.html#quiz" target="_blank" rel="noopener"><span class="ic">🧠</span><span>DWA 防災診断・防災クイズ<span class="sub">いっしょに防災知識を身につけましょう</span></span></a>
-      <a class="mi" href="https://bousai0111.info/battery-diagnosis.html" target="_blank" rel="noopener"><span class="ic">🔋</span><span>バッテリー診断<span class="sub">モバイルバッテリー・ポータブル電源の発火リスク</span></span></a>
-
-      <div class="grp">公式情報サイト</div>
-      <a class="mi" href="https://www.jma.go.jp/jma/index.html" target="_blank" rel="noopener"><span class="ic">🌦️</span><span>気象庁<span class="sub">天気・警報・地震・台風</span></span></a>
-      <a class="mi" href="https://www.bousai.go.jp/" target="_blank" rel="noopener"><span class="ic">🏛️</span><span>内閣府 防災情報<span class="sub">国の防災対策・支援制度</span></span></a>
-      <a class="mi" href="https://www.fdma.go.jp/" target="_blank" rel="noopener"><span class="ic">🚒</span><span>総務省消防庁<span class="sub">火災・救急・防災の情報</span></span></a>
-      <a class="mi" href="https://www.npa.go.jp/" target="_blank" rel="noopener"><span class="ic">👮</span><span>警察庁<span class="sub">安全・防犯・交通の情報</span></span></a>
-      <a class="mi" href="https://www.pref.kyoto.jp/" target="_blank" rel="noopener"><span class="ic">📍</span><span>京都府<span class="sub">府の防災・災害情報</span></span></a>
-      <a class="mi" href="https://www.city.nagaokakyo.lg.jp/" target="_blank" rel="noopener"><span class="ic">🏙️</span><span>長岡京市<span class="sub">市の防災・避難情報</span></span></a>
-
-      <div class="grp">このサイトについて</div>
+      <a class="mi" href="quiz.html"><span class="ic">🧠</span><span>防災診断・防災クイズ<span class="sub">いっしょに知識を身につける</span></span></a>
+      <a class="mi" href="battery-diagnosis.html"><span class="ic">🔋</span><span>バッテリー診断<span class="sub">発火リスクをチェック</span></span></a>
+      <a class="mi" href="contact.html"><span class="ic">✉️</span><span>お問い合わせ<span class="sub">ご質問・ご連絡はこちら</span></span></a>
       <a class="mi" href="privacy.html"><span class="ic">🔒</span><span>プライバシーポリシー<span class="sub">個人情報の取り扱い</span></span></a>
     </nav>
     <div class="mfoot">
@@ -152,6 +177,568 @@
     document.body.style.overflow = open?'hidden':'';
   }
   document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ const m=document.getElementById('menu'); if(m.classList.contains('open')) toggleMenu(); }});
+</script>
+
+<!-- ===== 緊急SOSビーコン（bousai0111.info本体より移植） ===== -->
+<div id="sosPanel" role="dialog" aria-label="緊急SOSビーコン">
+  <div class="sos-wrap">
+    <div class="sos-head">
+      <div class="sos-title">// 緊急SOSビーコン</div>
+      <button class="sos-close" type="button" onclick="sosClosePanel()">閉じる ✕</button>
+    </div>
+
+    <div class="sos-sec">
+      <h3>① 音・光ビーコン（通信不要）</h3>
+      <div class="sos-note">
+        画面をSOSモールス信号（・・・－－－・・・）で点滅させ、高音アラームを鳴らします。
+        瓦礫の下や暗所で居場所を知らせる用途です。<b>電波が無くても動きます。</b><br>
+        ※開始前に <b>音量（メディア音量）と画面の明るさを最大</b> にしてください。<br>
+        ※iPhoneは本体横の消音スイッチがONだと音が鳴りません。スイッチを解除してください。<br>
+        ※光の点滅が体質に合わない方は「光」をオフにしてください。<br>
+        <b>サイレン</b>は2種類の高音を交互に鳴らし続ける連続警報音です（光なし・通信不要）。
+        同じ音量でも救急車のサイレンと同じ原理で、人の耳に格段に気づかれやすい方式です。
+      </div>
+      <label class="sos-toggle"><input type="checkbox" id="sosOptSound" checked> 音（高音アラーム）</label>
+      <label class="sos-toggle"><input type="checkbox" id="sosOptLight" checked> 光（画面点滅）</label>
+      <button class="sos-btn red" type="button" onclick="sosBeaconStart()">▶ ビーコン開始</button>
+      <button class="sos-btn orange" type="button" onclick="sosSirenStart()">🚨 サイレン開始（連続2トーン）</button>
+      <button class="sos-btn gray" type="button" onclick="sosSoundTest()">🔊 音のテスト（1秒だけ鳴らす）</button>
+      <div class="sos-status" id="sosSoundTestStatus"></div>
+    </div>
+
+    <div class="sos-sec">
+      <h3>② 電話で通報（推奨）</h3>
+      <div class="sos-note">
+        通報できる状況の方は、こちらから直接通報してください。災害用伝言ダイヤルは171です。
+      </div>
+      <div class="sos-row">
+        <a class="sos-btn red" style="text-align:center;text-decoration:none;box-sizing:border-box;line-height:1.3" href="tel:119">📞 119へ電話<br><span style="font-size:11px;font-weight:400">火事・救急・救助</span></a>
+        <a class="sos-btn blue" style="text-align:center;text-decoration:none;box-sizing:border-box;line-height:1.3" href="tel:110">📞 110へ電話<br><span style="font-size:11px;font-weight:400">事件・事故</span></a>
+      </div>
+    </div>
+
+    <div class="sos-sec" style="border-style:dashed">
+      <h3>③ GPS位置発信・安否登録 <span style="color:#ffd54f">（10月1日 提供開始予定）</span></h3>
+      <div class="sos-note">
+        現在地をワンタップで発信して、ご家族や運営と共有できる「GPS位置発信」と「安否登録」は、
+        <b style="color:#ffd54f">プレミアム会員限定機能</b>として <b>10月1日</b> に提供を開始する予定です。<br>
+        ※無料会員登録は8月開始予定。詳細は追ってサイト内のお知らせでご案内します。
+      </div>
+    </div>
+
+    <div class="sos-note" style="text-align:center">
+      通報は119（消防）・110（警察）へ。<br>
+      この機能は公的な救助要請システムとは連動していません。
+    </div>
+  </div>
+</div>
+
+<div id="sosFlash" aria-hidden="true"></div>
+<button id="sosFlashStop" type="button" onclick="sosAlarmStopAll()">■ 停止</button>
+
+
+<script>
+(function () {
+  // サイト本体と同じGAS（ARTICLES_URL）へ送信。未定義時の保険としてURLを直書き。
+  var SOS_GAS_URL = (typeof ARTICLES_URL !== 'undefined' && ARTICLES_URL) ? ARTICLES_URL
+    : "https://script.google.com/macros/s/AKfycbzVC_aeGGOv4m7-CpKl2Z75muRwWrU6MZDj3sgaBcobw9mSq9jYDY95BsoxiZHkw1dimg/exec";
+
+  // ---------- パネル開閉 ----------
+  var panel = document.getElementById('sosPanel');
+  window.sosOpenPanel = function () {
+    panel.classList.add('open');
+    try { sosApplyLockUI(); } catch (e) {}
+    try { if (window.dwaTrack) window.dwaTrack('button', 'SOSビーコンを開く'); } catch (e) {}
+  };
+  window.sosClosePanel = function () { panel.classList.remove('open'); };
+
+  // ---------- 共有URL対応：?sos=1 または #sos 付きで開かれたらSOSパネルを自動表示 ----------
+  try {
+    var _sosParams = new URLSearchParams(location.search);
+    if (_sosParams.get('sos') === '1' || location.hash === '#sos') {
+      setTimeout(function () {
+        try { window.sosOpenPanel(); } catch (e) {}
+      }, 1200);
+    }
+  } catch (e) {}
+
+  // ============================================================
+  // ① 音・光ビーコン（オフライン動作）
+  //    SOSモールス信号: ・・・ －－－ ・・・（単位200ms）
+  // ============================================================
+  var UNIT = 200;
+  var SOS_PATTERN = [];
+  (function build() {
+    var dot = [1, 1], dash = [3, 1];
+    var s = [dot, dot, dot], o = [dash, dash, dash];
+    var letters = [s, o, s];
+    for (var i = 0; i < letters.length; i++) {
+      var L = letters[i];
+      for (var j = 0; j < L.length; j++) {
+        var onMs = L[j][0] * UNIT;
+        var offMs = L[j][1] * UNIT;
+        if (j === L.length - 1) offMs = 3 * UNIT;
+        if (i === letters.length - 1 && j === L.length - 1) offMs = 7 * UNIT;
+        SOS_PATTERN.push([onMs, offMs]);
+      }
+    }
+  })();
+
+  var beaconOn = false, timerId = null, audioCtx = null, osc = null, gainNode = null, wakeLock = null;
+  var flashEl = document.getElementById('sosFlash');
+  var stopBtn = document.getElementById('sosFlashStop');
+
+  // ---------- 予備ブザー：WebAudioが動かない端末では<audio>のビープ音に自動切替 ----------
+  var _sosFallbackAudio = null;
+  function sosBuildBeepWav_() {
+    // 2600Hzの矩形波1秒分のWAVをその場で生成（外部ファイル不要＝オフラインでも鳴る）
+    var rate = 22050, n = rate, freq = 2600;
+    var data = new Uint8Array(44 + n);
+    function w32(o, v) { data[o] = v & 255; data[o + 1] = (v >> 8) & 255; data[o + 2] = (v >> 16) & 255; data[o + 3] = (v >> 24) & 255; }
+    function w16(o, v) { data[o] = v & 255; data[o + 1] = (v >> 8) & 255; }
+    function ws(o, s) { for (var i = 0; i < s.length; i++) data[o + i] = s.charCodeAt(i); }
+    ws(0, 'RIFF'); w32(4, 36 + n); ws(8, 'WAVE'); ws(12, 'fmt '); w32(16, 16); w16(20, 1); w16(22, 1);
+    w32(24, rate); w32(28, rate); w16(32, 1); w16(34, 8); ws(36, 'data'); w32(40, n);
+    for (var i = 0; i < n; i++) { data[44 + i] = (Math.sin(2 * Math.PI * freq * i / rate) >= 0) ? 255 : 0; }
+    var b = '';
+    for (var j = 0; j < data.length; j++) b += String.fromCharCode(data[j]);
+    return 'data:audio/wav;base64,' + btoa(b);
+  }
+  function sosStartFallbackBeep() {
+    if (_sosFallbackAudio) return;
+    try {
+      _sosFallbackAudio = new Audio(sosBuildBeepWav_());
+      _sosFallbackAudio.loop = true;
+      _sosFallbackAudio.volume = 0;   // SOSパターンに合わせて setSignal が音量を上げ下げする
+      var p = _sosFallbackAudio.play();
+      if (p && p.catch) p.catch(function () { _sosFallbackAudio = null; });
+    } catch (e) { _sosFallbackAudio = null; }
+  }
+
+  function setSignal(on) {
+    if (document.getElementById('sosOptLight').checked) {
+      flashEl.classList.toggle('on', on);
+    }
+    if (gainNode && audioCtx) {
+      var t = audioCtx.currentTime;
+      try {
+        gainNode.gain.cancelScheduledValues(t);
+        gainNode.gain.setTargetAtTime(on ? 1.0 : 0.0001, t, 0.005);   // 1.0=デジタル最大出力
+      } catch (e) {
+        gainNode.gain.value = on ? 1.0 : 0.0001;   // 古いWebView向け
+      }
+    }
+    if (_sosFallbackAudio) {
+      _sosFallbackAudio.volume = on ? 1 : 0;       // 予備ブザーもSOSパターンで鳴らす
+    }
+  }
+
+  function runPattern(idx) {
+    if (!beaconOn) return;
+    var step = SOS_PATTERN[idx % SOS_PATTERN.length];
+    setSignal(true);
+    timerId = setTimeout(function () {
+      setSignal(false);
+      timerId = setTimeout(function () { runPattern(idx + 1); }, step[1]);
+    }, step[0]);
+  }
+
+  function requestWakeLock() {
+    try {
+      if (navigator.wakeLock && navigator.wakeLock.request) {
+        navigator.wakeLock.request('screen').then(function (wl) { wakeLock = wl; }).catch(function () {});
+      }
+    } catch (e) {}
+  }
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState !== 'visible') return;
+    if (beaconOn || sirenOn) {
+      requestWakeLock();
+      try { if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); } catch (e) {}
+      try { if (sirenCtx && sirenCtx.state === 'suspended') sirenCtx.resume(); } catch (e) {}
+    }
+  });
+
+  window.sosBeaconStart = function () {
+    if (beaconOn) return;
+    try { window.sosSirenStop(); } catch (e) {}   // サイレンと同時には鳴らさない
+    var useSound = document.getElementById('sosOptSound').checked;
+    var useLight = document.getElementById('sosOptLight').checked;
+    if (!useSound && !useLight) { alert('「音」か「光」のどちらかをオンにしてください。'); return; }
+    beaconOn = true;
+
+    if (useSound) {
+      try {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        // 一部ブラウザ(Android Chrome/iOS Safari)は生成直後が「一時停止(suspended)」
+        // 状態のため、明示的に再開しないと音が出ない
+        if (audioCtx.state === 'suspended') { try { audioCtx.resume(); } catch (e2) {} }
+        // iOS/Android向けアンロック：無音バッファを1回再生して音声出力を有効化する
+        try {
+          var _ub = audioCtx.createBuffer(1, 1, 22050);
+          var _us = audioCtx.createBufferSource();
+          _us.buffer = _ub; _us.connect(audioCtx.destination); _us.start(0);
+        } catch (e3) {}
+        osc = audioCtx.createOscillator();
+        gainNode = audioCtx.createGain();
+        osc.type = 'square';
+        osc.frequency.value = 2800;
+        gainNode.gain.value = 0.0001;
+        osc.connect(gainNode).connect(audioCtx.destination);
+        osc.start();
+      } catch (e) { audioCtx = null; osc = null; gainNode = null; }
+      // それでも音声エンジンが動かない端末は、<audio>のビープ音へ自動フォールバック
+      setTimeout(function () {
+        if (!beaconOn) return;
+        if (audioCtx && audioCtx.state !== 'running') { try { audioCtx.resume(); } catch (e4) {} }
+        setTimeout(function () {
+          if (beaconOn && (!audioCtx || audioCtx.state !== 'running')) sosStartFallbackBeep();
+        }, 800);
+      }, 1000);
+    }
+    if (useLight) {
+      flashEl.classList.add('show');
+      try {
+        var el = document.documentElement;
+        if (el.requestFullscreen) el.requestFullscreen().catch(function () {});
+      } catch (e) {}
+    }
+    stopBtn.classList.add('show');
+    panel.classList.remove('open');
+    requestWakeLock();
+    runPattern(0);
+    try { if (window.dwaTrack) window.dwaTrack('button', 'SOS音光ビーコン開始'); } catch (e) {}
+  };
+
+  // 音のテスト：1秒鳴らして音声エンジンの状態を表示（コード起因か端末起因かの切り分け用）
+  window.sosSoundTest = function () {
+    var out = document.getElementById('sosSoundTestStatus');
+    try {
+      var c = new (window.AudioContext || window.webkitAudioContext)();
+      if (c.state === 'suspended') { try { c.resume(); } catch (e) {} }
+      var o = c.createOscillator(), g = c.createGain();
+      o.type = 'square'; o.frequency.value = 2000; g.gain.value = 0.5;
+      o.connect(g).connect(c.destination);
+      o.start();
+      out.textContent = '🔊 テスト音を再生中…（1秒）';
+      setTimeout(function () {
+        var st = c.state;
+        try { o.stop(); } catch (e) {}
+        try { c.close(); } catch (e) {}
+        if (st === 'running') {
+          out.innerHTML = '✅ 音声エンジンは正常に動いています。<b>それでも聞こえなかった場合は端末側の設定です：</b><br>'
+            + '① メディア音量…このまま本体の音量アップボタンを押し、表示されるバーが「メディア」で0でないか確認<br>'
+            + '② マナーモード／ミュートを解除<br>'
+            + '③ Bluetooth…イヤホン・時計・車などに接続中だと音はそちらに流れます。Bluetoothを一時OFFにして再テスト<br>'
+            + '④ HDMI・外部ディスプレイ接続中は音がそちらに出力され、本体からは鳴りません';
+        } else {
+          out.textContent = '⚠️ 音声エンジンが「' + st + '」状態のままです。もう一度このボタンを押すか、ページを再読み込みしてお試しください。';
+        }
+      }, 1000);
+    } catch (e) {
+      out.textContent = '⚠️ 音声エンジンを起動できませんでした（' + e + '）。ブラウザを最新版に更新してお試しください。';
+    }
+  };
+
+  // ---------- サイレン（ビーコンとは別の連続2トーン警報音・2800Hz⇄2200Hz） ----------
+  var sirenOn = false, sirenCtx = null, sirenOsc = null, sirenGain = null;
+  var sirenTimer = null, sirenHigh = true, sirenFallbackTimer = null;
+
+  window.sosSirenStart = function () {
+    if (sirenOn) return;
+    try { window.sosBeaconStop(); } catch (e) {}   // ビーコンと同時には鳴らさない
+    sirenOn = true;
+    try {
+      sirenCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (sirenCtx.state === 'suspended') { try { sirenCtx.resume(); } catch (e2) {} }
+      // 音声アンロック（無音バッファ）
+      try {
+        var ub = sirenCtx.createBuffer(1, 1, 22050);
+        var us = sirenCtx.createBufferSource();
+        us.buffer = ub; us.connect(sirenCtx.destination); us.start(0);
+      } catch (e3) {}
+      sirenOsc = sirenCtx.createOscillator();
+      sirenGain = sirenCtx.createGain();
+      sirenOsc.type = 'square';
+      sirenOsc.frequency.value = 2800;
+      sirenGain.gain.value = 1.0;   // デジタル最大出力
+      sirenOsc.connect(sirenGain).connect(sirenCtx.destination);
+      sirenOsc.start();
+      sirenHigh = true;
+      // 350msごとに高音⇄低音を切り替える（救急車式の交互2トーン）
+      sirenTimer = setInterval(function () {
+        sirenHigh = !sirenHigh;
+        var f = sirenHigh ? 2800 : 2200;
+        try { sirenOsc.frequency.setValueAtTime(f, sirenCtx.currentTime); }
+        catch (e4) { try { sirenOsc.frequency.value = f; } catch (e5) {} }
+        // 予備ブザー使用時は音量の強弱で疑似サイレン化
+        if (_sosFallbackAudio) { _sosFallbackAudio.volume = sirenHigh ? 1 : 0.15; }
+      }, 350);
+    } catch (e) { sirenCtx = null; sirenOsc = null; sirenGain = null; }
+    // WebAudioが動かない端末は予備ブザーへ自動フォールバック
+    sirenFallbackTimer = setTimeout(function () {
+      if (sirenOn && (!sirenCtx || sirenCtx.state !== 'running')) sosStartFallbackBeep();
+    }, 1800);
+    stopBtn.classList.add('show');
+    panel.classList.remove('open');
+    requestWakeLock();
+    try { if (window.dwaTrack) window.dwaTrack('button', 'SOSサイレン開始'); } catch (e) {}
+  };
+
+  window.sosSirenStop = function () {
+    sirenOn = false;
+    if (sirenTimer) { clearInterval(sirenTimer); sirenTimer = null; }
+    if (sirenFallbackTimer) { clearTimeout(sirenFallbackTimer); sirenFallbackTimer = null; }
+    if (sirenOsc) { try { sirenOsc.stop(); } catch (e) {} sirenOsc = null; }
+    if (sirenCtx) { try { sirenCtx.close(); } catch (e) {} sirenCtx = null; sirenGain = null; }
+    if (_sosFallbackAudio) { try { _sosFallbackAudio.pause(); } catch (e) {} _sosFallbackAudio = null; }
+  };
+
+  // 停止ボタン共通処理：ビーコン・サイレンのどちらが鳴っていても止める
+  window.sosAlarmStopAll = function () {
+    try { window.sosBeaconStop(); } catch (e) {}
+    try { window.sosSirenStop(); } catch (e) {}
+  };
+
+  window.sosBeaconStop = function () {
+    beaconOn = false;
+    if (timerId) { clearTimeout(timerId); timerId = null; }
+    if (osc) { try { osc.stop(); } catch (e) {} osc = null; }
+    if (audioCtx) { try { audioCtx.close(); } catch (e) {} audioCtx = null; gainNode = null; }
+    if (wakeLock) { try { wakeLock.release(); } catch (e) {} wakeLock = null; }
+    if (_sosFallbackAudio) { try { _sosFallbackAudio.pause(); } catch (e) {} _sosFallbackAudio = null; }
+    flashEl.classList.remove('show', 'on');
+    stopBtn.classList.remove('show');
+    try { if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(function () {}); } catch (e) {}
+  };
+
+  // ============================================================
+  // ② SOS位置発信 ③ 安否登録（GASへ記録）
+  // ============================================================
+  function nowStr() {
+    var d = new Date();
+    function z(n) { return (n < 10 ? '0' : '') + n; }
+    return d.getFullYear() + '/' + z(d.getMonth() + 1) + '/' + z(d.getDate()) + ' ' + z(d.getHours()) + ':' + z(d.getMinutes());
+  }
+  function sosUid() {
+    try { return localStorage.getItem('dwa_visit_uid') || ''; } catch (e) { return ''; }
+  }
+  // ---------- 送信キュー：失敗したら成功するまで約2分おきに自動再送 ----------
+  // 送信内容は端末(localStorage)に保存するため、ページを開き直しても再送が続く。
+  var SOS_QUEUE_KEY = 'dwa_sos_queue';
+  var SOS_RETRY_MS = 2 * 60 * 1000;   // 再送間隔（約2分）
+  var _sosFlushTimer = null;
+  var _sosFlushing = false;
+
+  function sosLoadQueue() {
+    try { var q = JSON.parse(localStorage.getItem(SOS_QUEUE_KEY) || '[]'); return Array.isArray(q) ? q : []; }
+    catch (e) { return []; }
+  }
+  function sosSaveQueue(q) {
+    try { localStorage.setItem(SOS_QUEUE_KEY, JSON.stringify(q.slice(0, 20))); } catch (e) {}
+  }
+  function sosBuildUrl(item) {
+    var qs = Object.keys(item.p).map(function (k) {
+      return k + '=' + encodeURIComponent(item.p[k]);
+    }).join('&');
+    return SOS_GAS_URL + '?type=sos&' + qs + '&uid=' + encodeURIComponent(sosUid()) + '&_=' + Date.now();
+  }
+  function sosUpdateStatusEl(item, ok) {
+    var el = document.getElementById(item.el || 'sosLocStatus');
+    if (!el) return;
+    if (ok) {
+      el.innerHTML = '✅ サーバーへ送信しました：' + (item.p.st || '') + '（' + nowStr() + '）'
+        + (item.map ? '<br><a href="' + item.map + '" target="_blank" rel="noopener" style="color:#80d8ff">地図で確認 →</a>'
+          + '<br>「📤 家族に共有」でこの位置をLINE等に送れます。' : '');
+      if ((item.p.st || '') !== '発信取り消し') {
+        sosSetLock(Date.now() + SOS_LOCK_MS);   // 送信完了 → ここから1時間ロック
+      }
+    } else {
+      el.textContent = '⏳ 通信できませんでした：' + (item.p.st || '')
+        + '。成功するまで約2分おきに自動で再送します。画面はこのまま開いておいてください。';
+    }
+  }
+  function sosScheduleFlush(delayMs) {
+    clearTimeout(_sosFlushTimer);
+    _sosFlushTimer = setTimeout(sosFlushQueue, delayMs);
+  }
+  function sosFlushQueue() {
+    if (_sosFlushing) return;
+    var q = sosLoadQueue();
+    if (!q.length) return;
+    _sosFlushing = true;
+    var remain = [];
+    var chain = Promise.resolve();
+    q.forEach(function (item) {
+      chain = chain.then(function () {
+        return fetch(sosBuildUrl(item), { method: 'GET', mode: 'no-cors', cache: 'no-store' })
+          .then(function () { sosUpdateStatusEl(item, true); })
+          .catch(function () { remain.push(item); sosUpdateStatusEl(item, false); });
+      });
+    });
+    chain.then(function () {
+      sosSaveQueue(remain);
+      _sosFlushing = false;
+      sosApplyLockUI();
+      if (remain.length) sosScheduleFlush(SOS_RETRY_MS);   // 残りがある限り再送を続ける
+    }).catch(function () {
+      sosSaveQueue(remain);
+      _sosFlushing = false;
+      sosApplyLockUI();
+      sosScheduleFlush(SOS_RETRY_MS);
+    });
+  }
+  // 発信をキューに積んで即送信を試みる
+  function sendToGas(params, elId, map) {
+    var q = sosLoadQueue();
+    q.push({ p: params, el: elId || 'sosLocStatus', map: map || '', t: Date.now() });
+    sosSaveQueue(q);
+    sosApplyLockUI();
+    sosFlushQueue();
+  }
+  // 通信が復活した瞬間・ページを開き直したときに未送信分を自動再送
+  window.addEventListener('online', function () { sosScheduleFlush(1500); });
+  if (sosLoadQueue().length) sosScheduleFlush(4000);
+
+  // ---------- 連続送信防止ロック：送信完了後は全送信ボタンを1時間グレーアウト ----------
+  var SOS_LOCK_KEY = 'dwa_sos_lock_until';
+  var SOS_LOCK_MS = 60 * 60 * 1000;   // 1時間
+  var _sosLockTimer = null;
+  var _sosGeoBusy = false;            // 位置取得中の二度押し防止
+
+  function sosLockUntil() { try { return Number(localStorage.getItem(SOS_LOCK_KEY)) || 0; } catch (e) { return 0; } }
+  function sosIsLocked() { return sosLockUntil() > Date.now(); }
+  function sosSetLock(until) {
+    try { localStorage.setItem(SOS_LOCK_KEY, String(until)); } catch (e) {}
+    sosApplyLockUI();
+  }
+  function sosLockMsgText() {
+    var until = sosLockUntil();
+    var d = new Date(until);
+    function z(n) { return (n < 10 ? '0' : '') + n; }
+    var remainMin = Math.max(1, Math.ceil((until - Date.now()) / 60000));
+    return '✅ 送信は完了しています。連続送信防止のため、次の送信は '
+      + z(d.getHours()) + ':' + z(d.getMinutes()) + ' 以降（あと約' + remainMin + '分）に可能になります。'
+      + '「📤 家族に共有」と📞119・110への電話はいつでも使えます。';
+  }
+  function sosApplyLockUI() {
+    var btns = document.querySelectorAll('#sosPanel .sos-send');
+    var msg = document.getElementById('sosLockMsg');
+    var locked = sosIsLocked();
+    var pending = sosLoadQueue().length > 0;
+    for (var i = 0; i < btns.length; i++) {
+      if (locked || pending) { btns[i].classList.add('sos-locked'); btns[i].setAttribute('disabled', 'disabled'); }
+      else { btns[i].classList.remove('sos-locked'); btns[i].removeAttribute('disabled'); }
+    }
+    if (msg) {
+      if (locked) { msg.style.display = 'block'; msg.textContent = sosLockMsgText(); }
+      else if (pending) { msg.style.display = 'block'; msg.textContent = '⏳ 送信処理中です（未達の場合は約2分おきに自動再送します）。完了までお待ちください。'; }
+      else { msg.style.display = 'none'; }
+    }
+    // 取り消しボタン：ロック中（＝送信完了後）だけ最下部に表示し、復旧と同時に自動で消す
+    var cbtn = document.getElementById('sosCancelBtn');
+    var cst = document.getElementById('sosCancelStatus');
+    if (cbtn) {
+      if (locked) {
+        cbtn.style.display = 'block';
+        var sent = '';
+        try { sent = localStorage.getItem('dwa_sos_cancel_sent') || ''; } catch (e) {}
+        if (sent === String(sosLockUntil())) {
+          cbtn.classList.add('sos-locked');
+          cbtn.textContent = '↩️ 取り消しを送信済みです';
+        } else {
+          cbtn.classList.remove('sos-locked');
+          cbtn.textContent = '↩️ 直前の発信を取り消す（誤送信のとき）';
+        }
+      } else {
+        cbtn.style.display = 'none';
+        if (cst) cst.textContent = '';
+      }
+    }
+    // 1分ごとに残り時間を更新し、期限が来たら自動で復旧（グレー解除）
+    clearTimeout(_sosLockTimer);
+    if (locked) {
+      _sosLockTimer = setTimeout(sosApplyLockUI, Math.min(60000, Math.max(1000, sosLockUntil() - Date.now())));
+    }
+  }
+  sosApplyLockUI();
+
+  // 直前の発信の取り消し（送信完了後のロック中のみ・1回だけ）
+  window.sosSendCancel = function () {
+    if (!sosIsLocked()) { sosApplyLockUI(); return; }
+    var sent = '';
+    try { sent = localStorage.getItem('dwa_sos_cancel_sent') || ''; } catch (e) {}
+    if (sent === String(sosLockUntil())) return;   // 二重送信防止
+    try { localStorage.setItem('dwa_sos_cancel_sent', String(sosLockUntil())); } catch (e) {}
+    var cst = document.getElementById('sosCancelStatus');
+    if (cst) cst.textContent = '送信中…';
+    sendToGas({ st: '発信取り消し' }, 'sosCancelStatus');
+    sosApplyLockUI();
+    try { if (window.dwaTrack) window.dwaTrack('event', 'SOS発信取り消し'); } catch (e) {}
+  };
+
+  var lastLoc = null;
+  try { lastLoc = JSON.parse(localStorage.getItem('dwa_sos_last') || 'null'); } catch (e) {}
+
+  window.sosSendLocation = function (status) {
+    var out = document.getElementById('sosLocStatus');
+    if (sosIsLocked()) { sosApplyLockUI(); return; }
+    if (_sosGeoBusy) { return; }
+    if (!navigator.geolocation) { out.textContent = 'この端末では位置情報を取得できません。'; return; }
+    _sosGeoBusy = true;
+    out.textContent = '📡 現在地を取得中…（最大20秒）';
+    navigator.geolocation.getCurrentPosition(function (pos) {
+      _sosGeoBusy = false;
+      var lat = pos.coords.latitude.toFixed(6);
+      var lng = pos.coords.longitude.toFixed(6);
+      var acc = Math.round(pos.coords.accuracy || 0);
+      var map = 'https://maps.google.com/?q=' + lat + ',' + lng;
+      lastLoc = { st: status, lat: lat, lng: lng, acc: acc, map: map, time: nowStr() };
+      try { localStorage.setItem('dwa_sos_last', JSON.stringify(lastLoc)); } catch (e) {}
+      out.textContent = '📡 位置を取得しました（精度約' + acc + 'm）。送信中…';
+      sendToGas({ st: status, lat: lat, lng: lng, acc: acc }, 'sosLocStatus', map);
+      try { if (window.dwaTrack) window.dwaTrack('event', 'SOS位置発信:' + status); } catch (e) {}
+    }, function (err) {
+      _sosGeoBusy = false;
+      out.textContent = '⚠️ 位置を取得できませんでした（' +
+        (err.code === 1 ? '位置情報が許可されていません。ブラウザ設定をご確認ください' : '電波・GPSの状態をご確認ください') + '）。';
+    }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 60000 });
+  };
+
+  window.sosShareLast = function () {
+    var out = document.getElementById('sosLocStatus');
+    if (!lastLoc) { out.textContent = '先に「位置を発信」を押して現在地を取得してください。'; return; }
+    var text = '【SOS】' + lastLoc.st + '。現在地はこちら → ' + lastLoc.map +
+      '（精度約' + lastLoc.acc + 'm・' + lastLoc.time + '時点）';
+    if (navigator.share) {
+      navigator.share({ text: text }).catch(function () {});
+    } else if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        out.textContent = '📋 共有文をコピーしました。LINE等に貼り付けて送信してください。';
+      }).catch(function () { out.textContent = text; });
+    } else {
+      out.textContent = text;
+    }
+  };
+
+  window.sosSendStatus = function (status) {
+    var out = document.getElementById('sosStStatus');
+    if (sosIsLocked()) { sosApplyLockUI(); return; }
+    out.textContent = '送信中…';
+    sendToGas({ st: status }, 'sosStStatus');
+    try { if (window.dwaTrack) window.dwaTrack('event', 'SOS安否登録:' + status); } catch (e) {}
+  };
+})();
+</script>
+
+<script>
+function closeMenuThenSOS(){
+  try{ document.getElementById('menu').classList.remove('open');
+       document.getElementById('scrim').classList.remove('open');
+       document.getElementById('burger').classList.remove('open');
+       document.body.style.overflow=''; }catch(e){}
+  try{ sosOpenPanel(); }catch(e){}
+}
 </script>
 </body>
 </html>

@@ -1,0 +1,1873 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>バッテリー診断計 — モバイルバッテリー発火リスク診断</title>
+<style>
+  :root{
+    --bg:#12171d;
+    --bg-panel:#1a2129;
+    --bg-panel-2:#212a33;
+    --line:#2c3944;
+    --text:#e9edf1;
+    --text-dim:#93a2ad;
+    --text-faint:#5c6b76;
+    --safe:#4ec98b;
+    --warn:#f0b429;
+    --danger:#ef5b4e;
+    --unknown:#7a8894;
+    --mono:'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
+    --disp:'Space Grotesk', 'Hiragino Sans', sans-serif;
+    --body:'IBM Plex Sans', 'Hiragino Sans', sans-serif;
+  }
+  body.light{
+    --bg:#f2f1ec;
+    --bg-panel:#ffffff;
+    --bg-panel-2:#f1efe9;
+    --line:#dcd8cd;
+    --text:#211f1a;
+    --text-dim:#5c584e;
+    --text-faint:#8b877a;
+    --safe:#1f9d63;
+    --warn:#b3790a;
+    --danger:#c73f2f;
+    --unknown:#797468;
+  }
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:var(--body);}
+  body{
+    min-height:100vh;
+    background-image:
+      radial-gradient(circle at 15% -10%, rgba(78,201,139,0.05), transparent 40%),
+      radial-gradient(circle at 90% 10%, rgba(239,91,78,0.06), transparent 45%);
+    padding:40px 20px 60px;
+    transition:background-color .25s ease, color .25s ease;
+  }
+  body.light{
+    background-image:
+      radial-gradient(circle at 15% -10%, rgba(31,157,99,0.06), transparent 40%),
+      radial-gradient(circle at 90% 10%, rgba(199,63,47,0.05), transparent 45%);
+  }
+  .wrap{max-width:720px;margin:0 auto;}
+
+  /* ---- header ---- */
+  .eyebrow{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.18em;
+    color:var(--text-faint);
+    text-transform:uppercase;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:14px;
+  }
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--safe);box-shadow:0 0 6px var(--safe);}
+  h1{
+    font-family:var(--disp);
+    font-weight:700;
+    font-size:clamp(28px,5vw,40px);
+    line-height:1.15;
+    margin:0 0 10px;
+    letter-spacing:-0.01em;
+  }
+  h1 span{color:var(--text-dim);font-weight:500;}
+  .lede{color:var(--text-dim);font-size:15px;line-height:1.7;margin:0 0 28px;max-width:56ch;}
+  .lede b{color:var(--text);font-weight:600;}
+
+  /* ---- search panel ---- */
+  .panel{
+    background:var(--bg-panel);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:22px;
+    margin-bottom:22px;
+  }
+  .row{display:flex;gap:10px;flex-wrap:wrap;}
+  .field{flex:1;min-width:150px;display:flex;flex-direction:column;gap:6px;}
+  label{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--text-faint);text-transform:uppercase;}
+  select, input[type=text]{
+    background:var(--bg-panel-2);
+    border:1px solid var(--line);
+    color:var(--text);
+    border-radius:8px;
+    padding:11px 12px;
+    font-size:14.5px;
+    font-family:var(--body);
+    outline:none;
+    transition:border-color .15s ease;
+    width:100%;
+  }
+  select:focus, input[type=text]:focus{border-color:var(--warn);}
+  input[type=text]::placeholder{color:var(--text-faint);}
+
+  .field.grow{flex:1.6;}
+
+  .submit-row{margin-top:14px;display:flex;align-items:center;gap:12px;}
+  button.go{
+    background:var(--warn);
+    color:#1a1305;
+    border:none;
+    font-family:var(--disp);
+    font-weight:700;
+    font-size:14.5px;
+    padding:12px 22px;
+    border-radius:8px;
+    cursor:pointer;
+    letter-spacing:.01em;
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  button.go:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(240,180,41,0.25);}
+  button.go:active{transform:translateY(0);}
+  button.go:disabled{opacity:.55;cursor:not-allowed;transform:none;box-shadow:none;}
+  .hint{font-size:12.5px;color:var(--text-faint);}
+
+  /* ---- result ---- */
+  .result{display:none;}
+  .result.show{display:block;animation:fadein .35s ease;}
+  @keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+  .card{
+    background:var(--bg-panel);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:26px;
+    margin-bottom:16px;
+    position:relative;
+    overflow:hidden;
+  }
+  .card::before{
+    content:'';
+    position:absolute;top:0;left:0;right:0;height:3px;
+    background:var(--bar,var(--unknown));
+  }
+
+  .verdict-top{display:flex;gap:20px;align-items:center;margin-bottom:18px;}
+
+  /* gauge */
+  .gauge{width:120px;height:70px;position:relative;flex-shrink:0;}
+  .gauge svg{width:100%;height:100%;display:block;}
+  .gauge .needle{
+    position:absolute;left:50%;bottom:2px;width:2px;height:52px;
+    background:var(--text);
+    transform-origin:bottom center;
+    transform:rotate(0deg);
+    border-radius:2px;
+    transition:transform .6s cubic-bezier(.2,.8,.2,1);
+  }
+  .gauge .hub{position:absolute;left:50%;bottom:-4px;width:10px;height:10px;background:var(--text);border-radius:50%;transform:translateX(-50%);}
+  .gauge .lvl-label{
+    position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);
+    font-family:var(--mono);font-size:10px;color:var(--text-faint);letter-spacing:.05em;white-space:nowrap;
+  }
+
+  .verdict-text{flex:1;}
+  .verdict-text .tag{
+    font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--bar,var(--unknown));margin-bottom:4px;
+  }
+  .verdict-text h2{font-family:var(--disp);font-size:22px;margin:0 0 6px;line-height:1.25;}
+  .verdict-text .sub{font-size:13px;color:var(--text-dim);}
+
+  .divider{height:1px;background:var(--line);margin:18px 0;}
+
+  .section-label{font-family:var(--mono);font-size:11px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;}
+  .body-text{font-size:14.5px;line-height:1.8;color:var(--text);}
+  .body-text b{color:var(--warn);}
+
+  .meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;}
+  .meta-item{background:var(--bg-panel-2);border:1px solid var(--line);border-radius:8px;padding:12px 14px;}
+  .meta-item .k{font-family:var(--mono);font-size:10.5px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;}
+  .meta-item .v{font-size:14px;font-family:var(--mono);}
+
+  .sources{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:6px;}
+  .sources li a{color:var(--text-dim);font-size:13px;text-decoration:none;border-bottom:1px dotted var(--text-faint);}
+  .sources li a:hover{color:var(--warn);border-color:var(--warn);}
+
+  /* ---- chemistry note ---- */
+  .chem-note{
+    font-size:14px;line-height:1.75;color:var(--text);
+    background:var(--bg-panel-2);border:1px solid var(--line);
+    border-left:3px solid var(--chem-accent,var(--unknown));
+    border-radius:8px;padding:13px 15px;
+  }
+  .chem-note b{color:var(--chem-accent,var(--text));}
+  .chem-note .chem-head{
+    font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--chem-accent,var(--unknown));margin-bottom:6px;
+  }
+
+  /* ---- official search links ---- */
+  .official-links{display:flex;flex-wrap:wrap;gap:8px;}
+  .official-links a{
+    display:inline-flex;align-items:center;gap:7px;
+    background:var(--bg-panel-2);border:1px solid var(--line);color:var(--text);
+    font-size:13px;font-family:var(--body);
+    padding:9px 13px;border-radius:8px;text-decoration:none;
+    transition:border-color .15s ease, color .15s ease, transform .12s ease;
+  }
+  .official-links a:hover{border-color:var(--warn);color:var(--warn);transform:translateY(-1px);}
+  .official-links a .ext{width:12px;height:12px;opacity:.6;}
+
+  /* ---- tabs ---- */
+  .tabs{display:flex;gap:4px;margin-bottom:14px;border-bottom:1px solid var(--line);}
+  .tab{
+    background:none;border:none;cursor:pointer;
+    font-family:var(--disp);font-weight:600;font-size:14.5px;
+    color:var(--text-dim);padding:11px 18px;position:relative;
+    transition:color .15s ease;
+  }
+  .tab:hover{color:var(--text);}
+  .tab.active{color:var(--warn);}
+  .tab.active::after{
+    content:'';position:absolute;left:0;right:0;bottom:-1px;height:2px;
+    background:var(--warn);border-radius:2px;
+  }
+  .tab:focus-visible{outline:2px solid var(--warn);outline-offset:2px;border-radius:6px;}
+
+  /* ---- find-mode query display ---- */
+  .find-query{
+    font-family:var(--mono);font-size:14px;color:var(--text);
+    background:var(--bg-panel-2);border:1px solid var(--line);
+    border-radius:8px;padding:12px 14px;word-break:break-word;
+  }
+  .find-hint{font-size:12.5px;color:var(--text-faint);line-height:1.7;margin-top:14px;}
+
+  /* ---- Q&A modal ---- */
+  .qa-overlay{
+    position:fixed;inset:0;z-index:60;
+    background:rgba(0,0,0,0.55);
+    display:none;align-items:flex-start;justify-content:center;
+    padding:40px 16px;overflow-y:auto;
+    backdrop-filter:blur(2px);
+  }
+  .qa-overlay.show{display:flex;animation:fadein .2s ease;}
+  .qa-modal{
+    background:var(--bg-panel);border:1px solid var(--line);
+    border-radius:14px;max-width:640px;width:100%;
+    box-shadow:0 20px 60px rgba(0,0,0,0.35);
+  }
+  .qa-head{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:20px 22px;border-bottom:1px solid var(--line);
+    position:sticky;top:0;background:var(--bg-panel);border-radius:14px 14px 0 0;
+  }
+  .qa-head h2{font-family:var(--disp);font-size:19px;margin:0;}
+  .qa-close{
+    background:none;border:none;color:var(--text-dim);cursor:pointer;
+    width:32px;height:32px;display:flex;align-items:center;justify-content:center;
+    border-radius:8px;transition:background .15s ease,color .15s ease;
+  }
+  .qa-close:hover{background:var(--bg-panel-2);color:var(--text);}
+  .qa-close svg{width:20px;height:20px;}
+  .qa-body{padding:8px 22px 24px;}
+  .qa-item{padding:18px 0;border-bottom:1px solid var(--line);}
+  .qa-item:last-of-type{border-bottom:none;}
+  .qa-q{font-family:var(--disp);font-weight:600;font-size:15.5px;color:var(--warn);margin-bottom:10px;line-height:1.4;}
+  .qa-a{font-size:14px;line-height:1.85;color:var(--text);}
+  .qa-a p{margin:0 0 10px;}
+  .qa-a p:last-child{margin-bottom:0;}
+  .qa-a b{color:var(--text);font-weight:600;}
+  .qa-a ul{margin:8px 0 12px;padding-left:20px;}
+  .qa-a li{margin-bottom:5px;}
+  .qa-std{
+    background:var(--bg-panel-2);border:1px solid var(--line);
+    border-left:3px solid var(--warn);border-radius:8px;
+    padding:11px 14px;margin:10px 0;
+  }
+  .qa-std-name{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;}
+  .qa-std-desc{font-size:13px;line-height:1.7;color:var(--text-dim);}
+  .qa-note{
+    font-size:12.5px;color:var(--text-faint);line-height:1.7;
+    border-top:1px dashed var(--line);padding-top:14px;margin-top:6px;
+  }
+  /* ===== 目次（Q&A・使用方法 共通） ===== */
+  .qa-toc{
+    background:var(--bg-panel-2);border:1px solid var(--line);
+    border-radius:10px;padding:14px 16px;margin:6px 0 8px;
+  }
+  .qa-toc-title{
+    font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;
+    color:var(--text-faint);text-transform:uppercase;margin-bottom:10px;
+    display:flex;align-items:center;gap:7px;
+  }
+  .qa-toc-title svg{width:14px;height:14px;}
+  .qa-toc ol{margin:0;padding:0;list-style:none;counter-reset:toc;}
+  .qa-toc li{margin:0;padding:0;}
+  .qa-toc a{
+    display:flex;gap:10px;align-items:baseline;
+    padding:8px 8px;border-radius:7px;
+    color:var(--text);text-decoration:none;font-size:13.5px;line-height:1.5;
+    transition:background .15s ease,color .15s ease;
+    border:1px solid transparent;
+  }
+  .qa-toc a:hover,.qa-toc a:focus-visible{
+    background:var(--bg-panel);border-color:var(--line);color:var(--warn);
+  }
+  .qa-toc a::before{
+    counter-increment:toc;content:counter(toc);
+    font-family:var(--mono);font-size:12px;font-weight:600;
+    color:var(--warn);flex-shrink:0;min-width:1.4em;text-align:right;
+  }
+  /* ジャンプ先のハイライト（一瞬光らせる） */
+  .qa-item.jump-hl{animation:jumpHl 1.6s ease;}
+  @keyframes jumpHl{
+    0%{background:rgba(240,180,41,0.16);}
+    100%{background:transparent;}
+  }
+  .qa-item{scroll-margin-top:74px;}
+  /* 目次へ戻る小リンク */
+  .qa-backtop{
+    display:inline-flex;align-items:center;gap:5px;
+    font-family:var(--mono);font-size:11px;letter-spacing:.04em;
+    color:var(--text-faint);text-decoration:none;margin-top:10px;
+    padding:3px 0;transition:color .15s ease;
+  }
+  .qa-backtop:hover{color:var(--text-dim);}
+  .qa-backtop svg{width:12px;height:12px;}
+  /* 厳禁事項の項目は赤系で強調 */
+  .qa-q.danger{color:var(--danger);}
+  .qa-toc.danger-toc a::before{color:var(--danger);}
+  .qa-toc.danger-toc a:hover,.qa-toc.danger-toc a:focus-visible{color:var(--danger);}
+  @media (max-width:480px){
+    .qa-overlay{padding:16px 10px;}
+    .qa-head h2{font-size:17px;}
+  }
+
+  .source-tag{
+    display:inline-flex;align-items:center;gap:6px;
+    font-family:var(--mono);font-size:11px;color:var(--text-faint);
+    background:var(--bg-panel-2);border:1px solid var(--line);border-radius:20px;padding:5px 11px;margin-bottom:14px;
+  }
+  .source-tag .pip{width:6px;height:6px;border-radius:50%;}
+  .source-tag.local .pip{background:var(--safe);}
+  .source-tag.live .pip{background:var(--warn);}
+
+  .disclaimer{
+    font-size:12.5px;color:var(--text-faint);line-height:1.7;
+    border-top:1px dashed var(--line);padding-top:14px;margin-top:4px;
+  }
+
+  .loading{display:none;align-items:center;gap:10px;color:var(--text-dim);font-family:var(--mono);font-size:13px;padding:10px 2px;}
+  .loading.show{display:flex;}
+  .spinner{width:14px;height:14px;border-radius:50%;border:2px solid var(--line);border-top-color:var(--warn);animation:spin .7s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  .err{display:none;background:rgba(239,91,78,0.1);border:1px solid rgba(239,91,78,0.35);color:#f3a89f;border-radius:10px;padding:14px 16px;font-size:13.5px;margin-bottom:16px;}
+  .err.show{display:block;}
+
+  footer{margin-top:30px;font-size:12px;color:var(--text-faint);text-align:center;line-height:1.8;}
+  footer a{color:var(--text-dim);}
+
+  /* ---- top toolbar ---- */
+  .toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+  .icon-btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:6px;
+    background:var(--bg-panel);border:1px solid var(--line);color:var(--text-dim);
+    border-radius:8px;width:36px;height:36px;cursor:pointer;
+    transition:border-color .15s ease, color .15s ease, transform .12s ease;
+  }
+  .icon-btn:hover{border-color:var(--warn);color:var(--text);transform:translateY(-1px);}
+  .icon-btn svg{width:16px;height:16px;}
+
+  /* ---- result action row ---- */
+  .action-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px;}
+  .action-btn{
+    display:inline-flex;align-items:center;gap:7px;
+    background:var(--bg-panel-2);border:1px solid var(--line);color:var(--text-dim);
+    font-family:var(--mono);font-size:12px;letter-spacing:.03em;
+    padding:8px 13px;border-radius:8px;cursor:pointer;
+    transition:border-color .15s ease, color .15s ease;
+  }
+  .action-btn:hover{border-color:var(--warn);color:var(--text);}
+  .action-btn svg{width:14px;height:14px;}
+
+  .toast{
+    position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);
+    background:var(--text);color:var(--bg);
+    font-family:var(--mono);font-size:12.5px;
+    padding:10px 18px;border-radius:20px;
+    opacity:0;pointer-events:none;
+    transition:opacity .2s ease, transform .2s ease;
+    z-index:50;
+    box-shadow:0 8px 24px rgba(0,0,0,0.25);
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  @media (max-width:480px){
+    .verdict-top{flex-direction:column;align-items:flex-start;}
+    .meta-grid{grid-template-columns:1fr;}
+  }
+
+  /* ---- print ---- */
+  @media print{
+    body{background:#fff !important;color:#111 !important;padding:0;background-image:none !important;}
+    .toolbar, .panel, .loading, .err, footer, .action-row, .eyebrow{display:none !important;}
+    .wrap{max-width:100%;}
+    .card{border:1px solid #999;box-shadow:none;background:#fff;color:#111;}
+    .card::before{background:#111 !important;}
+    h1{color:#111;}
+    .lede{display:none;}
+    a{color:#111;text-decoration:underline;}
+  }
+  /* ===== 初回チュートリアル ===== */
+  #tutorial{
+    position:fixed; inset:0; z-index:200; display:none;
+    background:rgba(4,8,12,0.78); backdrop-filter:blur(3px);
+    align-items:center; justify-content:center; padding:20px;
+  }
+  #tutorial.show{ display:flex; animation:fadein .25s ease; }
+  .tut-card{
+    background:var(--bg-panel); border:1px solid var(--line);
+    border-radius:16px; max-width:400px; width:100%;
+    box-shadow:0 24px 70px rgba(0,0,0,0.5); padding:26px 24px 20px;
+    text-align:center;
+  }
+  .tut-icon{ font-size:40px; line-height:1; margin-bottom:14px; }
+  .tut-step-title{ font-family:var(--disp); font-size:19px; font-weight:700; color:var(--text); margin-bottom:12px; }
+  .tut-step-body{ font-size:14px; line-height:1.85; color:var(--text-dim); margin-bottom:20px; text-align:left; }
+  .tut-step-body b{ color:var(--warn); font-weight:600; }
+  .tut-dots{ display:flex; gap:7px; justify-content:center; margin-bottom:18px; }
+  .tut-dot{ width:8px; height:8px; border-radius:50%; background:var(--text-faint); opacity:.4; transition:opacity .2s, background .2s; }
+  .tut-dot.on{ opacity:1; background:var(--warn); }
+  .tut-btns{ display:flex; gap:10px; }
+  .tut-btn{
+    flex:1; padding:11px 14px; border-radius:9px; font-size:14px; font-weight:600;
+    cursor:pointer; border:1px solid var(--line); background:var(--bg-panel-2); color:var(--text);
+    transition:background .15s, border-color .15s, color .15s;
+  }
+  .tut-btn:hover{ border-color:var(--warn); color:var(--warn); }
+  .tut-btn.primary{ background:var(--warn); border-color:var(--warn); color:#1a1400; }
+  .tut-btn.primary:hover{ filter:brightness(1.08); color:#1a1400; }
+  .tut-skip{ display:block; margin:14px auto 0; background:none; border:none; color:var(--text-faint); font-size:12px; cursor:pointer; text-decoration:underline; }
+  /* カタログ検索結果カード */
+  .cat-item{
+    background:var(--bg-panel-2); border:1px solid var(--line);
+    border-radius:10px; padding:13px 15px; margin-bottom:10px;
+  }
+  .cat-item-name{ font-weight:600; color:var(--text); font-size:14.5px; margin-bottom:4px; }
+  .cat-item-maker{ font-family:var(--mono); font-size:11px; color:var(--warn); letter-spacing:.04em; }
+  .cat-item-specs{ display:flex; flex-wrap:wrap; gap:6px 14px; margin-top:8px; }
+  .cat-spec{ font-size:12px; color:var(--text-dim); }
+  .cat-spec b{ color:var(--text); font-weight:600; }
+  .cat-item-models{ font-family:var(--mono); font-size:11px; color:var(--text-faint); margin-top:6px; word-break:break-all; }
+  .cat-item-note{ font-size:11.5px; color:var(--text-faint); margin-top:6px; line-height:1.6; }
+  .cat-diag-btn{
+    margin-top:9px; font-size:12px; padding:6px 12px; border-radius:7px;
+    background:var(--bg-panel); border:1px solid var(--line); color:var(--text-dim); cursor:pointer;
+  }
+  .cat-diag-btn:hover{ border-color:var(--warn); color:var(--warn); }
+</style>
+</head>
+<body>
+
+<!-- 初回チュートリアル（初めて開いたときだけ表示） -->
+<div id="tutorial" role="dialog" aria-modal="true" aria-label="使い方ガイド">
+  <div class="tut-card">
+    <div class="tut-icon" id="tutIcon">🔋</div>
+    <div class="tut-step-title" id="tutTitle"></div>
+    <div class="tut-step-body" id="tutBody"></div>
+    <div class="tut-dots" id="tutDots"></div>
+    <div class="tut-btns">
+      <button class="tut-btn" id="tutPrev" style="display:none;">戻る</button>
+      <button class="tut-btn primary" id="tutNext">次へ ›</button>
+    </div>
+    <button class="tut-skip" id="tutSkip">スキップして始める</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="toolbar">
+    <div class="eyebrow" style="margin-bottom:0;"><span class="dot"></span>MOBILE BATTERY RISK CHECK — β</div>
+    <div style="display:flex;gap:8px;">
+      <button class="icon-btn" id="useBtn" title="正しい使い方・注意事項・厳禁事項" aria-label="使用方法を開く" style="width:auto;padding:0 13px;gap:7px;font-family:var(--mono);font-size:12.5px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1V17h6v-.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2z"/></svg>
+        使用方法
+      </button>
+      <button class="icon-btn" id="qaBtn" title="安全基準・注意点のQ&A" aria-label="Q&Aを開く" style="width:auto;padding:0 13px;gap:7px;font-family:var(--mono);font-size:12.5px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Q&amp;A
+      </button>
+      <button class="icon-btn" id="ppBtn" title="プライバシーポリシー" aria-label="プライバシーポリシーを開く" style="width:auto;padding:0 13px;gap:7px;font-family:var(--mono);font-size:12.5px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        プライバシー
+      </button>
+      <button class="icon-btn" id="shareToolBtn" title="このツールを共有する" aria-label="このツールを共有する" style="width:auto;padding:0 13px;gap:7px;font-family:var(--mono);font-size:12.5px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        共有
+      </button>
+      <button class="icon-btn" id="themeBtn" title="ダーク/ライト切替" aria-label="テーマ切替">
+        <svg id="themeIconMoon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg id="themeIconSun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <h1>バッテリー診断計<br><span>モバイルバッテリー・ポータブル電源の発火リスクを診断</span></h1>
+  <p class="lede"><b>型番でリスク診断</b>すると公表済みのリコール情報と照合し、セル種別に応じたリスクの目安を表示します。<b>条件指定で製品を探す</b>では、メーカーと電池の種類から製品を検索できます。完全オフラインで動作します。</p>
+
+  <div class="tabs" role="tablist">
+    <button class="tab active" id="tabDiag" role="tab" aria-selected="true">型番でリスク診断</button>
+    <button class="tab" id="tabFind" role="tab" aria-selected="false">条件指定で製品を探す</button>
+  </div>
+
+  <div class="panel" id="panelDiag">
+    <div class="row">
+      <div class="field">
+        <label for="maker">メーカー</label>
+        <select id="maker">
+          <option value="">選択してください</option>
+          <optgroup label="モバイルバッテリー・充電器">
+            <option value="Anker">Anker（アンカー）</option>
+            <option value="CIO">CIO</option>
+            <option value="ELECOM">ELECOM（エレコム）</option>
+            <option value="cheero">cheero（チーロ）</option>
+            <option value="RAVPower">RAVPower（ラブパワー）</option>
+            <option value="AUKEY">AUKEY（オーキー）</option>
+            <option value="UGREEN">UGREEN（ユーグリーン）</option>
+            <option value="Belkin">Belkin（ベルキン）</option>
+            <option value="Baseus">Baseus（ベイサス）</option>
+            <option value="Zendure">Zendure（ゼンデュア）</option>
+            <option value="MOTTERU">MOTTERU（モッテル）</option>
+            <option value="Owltech">Owltech（オウルテック）</option>
+            <option value="Maxell">maxell（マクセル）</option>
+            <option value="TP-Link">TP-Link（ティーピーリンク）</option>
+            <option value="Xiaomi">Xiaomi（シャオミ）</option>
+            <option value="INIU">INIU</option>
+            <option value="Sanwa Supply">サンワサプライ</option>
+            <option value="バッファロー">BUFFALO（バッファロー）</option>
+          </optgroup>
+          <optgroup label="ポータブル電源">
+            <option value="EcoFlow">EcoFlow（エコフロー）</option>
+            <option value="Jackery">Jackery（ジャクリ）</option>
+            <option value="BLUETTI">BLUETTI（ブルーティ）</option>
+            <option value="ALLPOWERS">ALLPOWERS（オールパワーズ）</option>
+            <option value="DABBSSON">DABBSSON（ダブソン）</option>
+            <option value="Anker Solix">Anker SOLIX（アンカー ソリックス）</option>
+            <option value="PowerArQ">PowerArQ（パワーアーク）</option>
+            <option value="JVCケンウッド">JVCケンウッド</option>
+            <option value="Aiper">Aiper</option>
+            <option value="EENOUR">EENOUR（イーノー）</option>
+            <option value="VTOMAN">VTOMAN</option>
+            <option value="Goal Zero">Goal Zero（ゴールゼロ）</option>
+            <option value="OUKITEL">OUKITEL</option>
+            <option value="Pecron">Pecron</option>
+          </optgroup>
+          <optgroup label="総合家電・電機メーカー">
+            <option value="Panasonic">Panasonic（パナソニック）</option>
+            <option value="SONY">SONY（ソニー）</option>
+            <option value="SHARP">SHARP（シャープ）</option>
+            <option value="東芝">東芝（TOSHIBA）</option>
+            <option value="日立">日立（HITACHI）</option>
+            <option value="三菱電機">三菱電機</option>
+            <option value="富士通">富士通（FUJITSU）</option>
+            <option value="NEC">NEC</option>
+            <option value="京セラ">京セラ（KYOCERA）</option>
+            <option value="アイリスオーヤマ">アイリスオーヤマ</option>
+            <option value="山善">山善（YAMAZEN）</option>
+            <option value="Apple">Apple（アップル）</option>
+            <option value="Samsung">Samsung（サムスン）</option>
+          </optgroup>
+          <option value="その他">その他 / 不明</option>
+        </select>
+      </div>
+      <div class="field grow">
+        <label for="model">型番・商品名</label>
+        <input type="text" id="model" placeholder="例）DE-M01L-10440、PowerCore 10000、Flat 10000mAh" />
+      </div>
+    </div>
+    <div class="row" style="margin-top:12px;">
+      <div class="field">
+        <label for="chem">セル種別（電池の種類）</label>
+        <select id="chem">
+          <option value="unknown">わからない / 記載なし</option>
+          <optgroup label="発火リスクが相対的に低いとされる種類">
+            <option value="lfp">リン酸鉄リチウム（LiFePO₄ / LFP）</option>
+            <option value="sodium">ナトリウムイオン（Na-ion）</option>
+            <option value="semisolid">準固体（セミソリッド）</option>
+          </optgroup>
+          <optgroup label="一定の発火リスクがある種類">
+            <option value="liion">リチウムイオン（一般 / 三元系ほか）</option>
+            <option value="lipo">リチウムイオンポリマー（Li-Po）</option>
+          </optgroup>
+        </select>
+        <span class="hint" style="margin-top:2px;">製品パッケージや仕様表に記載があります。不明なら「わからない」で構いません。</span>
+      </div>
+    </div>
+    <div class="submit-row">
+      <button class="go" id="goBtn">診断する</button>
+      <span class="hint">Enterキーでも実行できます</span>
+    </div>
+  </div>
+
+  <div class="panel" id="panelFind" style="display:none;">
+    <div class="row">
+      <div class="field">
+        <label for="findMaker">メーカー</label>
+        <select id="findMaker"></select>
+      </div>
+      <div class="field">
+        <label for="findChem">電池の種類</label>
+        <select id="findChem">
+          <option value="">指定しない</option>
+          <option value="リン酸鉄">リン酸鉄リチウム（LFP）</option>
+          <option value="ナトリウムイオン">ナトリウムイオン</option>
+          <option value="準固体">準固体（セミソリッド）</option>
+          <option value="リチウムイオン">リチウムイオン（三元系ほか）</option>
+          <option value="リチウムポリマー">リチウムイオンポリマー（Li-Po）</option>
+        </select>
+      </div>
+    </div>
+    <div class="row" style="margin-top:12px;">
+      <div class="field">
+        <label for="findCat">カテゴリ</label>
+        <select id="findCat">
+          <option value="モバイルバッテリー">モバイルバッテリー</option>
+          <option value="ポータブル電源">ポータブル電源</option>
+          <option value="">指定しない</option>
+        </select>
+      </div>
+      <div class="field grow">
+        <label for="findKeyword">追加キーワード（任意）</label>
+        <input type="text" id="findKeyword" placeholder="例）10000mAh、大容量、軽量、USB-C など" />
+      </div>
+    </div>
+    <div class="submit-row">
+      <button class="go" id="findBtn">この条件で探す</button>
+      <span class="hint">各サイトの検索結果が新しいタブで開きます</span>
+    </div>
+
+    <div id="findResult" style="display:none;margin-top:18px;">
+      <div class="section-label">検索クエリ</div>
+      <div class="find-query" id="findQuery"></div>
+      <div id="findCatalogWrap" style="display:none;margin-top:16px;">
+        <div class="section-label">カタログの該当製品 <span id="findCatalogCount" style="color:var(--text-dim);font-weight:normal;"></span></div>
+        <div id="findCatalogList"></div>
+      </div>
+      <div class="section-label" style="margin-top:16px;">各サイトで探す</div>
+      <div class="official-links" id="findLinks"></div>
+      <div class="find-hint" id="findHint"></div>
+    </div>
+  </div>
+
+  <div class="loading" id="loading"><span class="spinner"></span><span id="loadingText">検索中…</span></div>
+  <div class="err" id="err"></div>
+
+  <div class="result" id="result">
+    <div class="card" id="resultCard">
+      <div class="verdict-top">
+        <div class="gauge">
+          <svg viewBox="0 0 120 70">
+            <path d="M8,66 A52,52 0 0,1 39,17" stroke="#4ec98b" stroke-width="10" fill="none" stroke-linecap="round"/>
+            <path d="M41,15.5 A52,52 0 0,1 79,15.5" stroke="#f0b429" stroke-width="10" fill="none" stroke-linecap="round"/>
+            <path d="M81,17 A52,52 0 0,1 112,66" stroke="#ef5b4e" stroke-width="10" fill="none" stroke-linecap="round"/>
+          </svg>
+          <div class="needle" id="needle"></div>
+          <div class="hub"></div>
+          <div class="lvl-label" id="lvlLabel">—</div>
+        </div>
+        <div class="verdict-text">
+          <div class="tag" id="tag">診断結果</div>
+          <h2 id="verdictTitle">—</h2>
+          <div class="sub" id="verdictSub">—</div>
+        </div>
+      </div>
+
+      <span class="source-tag" id="sourceTag"><span class="pip"></span><span id="sourceTagText">—</span></span>
+
+      <div class="divider"></div>
+
+      <div class="section-label">診断の根拠</div>
+      <div class="body-text" id="basisText">—</div>
+
+      <div class="meta-grid" id="metaGrid"></div>
+
+      <div id="catInfoWrap" style="display:none;margin-top:18px;">
+        <div class="section-label">この製品の仕様（カタログ）</div>
+        <div id="catInfo"></div>
+      </div>
+
+      <div id="chemWrap" style="display:none;margin-top:16px;">
+        <div class="section-label">セル種別による傾向</div>
+        <div class="chem-note" id="chemNote"></div>
+      </div>
+
+      <div id="linksWrap" style="display:none;margin-top:18px;">
+        <div class="section-label">公式サイトで確認する</div>
+        <div class="official-links" id="officialLinks"></div>
+      </div>
+
+      <div id="sourcesWrap" style="display:none;margin-top:16px;">
+        <div class="section-label">参照元</div>
+        <ul class="sources" id="sourcesList"></ul>
+      </div>
+
+      <div class="disclaimer">
+        本診断は公表されているリコール情報に基づく参考情報であり、対象製品の安全性を保証するものではありません。「当DBに該当なし」は事故が無いことの証明にはなりません。セル種別による「相対的に低リスク」の表示は化学種の一般的傾向を示すもので、個別製品の不良・リコール・模倣品・誤使用による事故を否定するものではありません。使用前は必ずメーカー公式サイト・<a href="https://www.recall.caa.go.jp/" target="_blank" rel="noopener">消費者庁リコール情報サイト</a>・<a href="https://safe-lite.nite.go.jp/" target="_blank" rel="noopener">NITE SAFE-Lite</a>もあわせてご確認ください。
+      </div>
+
+      <div class="action-row">
+        <button class="action-btn" id="printBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          印刷
+        </button>
+        <button class="action-btn" id="copyBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          結果をコピー
+        </button>
+        <button class="action-btn" id="shareBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          共有
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    照合データベースは調査時点の公開リコール情報に基づきます（随時追加）。当DBに該当が無い場合は、公式サイトでの検索リンクをご案内します。完全オフラインで動作します。
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="qa-overlay" id="qaOverlay" aria-hidden="true">
+  <div class="qa-modal" role="dialog" aria-modal="true" aria-labelledby="qaTitle">
+    <div class="qa-head">
+      <h2 id="qaTitle">安全のためのQ&amp;A</h2>
+      <button class="qa-close" id="qaClose" aria-label="閉じる">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="qa-body">
+
+      <div class="qa-toc" id="qaToc">
+        <div class="qa-toc-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          目次（タップで移動）
+        </div>
+        <ol>
+          <li><a href="#qa1" class="qa-jump">型番の記載がない製品は危険ですか？</a></li>
+          <li><a href="#qa2" class="qa-jump">極端に安い製品は避けるべきですか？</a></li>
+          <li><a href="#qa3" class="qa-jump">PSEマーク・PSE技術基準適合とは何ですか？</a></li>
+          <li><a href="#qa4" class="qa-jump">PSE以外に、安全性を示す基準はありますか？</a></li>
+        </ol>
+      </div>
+
+      <div class="qa-item" id="qa1">
+        <div class="qa-q">Q. 型番の記載がない製品は危険ですか？</div>
+        <div class="qa-a">
+          <p><b>危険性が高いと考えて避けるのが安全です。</b>日本国内でリチウムイオンのモバイルバッテリーを販売するには、後述のPSE適合が法律で義務づけられており、本体には<b>型番・製造/輸入事業者名・PSEマーク</b>を表示する必要があります。型番や事業者名が見当たらない製品は、次のいずれかである可能性があります。</p>
+          <ul>
+            <li>PSE適合の手続きを経ていない<b>違法・未認証品</b></li>
+            <li>表示義務を守らない<b>管理体制の甘い製品</b></li>
+            <li>事故や回収が起きても<b>追跡・特定ができない</b>製品</li>
+          </ul>
+          <p>型番が無いと、リコール情報との照合もできず、事故時に事業者へ連絡することもできません。<b>型番・事業者名・PSEマークのいずれかが欠けている製品は、使用・購入を控えることを強く推奨します。</b></p>
+          <a href="#qaToc" class="qa-backtop qa-tocback"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>目次へ戻る</a>
+        </div>
+      </div>
+
+      <div class="qa-item" id="qa2">
+        <div class="qa-q">Q. 極端に安い製品は避けるべきですか？</div>
+        <div class="qa-a">
+          <p><b>相場から大きく外れた廉価品には注意が必要です。</b>リチウムイオン電池は、安全に作るために保護回路・良質なセル・複数の安全試験（後述）にコストがかかります。極端に安い製品では、これらが省かれている恐れがあります。特に次のような点に注意してください。</p>
+          <ul>
+            <li>大容量（例：10000mAh超）をうたうのに<b>不自然に安い</b></li>
+            <li>フリマ・海外通販・無名ブランドで<b>PSEや事業者名の確認ができない</b></li>
+            <li>レビューや製品情報が乏しく、<b>実体のわからない出品者</b></li>
+            <li>「訳あり」「並行輸入」などで<b>正規の保証・サポートが無い</b></li>
+          </ul>
+          <p>価格の安さそのものが悪いわけではありませんが、<b>安全にかけるコストを削った結果としての安さ</b>は、発火・膨張・故障のリスクに直結します。信頼できるメーカーの、正規流通品を選ぶことをおすすめします。</p>
+          <a href="#qaToc" class="qa-backtop qa-tocback"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>目次へ戻る</a>
+        </div>
+      </div>
+
+      <div class="qa-item" id="qa3">
+        <div class="qa-q">Q. PSEマーク・PSE技術基準適合とは何ですか？</div>
+        <div class="qa-a">
+          <p><b>PSE</b>は「電気用品安全法（Product Safety of Electrical appliance &amp; materials）」に基づく、日本国内の安全基準です。<b>2019年2月以降、PSEマークの無いリチウムイオンのモバイルバッテリーは、製造・輸入・販売が禁止</b>されています。これは充電中の内部短絡による火災事故を受けて規制対象化されたものです。</p>
+          <ul>
+            <li><b>丸形PSE</b>（○の中にPSE）… モバイルバッテリー本体に必要な表示。「特定電気用品以外の電気用品」向け。</li>
+            <li><b>ひし形PSE</b>（◇の中にPSE）… ACアダプター・充電器など「特定電気用品」向け。第三者認証機関の検査が必要な、より厳しい区分。</li>
+          </ul>
+          <p>PSEマークの近くには<b>製造・輸入事業者名</b>が併記されている必要があります。マークだけでなく事業者名の記載も確認してください。なお、AC100V出力のあるポータブル電源は、本体の扱いが構造・用途により異なる場合がありますが、<b>付属のACアダプターはほぼ確実にPSE（ひし形）対象</b>です。</p>
+          <a href="#qaToc" class="qa-backtop qa-tocback"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>目次へ戻る</a>
+        </div>
+      </div>
+
+      <div class="qa-item" id="qa4">
+        <div class="qa-q">Q. PSE以外に、バッテリーの安全性を示す基準はありますか？</div>
+        <div class="qa-a">
+          <p>あります。PSEは日本での販売の<b>最低条件（義務）</b>ですが、より高い安全性の裏付けとして、以下の規格や認証への適合が示されている製品は、一段安心の目安になります。</p>
+          <div class="qa-std">
+            <div class="qa-std-name">JIS C 62133 / JIS C 8714（日本産業規格）</div>
+            <div class="qa-std-desc">ポータブル機器用リチウム二次電池の安全性を定めたJIS規格。国際規格IEC 62133を基にしており、旧JIS C 8712を置き換えたもの。C 8714は圧壊・外部短絡など、より過酷な試験を規定します。</div>
+          </div>
+          <div class="qa-std">
+            <div class="qa-std-name">IEC 62133（国際電気標準会議）</div>
+            <div class="qa-std-desc">携帯機器用の密閉形二次電池の安全性要求を定めた国際規格。世界各国の安全基準やPSEの技術基準の土台になっています（現行はIEC 62133-2）。</div>
+          </div>
+          <div class="qa-std">
+            <div class="qa-std-name">UN38.3（国連輸送基準）</div>
+            <div class="qa-std-desc">リチウム電池を航空・海上輸送するために必須の安全試験。高度・温度・振動・衝撃・短絡など8項目の試験に合格した電池であることを示します。</div>
+          </div>
+          <div class="qa-std">
+            <div class="qa-std-name">UL 認証（UL 2056 / UL 1642 など）</div>
+            <div class="qa-std-desc">米国の第三者安全認証機関ULによる規格。モバイルバッテリーやセル単体の安全性を評価するもので、取得製品は安全設計の目安になります。</div>
+          </div>
+          <div class="qa-std">
+            <div class="qa-std-name">Sマーク（第三者認証）</div>
+            <div class="qa-std-desc">電気製品の安全性を第三者認証機関が確認したことを示す任意マーク。ポータブル電源向けの基準が2024年に整備され、取得を進めるメーカーが出てきています。</div>
+          </div>
+          <div class="qa-std">
+            <div class="qa-std-name">ISO 9001 / ISO 14001（マネジメント規格）</div>
+            <div class="qa-std-desc">製品そのものの安全規格ではありませんが、メーカーの品質管理（9001）・環境管理（14001）体制の国際規格。取得企業は製造管理の信頼性の一つの目安になります。</div>
+          </div>
+          <p style="margin-top:14px;">これらは<b>製品パッケージ・仕様表・メーカー公式サイト</b>に記載されていることが多いです。PSE（必須）に加えて、JIS/IEC/UN38.3などの適合が明記された、事業者名の明確な正規品を選ぶのが、最も確実なリスク低減になります。</p>
+          <a href="#qaToc" class="qa-backtop qa-tocback"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>目次へ戻る</a>
+        </div>
+      </div>
+
+      <div class="qa-note">
+        ここに記載した基準・制度の内容は一般的な解説であり、最新の法令・規格の詳細は経済産業省・消費者庁・各認証機関の公式情報でご確認ください。個別製品の適合状況は、必ずメーカー公式の表示をご確認ください。
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="qa-overlay" id="ppOverlay" aria-hidden="true">
+  <div class="qa-modal" role="dialog" aria-modal="true" aria-labelledby="ppTitle">
+    <div class="qa-head">
+      <h2 id="ppTitle">プライバシーポリシー</h2>
+      <button class="qa-close" id="ppClose" aria-label="閉じる">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="qa-body">
+
+      <div class="qa-note" style="border-top:none;padding-top:0;margin-bottom:6px;">
+        最終更新日：2026年8月19日
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-q">1. 基本方針</div>
+        <div class="qa-a">
+          <p>「バッテリー診断計」（以下「本ツール」といいます）は、利用者のプライバシーを尊重し、個人情報の保護に努めます。</p>
+          <p><b>本ツールは、完全にお使いの端末（ブラウザ）内だけで動作します。</b>入力された情報や診断結果を、当方や第三者のサーバーへ送信・保存・収集することは一切ありません。</p>
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-q">2. 収集しない情報</div>
+        <div class="qa-a">
+          <p>本ツールは、次のような情報を<b>収集・送信しません</b>。</p>
+          <ul>
+            <li>診断のために入力されたメーカー名・型番・電池の種類・キーワードなどの入力内容</li>
+            <li>診断結果や検索結果の内容</li>
+            <li>氏名・住所・メールアドレス・電話番号などの個人を特定できる情報</li>
+            <li>Cookie等を用いた閲覧履歴・行動追跡の情報</li>
+          </ul>
+          <p>入力された内容は診断の計算にのみ使われ、画面を閉じる・再読み込みすると消去されます。当方がこれらを受け取ることはありません。</p>
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-q">3. Cookie・アクセス解析について</div>
+        <div class="qa-a">
+          <p>本ツールは、<b>Cookieを使用しません。また、Google Analytics等のアクセス解析ツールも利用していません。</b>そのため、利用者を識別・追跡することはありません。</p>
+          <p>テーマ（ダーク/ライト表示）の切り替えは、その場の表示に反映されるのみで、個人を識別する情報として扱うことはありません。</p>
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-q">4. 共有機能について</div>
+        <div class="qa-a">
+          <p>診断結果を共有するボタンを押した場合に限り、お使いの端末（OS）が備える標準の共有機能が起動します。この共有はご利用の端末上で完結し、共有先の選択・送信内容の決定はすべて利用者ご自身が行います。当方が共有内容を取得することはありません。</p>
+          <p>共有した情報の取り扱いについては、共有先となる各サービス（メール・SNS・メッセージアプリ等）のプライバシーポリシーが適用されます。</p>
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-q">5. 外部サイトへのリンクについて</div>
+        <div class="qa-a">
+          <p>本ツールでは、メーカー公式サイトやリコール情報など、外部サイトへのリンクを表示することがあります。リンク先の外部サイトにおける個人情報の取り扱いについては、当方は責任を負いません。各サイトのプライバシーポリシーをご確認ください。</p>
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-q">6. 免責事項</div>
+        <div class="qa-a">
+          <p>本ツールの診断結果は、調査時点で公開されているリコール情報や電池の種類などに基づく<b>リスクの目安</b>であり、製品の安全性を保証・断定するものではありません。当ツールに該当情報が無い場合でも、安全であることを意味しません。</p>
+          <p>製品の実際の適合状況・安全性については、必ずメーカー公式の表示や、経済産業省・消費者庁・各認証機関の公式情報をご確認ください。本ツールの利用によって生じたいかなる損害についても、当方は責任を負いかねます。</p>
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-q">7. ポリシーの変更</div>
+        <div class="qa-a">
+          <p>本ポリシーの内容は、法令の変更や本ツールの改善に伴い、予告なく変更されることがあります。変更後の内容は、本ページに掲載した時点から効力を生じるものとします。</p>
+        </div>
+      </div>
+
+      <div class="qa-note">
+        本ポリシーは本ツールの動作内容に基づき作成した一般的な説明です。事業として公開・運用される場合は、運営者情報やお問い合わせ先の記載、および適用される法令・ガイドラインへの適合について、必要に応じて専門家にご確認ください。
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="qa-overlay" id="useOverlay" aria-hidden="true">
+  <div class="qa-modal" role="dialog" aria-modal="true" aria-labelledby="useTitle">
+    <div class="qa-head">
+      <h2 id="useTitle">正しい使い方・注意事項・厳禁事項</h2>
+      <button class="qa-close" id="useClose" aria-label="閉じる">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="qa-body">
+
+      <div class="qa-toc" id="useToc">
+        <div class="qa-toc-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          目次（タップで移動）
+        </div>
+        <ol>
+          <li><a href="#use1" class="qa-jump">充電するときの正しい使い方</a></li>
+          <li><a href="#use2" class="qa-jump">保管・持ち運びの注意事項</a></li>
+          <li><a href="#use3" class="qa-jump">こんな異常が出たら使用中止</a></li>
+          <li><a href="#use4" class="qa-jump">絶対にやってはいけない厳禁事項</a></li>
+          <li><a href="#use5" class="qa-jump">発火・発煙したときの対処法</a></li>
+          <li><a href="#use6" class="qa-jump">正しい捨て方（廃棄・リサイクル）</a></li>
+        </ol>
+      </div>
+
+      <div style="margin:4px 0 14px;text-align:center;">
+        <button type="button" onclick="if(window.openBatteryTutorial)window.openBatteryTutorial();" style="background:var(--bg-panel-2);border:1px solid var(--line);color:var(--text-dim);border-radius:9px;padding:9px 16px;font-size:13px;cursor:pointer;">🔋 はじめての方へ・使い方ガイドをもう一度見る</button>
+      </div>
+
+      <div class="qa-item" id="use1">
+        <div class="qa-q">1. 充電するときの正しい使い方</div>
+        <div class="qa-a">
+          <p>充電中は発熱しやすく、事故が最も起きやすい場面です。次の点を守ってください。</p>
+          <ul>
+            <li><b>燃えやすい物のない場所で充電する。</b>布団・カーペット・ソファ・紙類・カーテンの上や近くを避け、硬く平らな場所に置きます。</li>
+            <li><b>製品指定の充電器・ケーブルを使う。</b>付属品や、メーカーが指定する規格の充電器を使用します。出力の合わない充電器は発熱の原因になります。</li>
+            <li><b>就寝中や外出中の充電は避ける。</b>異常に気づけるよう、人の目が届く状態で充電します。</li>
+            <li><b>充電しながらの使用（ながら充電）は控える。</b>発熱が重なり、温度が上がりやすくなります。</li>
+            <li><b>満充電のまま長時間放置しない。</b>充電が終わったらケーブルを抜きます。</li>
+          </ul>
+          <a href="#useToc" class="qa-backtop qa-tocback"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>目次へ戻る</a>
+        </div>
+      </div>
+
+      <div class="qa-item" id="use2">
+        <div class="qa-q">2. 保管・持ち運びの注意事項</div>
+        <div class="qa-a">
+          <p>リチウムイオン電池は<b>熱と衝撃に弱い</b>のが特徴です。特に夏場は事故が増えます。</p>
+          <ul>
+            <li><b>高温になる場所に置かない。</b>真夏の車内、直射日光の当たる窓際、暖房器具の近くは非常に危険です。車内は短時間でも高温になります。</li>
+            <li><b>強い衝撃・圧力を加えない。</b>落とした、踏んだ、家具に挟んだなどの後は、外観に異常がなくても内部が傷んでいることがあります。</li>
+            <li><b>カバンやポケットの中で圧迫しない。</b>硬い物と一緒に押し込むと、変形や内部短絡の原因になります。</li>
+            <li><b>湿気・水濡れを避ける。</b>浴室や水回りでの使用・保管は避けます。</li>
+            <li><b>長期間使わないときは、満充電・完全放電を避けて保管する。</b>半分程度の充電状態が電池に優しいとされます。</li>
+            <li><b>金属と一緒に持ち運ばない。</b>端子が鍵や小銭に触れると短絡（ショート）することがあります。</li>
+          </ul>
+          <a href="#useToc" class="qa-backtop qa-tocback"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>目次へ戻る</a>
+        </div>
+      </div>
+
+      <div class="qa-item" id="use3">
+        <div class="qa-q">3. こんな異常が出たら、すぐ使用中止</div>
+        <div class="qa-a">
+          <p>次のような<b>異常のサイン</b>が一つでも見られたら、直ちに使用をやめてください。これらは発火の前兆であることがあります。</p>
+          <ul>
+            <li><b>膨らんでいる・変形している</b>（本体がパンパンに膨張、ケースが浮く）</li>
+            <li><b>異常に熱い</b>（持てないほど熱くなる）</li>
+            <li><b>変なにおいがする</b>（甘いような、薬品のようなにおい）</li>
+            <li><b>異音がする</b>（シューという音、パチパチ音）</li>
+            <li><b>液漏れ・変色がある</b></li>
+            <li><b>充電が異常に速い／まったく充電できない</b></li>
+          </ul>
+          <p>膨張したバッテリーは、<b>無理に押したり穴を開けたりせず</b>、燃えにくい場所（金属製の容器など）に移し、メーカーや自治体の案内に従って処分してください。</p>
+          <a href="#useToc" class="qa-backtop qa-tocback"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>目次へ戻る</a>
+        </div>
+      </div>
+
+      <div class="qa-item" id="use4">
+        <div class="qa-q danger">4. 絶対にやってはいけない厳禁事項</div>
+        <div class="qa-a">
+          <p><b style="color:var(--danger);">次の行為は、発火・爆発に直結します。絶対に行わないでください。</b></p>
+          <ul>
+            <li><b>分解・改造をしない。</b>内部のセルが露出・破損すると、急激に発火します。</li>
+            <li><b>火の中・水の中に入れない。</b>加熱・水没させると破裂・発火の危険があります（※発火後の消火目的の注水は別。次項参照）。</li>
+            <li><b>釘を刺す・穴を開ける・切るなど、内部を傷つけない。</b></li>
+            <li><b>端子を金属で短絡（ショート）させない。</b></li>
+            <li><b>高温下（炎天下の車内など）に放置しない。</b></li>
+            <li><b>膨張・破損した製品を使い続けない。</b></li>
+            <li><b>PSEマークや事業者名の無い製品、リコール対象品を使わない。</b>リコール対象は、異常がなくても直ちに使用を中止します。</li>
+            <li><b>強い衝撃を与えたバッテリーをそのまま使わない。</b></li>
+            <li><b>ごみとして一般ごみ・不燃ごみに混ぜて捨てない。</b>収集車や処理施設での火災原因になります。</li>
+          </ul>
+          <a href="#useToc" class="qa-backtop qa-tocback"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>目次へ戻る</a>
+        </div>
+      </div>
+
+      <div class="qa-item" id="use5">
+        <div class="qa-q danger">5. 発火・発煙したときの対処法</div>
+        <div class="qa-a">
+          <p>万が一、発火・発煙した場合の手順です（消防機関の案内に基づく一般的な方法）。</p>
+          <ul>
+            <li><b>① 煙や炎が激しく噴き出している間は、近寄らない。</b>まず自分と周囲の人の身の安全を最優先にしてください。有毒なガスが出ることがあります。</li>
+            <li><b>② 火の勢いが収まってきたら、大量の水や消火器で消火する。</b>小型のモバイルバッテリーであれば、火花が収まった後にペットボトル等で大量の水をかけて消火できます。</li>
+            <li><b>③ 十分に水で冷やし、可能なら水没させた状態にする。</b>再発火を防ぐため、温度を十分に下げます。</li>
+            <li><b>④ 消火が難しい・危険と判断したら、無理をせず避難し、119番通報する。</b></li>
+          </ul>
+          <p class="qa-note" style="border-top:none;padding-top:0;">※発火時の注水は「消火・冷却」のための対処です。正常な製品を水に入れることは厳禁事項（前項）です。混同しないでください。</p>
+          <a href="#useToc" class="qa-backtop qa-tocback"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>目次へ戻る</a>
+        </div>
+      </div>
+
+      <div class="qa-item" id="use6">
+        <div class="qa-q">6. 正しい捨て方（廃棄・リサイクル）</div>
+        <div class="qa-a">
+          <p>使用済み・不要になったモバイルバッテリーは、<b>一般ごみに混ぜず、リサイクル回収に出す</b>のが原則です。ごみ収集車や処理施設での火災を防ぐためです。</p>
+          <ul>
+            <li><b>家電量販店などの回収ボックス（JBRC等のリサイクルBOX）に出す。</b>端子部分をテープで絶縁してから入れます。</li>
+            <li><b>自治体の回収区分を確認する。</b>市区町村によって、拠点回収や資源回収の方法が案内されています。</li>
+            <li><b>膨張・破損している場合は、回収ボックスに入れず、回収窓口やメーカーに相談する。</b></li>
+            <li><b>端子は絶縁してから出す。</b>ビニールテープ等で+/−端子を覆い、ショートを防ぎます。</li>
+          </ul>
+          <a href="#useToc" class="qa-backtop qa-tocback"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>目次へ戻る</a>
+        </div>
+      </div>
+
+      <div class="qa-note">
+        本ページは、NITE（製品評価技術基盤機構）や東京消防庁など公的機関が公表している一般的な注意喚起に基づいてまとめたものです。製品ごとの取り扱いは、必ずお使いの製品の取扱説明書・メーカー公式の案内に従ってください。廃棄方法は自治体により異なります。
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  // ---------------- 静的リコール／事故データベース ----------------
+  // keywords: 型番入力とゆるく一致させるための正規化済みキーワード
+  var DB = [
+    {
+      maker:'cheero', keywords:['flat10000','flat 10000','che112','che-112'],
+      level:'high', title:'cheero Flat 10000mAh（CHE-112）— リコール対象・発火事故報告あり',
+      basis:'2019年12月〜2021年8月に販売。バッテリー本体を充電中に発火する重大製品事故が発生し、2023年6月に対象全数（約39,300台）のリコールが開始されました。2025年7月にはJR山手線車内での発火事故の原因製品と特定され、2026年1月にも充電中の発火が報告されています。2026年2月時点の回収率は約13.2%にとどまっています。',
+      meta:{'対象台数':'約39,300台','リコール開始':'2023年6月','回収率(参考)':'約13.2%（2026年2月時点）'}
+    },
+    {
+      maker:'Anker', keywords:['powercore10000','a1263','power bank 10000 22.5w','a1257','334magbattery','maggo10000','a1642','a1647','a1652'],
+      level:'high', title:'Anker Power Bank / PowerCore 10000 系 — 複数モデルがリコール対象',
+      basis:'セル製造委託先の不適切な部材使用・異物混入により、2025年6月と10月の2度にわたり大規模リコールが実施されました（対象は延べ数十万台規模）。国内でも2025年度に複数件の火災報告があり、経済産業省がAnker Japanに行政指導を行っています。海外（米CPSC）ではA1263関連だけで19件の火災・爆発報告があります。',
+      meta:{'対象台数':'40万台超（6月分）＋約52万台（10月分・4製品）','リコール開始':'2025年6月／10月','行政指導':'2025年10月・経産省'}
+    },
+    {
+      maker:'Anker', keywords:['soundcore','a3102016'],
+      level:'high', title:'Anker SoundCore（Bluetoothスピーカー）— リコール対象・火災報告あり',
+      basis:'モバイルバッテリーではありませんが、同時期にリコールとなったAnker製品として火災事故が報告されています（2023年4〜9月販売分、2,420台対象、原因調査中の火災5件）。参考情報としてご確認ください。',
+      meta:{'対象台数':'2,420台','火災報告':'5件（うち1件は2025年10月報道）'}
+    },
+    {
+      maker:'CIO', keywords:['smartcoby','ex01','ex01slim'],
+      level:'high', title:'CIO SMARTCOBY Ex01 SLIM 系 — 一部製造ロットが自主回収対象',
+      basis:'2025年1月より、バッテリーセルの粘度不均一異常による内部短絡の恐れがあるとして、一部製造ロットの自主回収が行われています。対象ロットかどうかはCIO公式サイトでシリアル番号を確認してください。',
+      meta:{'対応開始':'2025年1月〜','対象範囲':'特定ロットのみ（全数ではない）'}
+    },
+    {
+      maker:'ELECOM', keywords:['dem01l10440','de-m01l-10440','dem01l13040','de-m01l-13040'],
+      level:'high', title:'エレコム DE-M01L-10440 / 13040 系 — 自主回収対象',
+      basis:'製造工程上の不具合により発熱・発火の可能性があるとして自主回収・交換対応が行われました。なお、この2機種は26,800mAh級の大容量モデルで、10000mAh帯の製品とは異なります。',
+      meta:{'容量帯':'26,800mAh（10000mAhとは別モデル）','対応':'自主回収・交換'}
+    },
+    {
+      maker:'RAVPower', keywords:['10050','pikachu','ピカチュウ','モンスターボール','pokemon'],
+      level:'medium', title:'ポケモン モバイルバッテリー RAVPower 10050mAh 系 — 自主回収対象（旧製品）',
+      basis:'2016年9月〜2017年2月販売分で、製造工程の不備による異常発熱・発煙が確認され自主回収されました（発売元：株式会社ポケモン、製造元：現SUNVALLEY JAPAN）。火災に至った件数は公表されていません。現在は販売終了しており、日本国内でのRAVPower新品の主要取り扱いも縮小しています。',
+      meta:{'販売期間':'2016年9月〜2017年2月','不具合内容':'異常発熱・発煙'}
+    }
+  ];
+
+  // ---------------- リコール情報の更新（任意・スプレッドシート連携） ----------------
+  // GAS（Googleスプレッドシート）の公開URLを設定すると、起動時に最新のリコール情報を
+  // 取得して上の内蔵DBを置き換えます。未設定・オフライン・通信失敗のときは、
+  // 上の内蔵DBのまま完全オフラインで動作します（診断は常に利用可能）。
+  //
+  // ▼ 使い方：下の '' に、GASウェブアプリのURL（.../exec）を貼り付けるだけ。
+  //   例）var RECALL_GAS_URL = 'https://script.google.com/macros/s/XXXX/exec';
+  // 親サイト（防災情報センター）にiframeで埋め込むときは、親から
+  //   window.name = 'recallGas:https://script.google.com/.../exec'
+  //   もしくは URLパラメータ ?gas=... で渡すこともできます（下で自動検出）。
+  var RECALL_GAS_URL = '';
+
+  (function detectGasUrl(){
+    try {
+      // ① URLクエリ ?gas=... / ?recallGas=...
+      var q = new URLSearchParams(location.search);
+      var fromQuery = q.get('recallGas') || q.get('gas');
+      if (fromQuery) { RECALL_GAS_URL = fromQuery; return; }
+      // ② window.name 経由（親サイトが埋め込み時に渡す）
+      if (window.name && window.name.indexOf('recallGas:') === 0) {
+        RECALL_GAS_URL = window.name.slice('recallGas:'.length); return;
+      }
+    } catch(e){}
+  })();
+
+  // GASのJSONP応答をDBへ反映する
+  function applyRecallData(list){
+    if (!list || !list.length) return;
+    var mapped = list.map(function(r){
+      return {
+        maker: String(r.maker||''),
+        keywords: Array.isArray(r.keywords) ? r.keywords : String(r.keywords||'').split(/[,、\n]+/),
+        level: (r.level==='medium'||r.level==='low'||r.level==='high') ? r.level : 'high',
+        title: String(r.title||''),
+        basis: String(r.basis||''),
+        meta: r.meta || {}
+      };
+    }).filter(function(r){ return r.maker || r.title; });
+    if (mapped.length){ DB = mapped; }
+  }
+
+  // 起動時に一度だけ、リコール情報の取得を試みる（失敗しても静かに内蔵DBで継続）
+  (function loadRecallFromGas(){
+    if (!RECALL_GAS_URL) return;
+    try {
+      var cbName = 'recallCb' + Date.now();
+      var done = false;
+      window[cbName] = function(data){
+        done = true;
+        try { applyRecallData(data && data.recall); } catch(e){}
+        try { delete window[cbName]; } catch(e){ window[cbName] = undefined; }
+        if (s && s.parentNode) s.parentNode.removeChild(s);
+      };
+      var s = document.createElement('script');
+      var sep = RECALL_GAS_URL.indexOf('?')>=0 ? '&' : '?';
+      s.src = RECALL_GAS_URL + sep + 'type=recall&callback=' + cbName + '&_=' + Date.now();
+      s.onerror = function(){ if (s && s.parentNode) s.parentNode.removeChild(s); };
+      document.head.appendChild(s);
+      setTimeout(function(){ if (!done && s && s.parentNode) s.parentNode.removeChild(s); }, 8000);
+    } catch(e){}
+  })();
+
+  // ---------------- 製品カタログ（スプレッドシート連携） ----------------
+  // GASの「製品カタログ」シートから読み込む製品一覧。条件検索・型番診断で使う。
+  // GAS未設定・オフライン・通信失敗のときは空のまま（外部検索リンクは従来どおり動作）。
+  var CATALOG = [];
+
+  function applyCatalogData(list){
+    if (!list || !list.length) return;
+    CATALOG = list.map(function(r){
+      return {
+        maker: String(r.maker||''),
+        models: Array.isArray(r.models) ? r.models : String(r.models||'').split(/[,、\n]+/).map(function(s){return s.replace(/\s+/g,'');}).filter(Boolean),
+        name: String(r.name||''),
+        capacity: String(r.capacity||''),
+        output: String(r.output||''),
+        chem: String(r.chem||''),
+        pse: String(r.pse||''),
+        year: String(r.year||''),
+        note: String(r.note||'')
+      };
+    }).filter(function(r){ return r.maker || r.name; });
+    // すでに検索結果が表示されている場合は、取り込み後に反映し直す
+    try { if (typeof refreshFindIfShown === 'function') refreshFindIfShown(); } catch(e){}
+  }
+
+  // 起動時に一度だけ、カタログの取得を試みる（リコールと同じGAS URLを使う）
+  (function loadCatalogFromGas(){
+    if (!RECALL_GAS_URL) return;
+    try {
+      var cbName = 'catalogCb' + Date.now();
+      var done = false;
+      window[cbName] = function(data){
+        done = true;
+        try { applyCatalogData(data && data.catalog); } catch(e){}
+        try { delete window[cbName]; } catch(e){ window[cbName] = undefined; }
+        if (s && s.parentNode) s.parentNode.removeChild(s);
+      };
+      var s = document.createElement('script');
+      var sep = RECALL_GAS_URL.indexOf('?')>=0 ? '&' : '?';
+      s.src = RECALL_GAS_URL + sep + 'type=catalog&callback=' + cbName + '&_=' + Date.now();
+      s.onerror = function(){ if (s && s.parentNode) s.parentNode.removeChild(s); };
+      document.head.appendChild(s);
+      setTimeout(function(){ if (!done && s && s.parentNode) s.parentNode.removeChild(s); }, 8000);
+    } catch(e){}
+  })();
+
+  // カタログを条件で絞り込む（メーカー・電池種別・キーワード）
+  function searchCatalog(opt){
+    opt = opt || {};
+    var mk = (opt.maker||'').toLowerCase();
+    var chem = (opt.chem||'');
+    var kw = (opt.keyword||'').trim().toLowerCase();
+    return CATALOG.filter(function(p){
+      if (mk && p.maker.toLowerCase() !== mk) return false;
+      if (chem && p.chem.indexOf(chem) < 0) return false;
+      if (kw){
+        var hay = (p.maker+' '+p.name+' '+p.models.join(' ')+' '+p.capacity+' '+p.output+' '+p.chem+' '+p.note).toLowerCase();
+        if (hay.indexOf(kw) < 0) return false;
+      }
+      return true;
+    });
+  }
+
+  // 型番からカタログの該当製品を探す（型番診断タブで使う）
+  function findCatalogByModel(maker, model){
+    var m = (model||'').replace(/\s+/g,'').toLowerCase();
+    if (!m) return null;
+    var mk = (maker||'').toLowerCase();
+    var hit = null;
+    CATALOG.forEach(function(p){
+      if (mk && p.maker.toLowerCase() !== mk) return;
+      p.models.forEach(function(code){
+        var c = code.replace(/\s+/g,'').toLowerCase();
+        if (c && (c === m || m.indexOf(c) >= 0 || c.indexOf(m) >= 0)){
+          if (!hit) hit = p;
+        }
+      });
+    });
+    return hit;
+  }
+
+  // ---------------- セル種別（化学種）の定義 ----------------
+  var CHEM_INFO = {
+    lfp: {
+      accent:'var(--safe)',
+      head:'リン酸鉄リチウム（LFP）',
+      lowRisk:true,
+      note:'リン酸鉄リチウム（LFP）は、三元系（NMC）やコバルト酸リチウムに比べて<b>熱的に安定で、熱暴走の開始温度が高く、発火・延焼しにくい</b>とされる化学種です。そのため、同種の使用条件では発火リスクは<b>相対的に低い</b>と考えられます。ただし、保護回路の不良・製造欠陥・模倣品・過充電や物理破損による事故はLFPでも起こり得ます。リコール情報は必ず別途ご確認ください。'
+    },
+    semisolid: {
+      accent:'var(--safe)',
+      head:'準固体（セミソリッド）',
+      lowRisk:true,
+      note:'準固体（セミソリッド）電池は液体電解液が少なく、<b>漏液・発火のリスクが抑えられる</b>とされる構成です。そのため発火リスクは<b>相対的に低い</b>と考えられます。ただし各社で定義や構成に幅があり、「準固体だから一律に安全」とは言い切れません。個別製品の不良・リコールの可能性は別途ご確認ください。'
+    },
+    sodium: {
+      accent:'var(--safe)',
+      head:'ナトリウムイオン（Na-ion）',
+      lowRisk:true,
+      note:'ナトリウムイオン電池はリチウムの代わりにナトリウムを用いる電池で、<b>反応が穏やかで熱暴走が起きにくく</b>、発火・破裂のリスクは<b>相対的に低い</b>とされます。動作温度範囲が広いのも特長です。ただし新しい方式で実績の蓄積はこれからの面もあり、同容量ではリチウムイオンより大きく重くなります。また新方式のため<b>航空機への持ち込み可否のルールが未整備で、機内持ち込みができない場合がある</b>点にご注意ください。個別製品の不良・リコールは別途ご確認ください。'
+    },
+    liion: {
+      accent:'var(--warn)',
+      head:'リチウムイオン（一般 / 三元系ほか）',
+      lowRisk:false,
+      note:'三元系（NMC）やコバルト酸リチウムなど、最も一般的なリチウムイオンセルです。エネルギー密度が高く小型軽量にできる反面、LFP・ナトリウムイオンに比べて<b>熱暴走が起きやすく、一定の発火・破裂リスクがあります</b>。適切な保護回路とPSE適合が特に重要です。膨張・異常な発熱・変形・異臭に気づいたら直ちに使用を中止してください。高温の車内などへの放置も避けてください。'
+    },
+    lipo: {
+      accent:'var(--warn)',
+      head:'リチウムイオンポリマー（Li-Po）',
+      lowRisk:false,
+      note:'ゲル状の電解質を用いるリチウムイオン電池の一種で、薄型・軽量に作れるため多くのモバイルバッテリーに使われています。基本的な発火リスクの傾向は一般的なリチウムイオンと同様で、<b>過充電・物理的な損傷・高温に弱く、一定の発火・膨張リスクがあります</b>。特に外装が柔らかい製品は圧迫や落下でダメージを受けやすいため、<b>膨らみ（スウェリング）が見られたら直ちに使用を中止</b>してください。保護回路とPSE適合の確認が重要です。'
+    },
+    unknown: {
+      accent:'var(--unknown)',
+      head:'セル種別 不明',
+      lowRisk:false,
+      note:'セルの種類が不明なため、化学種によるリスク傾向は判定できません。製品の仕様表やメーカー公式で電池の種類（リン酸鉄リチウム／リチウムイオン等）をご確認ください。'
+    }
+  };
+
+  // ---------------- 公式サイト検索リンクの組み立て ----------------
+  function buildOfficialLinks(maker, model){
+    var q = ((maker && maker!=='その他' ? maker+' ' : '') + model).trim();
+    var makerQ = encodeURIComponent(q);
+    return [
+      { label:'消費者庁リコールDB', url:'https://www.recall.caa.go.jp/' },
+      { label:'NITE SAFE-Lite で事故情報を検索', url:'https://safe-lite.nite.go.jp/' },
+      { label:'メーカー公式を検索', url:'https://duckduckgo.com/?q='+encodeURIComponent((maker&&maker!=='その他'?maker:'')+' '+model+' 公式').trim() },
+      { label:'Google で「'+ (q||model) +'」を検索', url:'https://www.google.com/search?q='+makerQ }
+    ];
+  }
+
+  function normalize(s){
+    return String(s||'')
+      .toLowerCase()
+      .replace(/[\s\-_（）()／\/,、。]/g,'')
+      .replace(/[０-９]/g, function(c){ return String.fromCharCode(c.charCodeAt(0)-0xFEE0); });
+  }
+
+  function findLocalMatch(maker, model){
+    var nModel = normalize(model);
+    if (!nModel) return null;
+    var candidates = DB.filter(function(d){ return maker && d.maker.toLowerCase()===maker.toLowerCase(); });
+    // メーカー未指定/その他の場合は全件から探す
+    var pool = candidates.length ? candidates : DB;
+    for (var i=0;i<pool.length;i++){
+      var d = pool[i];
+      for (var j=0;j<d.keywords.length;j++){
+        var k = normalize(d.keywords[j]);
+        if (k && (nModel.indexOf(k)>=0 || k.indexOf(nModel)>=0)) return d;
+      }
+    }
+    return null;
+  }
+
+  var LEVEL_INFO = {
+    high:   { angle: 58, color:'var(--danger)', tag:'警告',   label:'危険度：高' },
+    medium: { angle: 22, color:'var(--warn)',   tag:'注意',   label:'危険度：中' },
+    low:    { angle:-58, color:'var(--safe)',   tag:'参考',   label:'相対的に低リスク' },
+    unknown:{ angle: 0,  color:'var(--unknown)',tag:'要確認', label:'当DBに該当なし' }
+  };
+
+  var $ = function(id){ return document.getElementById(id); };
+  var makerSel = $('maker'), modelInput = $('model'), chemSel = $('chem'), goBtn = $('goBtn');
+  var loading = $('loading'), loadingText=$('loadingText'), errBox = $('err'), resultWrap = $('result'), card = $('resultCard');
+  var lastResult = null; // コピー・共有用に直近の診断結果を保持
+
+  // ---------------- テーマ切替（ダーク/ライト） ----------------
+  var themeBtn = $('themeBtn'), moonIcon = $('themeIconMoon'), sunIcon = $('themeIconSun');
+  function applyTheme(light){
+    document.body.classList.toggle('light', light);
+    moonIcon.style.display = light ? 'none' : 'block';
+    sunIcon.style.display = light ? 'block' : 'none';
+  }
+  var prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+  applyTheme(!!prefersLight);
+  themeBtn.addEventListener('click', function(){
+    applyTheme(!document.body.classList.contains('light'));
+  });
+
+  // ---------------- トースト通知 ----------------
+  var toastEl = $('toast'), toastTimer = null;
+  function showToast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toastEl.classList.remove('show'); }, 2200);
+  }
+
+  function setMeta(obj){
+    var grid = $('metaGrid'); grid.innerHTML='';
+    Object.keys(obj||{}).forEach(function(k){
+      var item = document.createElement('div');
+      item.className='meta-item';
+      item.innerHTML = '<div class="k">'+k+'</div><div class="v">'+obj[k]+'</div>';
+      grid.appendChild(item);
+    });
+  }
+
+  function setSources(list){
+    var wrap = $('sourcesWrap'), ul = $('sourcesList');
+    ul.innerHTML='';
+    if (!list || !list.length){ wrap.style.display='none'; return; }
+    wrap.style.display='block';
+    list.slice(0,6).forEach(function(s){
+      var li = document.createElement('li');
+      var a = document.createElement('a');
+      a.href = s.url; a.target='_blank'; a.rel='noopener';
+      a.textContent = s.title || s.url;
+      li.appendChild(a);
+      ul.appendChild(li);
+    });
+  }
+
+  function setChemNote(chemKey){
+    var wrap = $('chemWrap'), note = $('chemNote');
+    var c = CHEM_INFO[chemKey] || CHEM_INFO.unknown;
+    if (chemKey === 'unknown'){ wrap.style.display='none'; return; }
+    wrap.style.display='block';
+    note.style.setProperty('--chem-accent', c.accent);
+    note.innerHTML = '<div class="chem-head">'+c.head+'</div>'+c.note;
+  }
+
+  function setOfficialLinks(maker, model){
+    var wrap = $('linksWrap'), box = $('officialLinks');
+    box.innerHTML='';
+    var ext = '<svg class="ext" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';
+    buildOfficialLinks(maker, model).forEach(function(l){
+      var a = document.createElement('a');
+      a.href = l.url; a.target='_blank'; a.rel='noopener';
+      a.innerHTML = l.label + ext;
+      box.appendChild(a);
+    });
+    wrap.style.display='block';
+  }
+
+  // 型番診断の結果に、カタログの製品仕様を表示する
+  function setCatalogInfo(maker, model){
+    var wrap = $('catInfoWrap'), box = $('catInfo');
+    if (!wrap || !box) return;
+    var p = findCatalogByModel(maker, model);
+    if (!p){ wrap.style.display='none'; box.innerHTML=''; return; }
+    var specs = [];
+    if (p.capacity) specs.push('<span class="cat-spec"><b>容量</b> '+esc(p.capacity)+'</span>');
+    if (p.output)   specs.push('<span class="cat-spec"><b>出力</b> '+esc(p.output)+'</span>');
+    if (p.chem)     specs.push('<span class="cat-spec"><b>電池</b> '+esc(p.chem)+'</span>');
+    if (p.pse)      specs.push('<span class="cat-spec"><b>PSE</b> '+esc(p.pse)+'</span>');
+    if (p.year)     specs.push('<span class="cat-spec"><b>発売</b> '+esc(p.year)+'</span>');
+    box.innerHTML =
+      '<div class="cat-item">' +
+        '<div class="cat-item-maker">'+esc(p.maker)+'</div>' +
+        '<div class="cat-item-name">'+esc(p.name||'')+'</div>' +
+        (specs.length ? '<div class="cat-item-specs">'+specs.join('')+'</div>' : '') +
+        (p.note ? '<div class="cat-item-note">'+esc(p.note)+'</div>' : '') +
+      '</div>';
+    wrap.style.display='block';
+  }
+
+  function renderResult(opts){
+    // opts: { level, title, sub, basis, meta, chemKey, matched, showLinks }
+    var level = opts.level, chemKey = opts.chemKey || 'unknown';
+    lastResult = { level:level, title:opts.title, sub:opts.sub, basis:opts.basis,
+      meta:opts.meta||{}, chemKey:chemKey, matched:!!opts.matched,
+      maker:makerSel.value, model:modelInput.value.trim() };
+
+    var info = LEVEL_INFO[level] || LEVEL_INFO.unknown;
+    card.style.setProperty('--bar', info.color);
+    $('needle').style.transform = 'rotate('+info.angle+'deg)';
+    $('lvlLabel').textContent = info.label;
+    $('tag').textContent = info.tag;
+    $('verdictTitle').textContent = opts.title;
+    $('verdictSub').textContent = opts.sub;
+    $('basisText').textContent = opts.basis;
+    setMeta(opts.meta);
+    setChemNote(chemKey);
+    // 公式リンクは「DB非該当」時に必ず表示。該当時も確認用に表示。
+    setOfficialLinks(makerSel.value, modelInput.value.trim());
+    setSources(null); // 参照元リストは使わない（オフライン化）
+
+    // カタログに該当製品があれば仕様を表示する
+    setCatalogInfo(makerSel.value, modelInput.value.trim());
+
+    var tagEl = $('sourceTag');
+    tagEl.className = 'source-tag ' + (opts.matched ? 'live' : 'local');
+    $('sourceTagText').textContent = opts.matched
+      ? '照合データベースに該当あり（既知のリコール・事故情報）'
+      : '照合データベースに該当なし — 下記の公式サイトで最新情報をご確認ください';
+
+    resultWrap.classList.add('show');
+    resultWrap.scrollIntoView({behavior:'smooth', block:'nearest'});
+  }
+
+  function runDiagnosis(){
+    var maker = makerSel.value;
+    var model = modelInput.value.trim();
+    var chemKey = chemSel.value || 'unknown';
+    errBox.classList.remove('show');
+    if (!model){
+      errBox.textContent = '型番または商品名を入力してください。';
+      errBox.classList.add('show');
+      return;
+    }
+
+    // ① リコールDBと照合（最優先）
+    var local = findLocalMatch(maker, model);
+    if (local){
+      // 該当あり → 化学種に関係なく赤（またはDB登録levelの）警告を優先
+      renderResult({
+        level: local.level,
+        title: local.title,
+        sub: 'リコールデータベースに該当',
+        basis: local.basis,
+        meta: local.meta,
+        chemKey: chemKey,
+        matched: true
+      });
+      return;
+    }
+
+    // ② DB非該当 → 化学種による相対リスク傾向を補足しつつ、公式確認へ誘導
+    var chem = CHEM_INFO[chemKey] || CHEM_INFO.unknown;
+    var level, title, sub, basis;
+
+    if (chem.lowRisk){
+      // LFP / 準固体 → 相対的に低リスク（緑）
+      level = 'low';
+      title = '当データベースに該当なし ／ 熱的に安定な化学種';
+      sub = '相対的に低リスク（保証ではありません）';
+      basis = '登録済みのリコール情報の中に、この製品に該当するものは見つかりませんでした。'
+        + 'また、選択されたセル種別（' + chem.head + '）は一般に熱的安定性が高く、発火リスクは相対的に低いとされます。'
+        + 'ただしこれは化学種の傾向であり、個別製品の安全性を保証するものではありません。最新のリコール状況は下記の公式サイトで必ずご確認ください。';
+    } else {
+      // 三元系 / 不明 → 判定せず要確認（グレー）
+      level = 'unknown';
+      title = '当データベースに該当なし';
+      sub = '安全の証明ではありません — 公式確認を';
+      basis = '登録済みのリコール情報の中に、この製品に該当するものは見つかりませんでした。'
+        + 'ただし、これは事故が無いことの証明ではなく、まだ登録されていない製品やごく最近の情報が含まれていない可能性があります。'
+        + (chemKey==='unknown'
+            ? 'セル種別が不明なため、化学種による傾向判定も行えません。'
+            : '選択されたセル種別（' + chem.head + '）は、LFP・ナトリウムイオン等に比べて熱暴走が起きやすく、一定の発火リスクがあるとされます。')
+        + '下記の公式サイトで最新のリコール・事故情報を必ずご確認ください。';
+    }
+
+    renderResult({
+      level: level, title: title, sub: sub, basis: basis,
+      meta: {}, chemKey: chemKey, matched: false
+    });
+  }
+
+  goBtn.addEventListener('click', runDiagnosis);
+
+  // ================= タブ切替 & 条件検索モード =================
+  var tabDiag = $('tabDiag'), tabFind = $('tabFind');
+  var panelDiag = $('panelDiag'), panelFind = $('panelFind');
+
+  function switchTab(toFind){
+    tabFind.classList.toggle('active', toFind);
+    tabDiag.classList.toggle('active', !toFind);
+    tabFind.setAttribute('aria-selected', toFind ? 'true' : 'false');
+    tabDiag.setAttribute('aria-selected', toFind ? 'false' : 'true');
+    panelFind.style.display = toFind ? 'block' : 'none';
+    panelDiag.style.display = toFind ? 'none' : 'block';
+    // 診断結果カードは診断タブでのみ表示
+    resultWrap.style.display = toFind ? 'none' : '';
+    errBox.classList.remove('show');
+  }
+  tabDiag.addEventListener('click', function(){ switchTab(false); });
+  tabFind.addEventListener('click', function(){ switchTab(true); });
+
+  // 検索モードのメーカー選択肢は診断側から複製（同じ一覧を再利用）
+  var findMaker = $('findMaker');
+  (function cloneMakerOptions(){
+    var srcHtml = makerSel.innerHTML;
+    // 先頭の「選択してください」を「すべてのメーカー」に置き換え
+    findMaker.innerHTML = srcHtml.replace('選択してください','すべて / 指定しない');
+  })();
+
+  var findChem = $('findChem'), findCat = $('findCat'), findKeyword = $('findKeyword'), findBtn = $('findBtn');
+
+  function buildFindQuery(){
+    var parts = [];
+    var mk = findMaker.value;
+    if (mk && mk !== 'その他') parts.push(mk);
+    if (findChem.value) parts.push(findChem.value);
+    if (findCat.value) parts.push(findCat.value);
+    var kw = findKeyword.value.trim();
+    if (kw) parts.push(kw);
+    return parts.join(' ').trim();
+  }
+
+  function runFind(){
+    var q = buildFindQuery();
+    errBox.classList.remove('show');
+    if (!q){
+      errBox.textContent = 'メーカー・電池の種類・カテゴリのいずれか、またはキーワードを指定してください。';
+      errBox.classList.add('show');
+      return;
+    }
+    $('findQuery').textContent = q;
+
+    var mk = (findMaker.value && findMaker.value!=='その他') ? findMaker.value : '';
+    var enc = encodeURIComponent(q);
+    // メーカー公式は「メーカー名 + 条件 + 公式」で寄せる
+    var officialQ = encodeURIComponent((mk ? mk+' ' : '') + [findChem.value, findCat.value, findKeyword.value.trim()].filter(Boolean).join(' ') + ' 公式').trim();
+    // 価格.comはShift_JISのため日本語直接エンコードだと文字化けする。
+    // Google の site: 検索で価格.com内の該当ページに確実に誘導する。
+    var kakakuQ = encodeURIComponent(q + ' site:kakaku.com');
+
+    var links = [
+      { label:'Google で探す', url:'https://www.google.com/search?q='+enc },
+      { label:'メーカー公式を探す', url:'https://duckduckgo.com/?q='+officialQ },
+      { label:'価格.com で探す', url:'https://www.google.com/search?q='+kakakuQ }
+    ];
+
+    var box = $('findLinks'); box.innerHTML='';
+    var ext = '<svg class="ext" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';
+    links.forEach(function(l){
+      var a = document.createElement('a');
+      a.href = l.url; a.target='_blank'; a.rel='noopener';
+      a.innerHTML = l.label + ext;
+      box.appendChild(a);
+    });
+
+    $('findHint').innerHTML = '検索結果は各サイトの最新の掲載内容です。気になる製品が見つかったら、その型番を「型番で診断」タブに入れると、リコール情報との照合とリスクの目安を確認できます。';
+
+    // カタログ（スプレッドシート）から該当製品を表示
+    renderFindCatalog();
+
+    $('findResult').style.display = 'block';
+    $('findResult').scrollIntoView({behavior:'smooth', block:'nearest'});
+  }
+
+  // 直近の条件でカタログを検索して一覧表示する
+  function renderFindCatalog(){
+    var wrap = $('findCatalogWrap'), list = $('findCatalogList'), cnt = $('findCatalogCount');
+    if (!wrap || !list) return;
+    var mk = (findMaker.value && findMaker.value!=='その他') ? findMaker.value : '';
+    var hits = searchCatalog({ maker:mk, chem:findChem.value, keyword:findKeyword.value.trim() });
+
+    if (!hits.length){
+      wrap.style.display = 'none';
+      list.innerHTML = '';
+      return;
+    }
+    wrap.style.display = 'block';
+    if (cnt) cnt.textContent = '（' + hits.length + '件）';
+    list.innerHTML = '';
+    hits.forEach(function(p){
+      var el = document.createElement('div');
+      el.className = 'cat-item';
+      var specs = [];
+      if (p.capacity) specs.push('<span class="cat-spec"><b>容量</b> '+esc(p.capacity)+'</span>');
+      if (p.output)   specs.push('<span class="cat-spec"><b>出力</b> '+esc(p.output)+'</span>');
+      if (p.chem)     specs.push('<span class="cat-spec"><b>電池</b> '+esc(p.chem)+'</span>');
+      if (p.pse)      specs.push('<span class="cat-spec"><b>PSE</b> '+esc(p.pse)+'</span>');
+      if (p.year)     specs.push('<span class="cat-spec"><b>発売</b> '+esc(p.year)+'</span>');
+      var modelStr = p.models && p.models.length ? p.models.join(' / ') : '';
+      el.innerHTML =
+        '<div class="cat-item-maker">'+esc(p.maker)+'</div>' +
+        '<div class="cat-item-name">'+esc(p.name||'（製品名未登録）')+'</div>' +
+        (specs.length ? '<div class="cat-item-specs">'+specs.join('')+'</div>' : '') +
+        (modelStr ? '<div class="cat-item-models">型番: '+esc(modelStr)+'</div>' : '') +
+        (p.note ? '<div class="cat-item-note">'+esc(p.note)+'</div>' : '');
+      // 型番診断へ送るボタン
+      if (modelStr){
+        var btn = document.createElement('button');
+        btn.className = 'cat-diag-btn';
+        btn.textContent = 'この製品を型番で診断 →';
+        btn.addEventListener('click', function(){
+          switchTab(false);
+          makerSel.value = p.maker;
+          modelInput.value = (p.models && p.models[0]) ? p.models[0] : (p.name||'');
+          runDiagnosis();
+        });
+        el.appendChild(btn);
+      }
+      list.appendChild(el);
+    });
+  }
+
+  // カタログが後から届いたとき、検索結果が表示中なら再描画する
+  function refreshFindIfShown(){
+    var fr = $('findResult');
+    if (fr && fr.style.display === 'block') renderFindCatalog();
+  }
+
+  // HTMLエスケープ（カタログ表示用）
+  function esc(s){
+    return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  findBtn.addEventListener('click', runFind);
+  findKeyword.addEventListener('keydown', function(e){ if (e.key==='Enter') runFind(); });
+
+  // ================= Q&A モーダル =================
+  var qaBtn = $('qaBtn'), qaOverlay = $('qaOverlay'), qaClose = $('qaClose');
+  function openQA(){ qaOverlay.classList.add('show'); qaOverlay.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden'; }
+  function closeQA(){ qaOverlay.classList.remove('show'); qaOverlay.setAttribute('aria-hidden','true'); document.body.style.overflow=''; }
+  qaBtn.addEventListener('click', openQA);
+  qaClose.addEventListener('click', closeQA);
+  qaOverlay.addEventListener('click', function(e){ if (e.target===qaOverlay) closeQA(); });
+  document.addEventListener('keydown', function(e){ if (e.key==='Escape' && qaOverlay.classList.contains('show')) closeQA(); });
+
+  var ppBtn = $('ppBtn'), ppOverlay = $('ppOverlay'), ppClose = $('ppClose');
+  function openPP(){ ppOverlay.classList.add('show'); ppOverlay.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden'; }
+  function closePP(){ ppOverlay.classList.remove('show'); ppOverlay.setAttribute('aria-hidden','true'); document.body.style.overflow=''; }
+  if (ppBtn) ppBtn.addEventListener('click', openPP);
+  if (ppClose) ppClose.addEventListener('click', closePP);
+  ppOverlay.addEventListener('click', function(e){ if (e.target===ppOverlay) closePP(); });
+  document.addEventListener('keydown', function(e){ if (e.key==='Escape' && ppOverlay.classList.contains('show')) closePP(); });
+
+  var useBtn = $('useBtn'), useOverlay = $('useOverlay'), useClose = $('useClose');
+  function openUse(){ useOverlay.classList.add('show'); useOverlay.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden'; }
+  function closeUse(){ useOverlay.classList.remove('show'); useOverlay.setAttribute('aria-hidden','true'); document.body.style.overflow=''; }
+  if (useBtn) useBtn.addEventListener('click', openUse);
+  if (useClose) useClose.addEventListener('click', closeUse);
+  useOverlay.addEventListener('click', function(e){ if (e.target===useOverlay) closeUse(); });
+  document.addEventListener('keydown', function(e){ if (e.key==='Escape' && useOverlay.classList.contains('show')) closeUse(); });
+
+  // ===== 目次のタップ移動（Q&A・使用方法 共通） =====
+  // モーダル内スクロールなので、リンク先要素までモーダルの本体をスクロールさせる。
+  function qhJumpTo(targetId){
+    var target = document.getElementById(targetId);
+    if (!target) return;
+    // 直近の .qa-body（スクロールコンテナ）を探す
+    var container = target.closest ? target.closest('.qa-modal') : null;
+    if (target.scrollIntoView){
+      target.scrollIntoView({ behavior:'smooth', block:'start' });
+    }
+    // ハイライト（qa-item のときだけ）
+    if (target.classList && target.classList.contains('qa-item')){
+      target.classList.remove('jump-hl');
+      // リフローを挟んでアニメーションを再発火
+      void target.offsetWidth;
+      target.classList.add('jump-hl');
+      setTimeout(function(){ target.classList.remove('jump-hl'); }, 1700);
+    }
+  }
+  document.addEventListener('click', function(e){
+    var a = e.target.closest ? e.target.closest('a.qa-jump, a.qa-tocback') : null;
+    if (!a) return;
+    var href = a.getAttribute('href') || '';
+    if (href.charAt(0) !== '#') return;
+    e.preventDefault();
+    qhJumpTo(href.slice(1));
+  });
+  modelInput.addEventListener('keydown', function(e){ if (e.key==='Enter') runDiagnosis(); });
+
+  // ---------------- 結果テキストの組み立て（コピー・共有共通） ----------------
+  function buildResultText(){
+    if (!lastResult) return '';
+    var info = LEVEL_INFO[lastResult.level] || LEVEL_INFO.unknown;
+    var lines = [];
+    lines.push('【バッテリー診断計】'+ (lastResult.maker ? lastResult.maker+' ' : '') + lastResult.model);
+    lines.push(info.label + '　' + lastResult.title);
+    lines.push('');
+    lines.push(lastResult.basis);
+    if (lastResult.meta && Object.keys(lastResult.meta).length){
+      lines.push('');
+      Object.keys(lastResult.meta).forEach(function(k){ lines.push('・'+k+'：'+lastResult.meta[k]); });
+    }
+    if (lastResult.chemKey && lastResult.chemKey!=='unknown'){
+      var c = CHEM_INFO[lastResult.chemKey];
+      if (c){
+        lines.push('');
+        lines.push('セル種別：'+c.head);
+      }
+    }
+    lines.push('');
+    lines.push('公式確認：');
+    lines.push('・消費者庁リコールDB https://www.recall.caa.go.jp/');
+    lines.push('・NITE SAFE-Lite https://safe-lite.nite.go.jp/');
+    lines.push('');
+    lines.push('※公表済みのリコール情報に基づく参考情報です。安全性を保証するものではなく、「該当なし」は事故が無い証明ではありません。');
+    return lines.join('\n');
+  }
+
+  // ---------------- 印刷 ----------------
+  $('printBtn').addEventListener('click', function(){
+    window.print();
+  });
+
+  // ---------------- コピー ----------------
+  $('copyBtn').addEventListener('click', async function(){
+    var text = buildResultText();
+    if (!text) return;
+    try{
+      await navigator.clipboard.writeText(text);
+      showToast('診断結果をコピーしました');
+    }catch(e){
+      showToast('コピーに失敗しました。手動で選択してください');
+    }
+  });
+
+  // ---------------- 共有 ----------------
+  $('shareBtn').addEventListener('click', async function(){
+    var text = buildResultText();
+    if (!text) return;
+    if (navigator.share){
+      try{
+        await navigator.share({ title:'バッテリー診断計 — 診断結果', text: text });
+      }catch(e){ /* ユーザーによるキャンセル等は無視 */ }
+    }else{
+      try{
+        await navigator.clipboard.writeText(text);
+        showToast('共有機能が使えない環境のため、結果をコピーしました');
+      }catch(e){
+        showToast('共有に失敗しました');
+      }
+    }
+  });
+
+  // ---------------- このツール自体を共有（ヘッダー） ----------------
+  var shareToolBtn = $('shareToolBtn');
+  if (shareToolBtn) shareToolBtn.addEventListener('click', async function(){
+    // 共有するURLを決める。iframe内で開かれている場合は親ページのURLを優先する。
+    var shareUrl = '';
+    try {
+      if (window.parent && window.parent !== window && document.referrer) {
+        shareUrl = document.referrer;        // 親サイト（防災情報センター）のURL
+      }
+    } catch(e){}
+    if (!shareUrl) {
+      // スタンドアロンで開かれている場合は自分のURL（?gas= などのパラメータは外す）
+      shareUrl = location.origin + location.pathname;
+    }
+    var shareData = {
+      title: 'バッテリー診断計 — モバイルバッテリー発火リスク診断',
+      text: 'お使いのモバイルバッテリーが発火事故で回収（リコール）されていないか、その場で確認できます。電車内や住宅での発火が増えているいま、手元の製品をチェックしてみてください。',
+      url: shareUrl
+    };
+    if (navigator.share){
+      try{
+        await navigator.share(shareData);
+      }catch(e){ /* キャンセルは無視 */ }
+    } else if (navigator.clipboard && navigator.clipboard.writeText){
+      try{
+        await navigator.clipboard.writeText(shareData.text + '\n' + shareUrl);
+        showToast('共有機能が使えないため、リンクをコピーしました');
+      }catch(e){
+        window.prompt('このリンクをコピーしてください', shareUrl);
+      }
+    } else {
+      window.prompt('このリンクをコピーしてください', shareUrl);
+    }
+  });
+
+  // ---------------- 初回チュートリアル ----------------
+  var TUT_STEPS = [
+    { icon:'🔋', title:'バッテリー診断計へようこそ',
+      body:'お使いの<b>モバイルバッテリーやポータブル電源</b>が、発火事故で回収（リコール）されていないかを、その場で確認できるツールです。電車内や住宅での発火が増えているいま、手元の製品をチェックしてみましょう。' },
+    { icon:'🔍', title:'① 型番でリスク診断',
+      body:'「型番でリスク診断」タブで、<b>メーカーと型番</b>を選んで入力します。公表されているリコール情報と照合し、<b>発火リスクの目安</b>を表示します。型番は本体の裏面やパッケージに記載されています。' },
+    { icon:'📋', title:'② 使い方・厳禁事項も確認',
+      body:'画面上部の<b>「使用方法」</b>ボタンから、正しい充電のしかた・保管の注意・<b>絶対にやってはいけない厳禁事項</b>・発火したときの対処法まで確認できます。<b>「Q&A」</b>では安全な製品の選び方も解説しています。' },
+    { icon:'✅', title:'さっそく始めましょう',
+      body:'診断結果は<b>目安</b>です。「該当なし」でも安全の証明ではありません。使用前は必ずメーカー公式や消費者庁・NITEの情報もご確認ください。それでは、お使いの製品を診断してみましょう。' }
+  ];
+  var TUT_KEY = 'batteryDiag_tutorial_done_v1';
+  var tutIdx = 0;
+  var tutEl   = $('tutorial');
+  var tutIcon = $('tutIcon'),  tutTitle = $('tutTitle'), tutBody = $('tutBody');
+  var tutDots = $('tutDots'),  tutPrev  = $('tutPrev'),  tutNext = $('tutNext'), tutSkip = $('tutSkip');
+
+  function tutRender(){
+    var s = TUT_STEPS[tutIdx];
+    if (tutIcon)  tutIcon.textContent  = s.icon;
+    if (tutTitle) tutTitle.textContent = s.title;
+    if (tutBody)  tutBody.innerHTML    = s.body;
+    if (tutDots){
+      tutDots.innerHTML = '';
+      for (var i=0;i<TUT_STEPS.length;i++){
+        var d = document.createElement('span');
+        d.className = 'tut-dot' + (i===tutIdx ? ' on' : '');
+        tutDots.appendChild(d);
+      }
+    }
+    if (tutPrev) tutPrev.style.display = (tutIdx>0) ? '' : 'none';
+    if (tutNext) tutNext.textContent = (tutIdx < TUT_STEPS.length-1) ? '次へ ›' : '始める';
+  }
+  function tutOpen(){ if(!tutEl) return; tutIdx=0; tutRender(); tutEl.classList.add('show'); }
+  function tutClose(){
+    if(!tutEl) return;
+    tutEl.classList.remove('show');
+    try { localStorage.setItem(TUT_KEY, '1'); } catch(e){}
+  }
+  if (tutNext) tutNext.addEventListener('click', function(){
+    if (tutIdx < TUT_STEPS.length-1){ tutIdx++; tutRender(); }
+    else { tutClose(); }
+  });
+  if (tutPrev) tutPrev.addEventListener('click', function(){
+    if (tutIdx>0){ tutIdx--; tutRender(); }
+  });
+  if (tutSkip) tutSkip.addEventListener('click', tutClose);
+  if (tutEl) tutEl.addEventListener('click', function(e){ if (e.target===tutEl) tutClose(); });
+  document.addEventListener('keydown', function(e){
+    if (e.key==='Escape' && tutEl && tutEl.classList.contains('show')) tutClose();
+  });
+
+  // 「使用方法」内から、いつでもチュートリアルを見直せるようにする（グローバル公開）
+  window.openBatteryTutorial = tutOpen;
+
+  // 初回だけ自動表示（localStorageが使えない環境では毎回スキップ可能に）
+  (function initTutorial(){
+    var done = false;
+    try { done = (localStorage.getItem(TUT_KEY) === '1'); } catch(e){ done = false; }
+    if (!done){ setTimeout(tutOpen, 350); }
+  })();
+})();
+</script>
+</body>
+</html>

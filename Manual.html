@@ -1,0 +1,2180 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>緊急対応マニュアル</title>
+<style>
+  :root{
+    --bg:#0f1b2d;
+    --panel:#16263d;
+    --panel-soft:#1d3149;
+    --ink:#f2f6fb;
+    --muted:#9fb3c8;
+    --line:#284463;
+    --accent:#ffd23f;     /* 注意の黄 */
+    --danger:#ff5a5f;     /* 危険の赤 */
+    --safe:#3ddc97;       /* 安全の緑 */
+    --call:#ff5a5f;
+    --radius:18px;
+    --shadow:0 10px 30px rgba(0,0,0,.35);
+    --font:"Hiragino Kaku Gothic ProN","Yu Gothic","Noto Sans JP",system-ui,sans-serif;
+    --bg-glow:#1b3354;
+    --fs-zoom:1;
+  }
+  /* ---------- ライトモード ---------- */
+  html[data-theme="light"]{
+    --bg:#eef2f7;
+    --panel:#ffffff;
+    --panel-soft:#f3f6fb;
+    --ink:#182636;
+    --muted:#5c6b7c;
+    --line:#d9e1eb;
+    --shadow:0 8px 24px rgba(20,40,70,.10);
+    --bg-glow:#cfe0f7;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1200px 600px at 50% -10%, var(--bg-glow) 0%, transparent 60%),
+      var(--bg);
+    background-color:var(--bg);
+    color:var(--ink);
+    font-family:var(--font);
+    line-height:1.6;
+    min-height:100vh;
+    min-height:100dvh;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    transition:background-color .2s ease, color .2s ease;
+  }
+  .wrap{max-width:680px;margin:0 auto;padding:18px 16px 60px;zoom:var(--fs-zoom,1);}
+
+  /* ---------- 表示設定ツールバー（テーマ/文字サイズ/コピー/印刷/共有） ---------- */
+  .toolbar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px;}
+  .tool-btn{
+    display:inline-flex;align-items:center;gap:6px;
+    background:var(--panel-soft);border:1px solid var(--line);color:var(--ink);
+    font:inherit;font-size:12.5px;font-weight:700;border-radius:999px;
+    padding:8px 13px;cursor:pointer;line-height:1;white-space:nowrap;
+  }
+  .tool-btn svg{width:16px;height:16px;flex:0 0 auto;color:var(--accent);}
+  .tool-btn:hover{border-color:var(--accent);}
+  .tool-fs{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--panel-soft);}
+  .tool-fs .tool-btn{border:none;border-radius:0;padding:8px 14px;font-size:14px;}
+  .tool-fs .tool-btn:first-child{border-right:1px solid var(--line);}
+  .tool-fs .tool-btn small{font-size:9px;position:relative;top:-4px;}
+
+  /* ---------- 文字検索 ---------- */
+  .search-wrap{margin-bottom:16px;}
+  .search-input-row{
+    display:flex;align-items:center;gap:10px;
+    background:var(--panel-soft);border:1px solid var(--line);border-radius:14px;
+    padding:11px 14px;box-shadow:var(--shadow);
+  }
+  .search-input-row svg{width:18px;height:18px;color:var(--muted);flex:0 0 auto;}
+  .search-input-row input{
+    flex:1;min-width:0;background:none;border:none;outline:none;
+    color:var(--ink);font:inherit;font-size:14px;
+  }
+  .search-input-row input::placeholder{color:var(--muted);}
+  .search-clear{
+    display:none;background:none;border:none;color:var(--muted);cursor:pointer;
+    font-size:15px;line-height:1;padding:2px 4px;flex:0 0 auto;
+  }
+  .search-clear.show{display:inline-flex;}
+  .search-clear:hover{color:var(--ink);}
+  .search-results{margin-top:8px;display:flex;flex-direction:column;gap:8px;}
+  .search-results.hidden{display:none;}
+  .search-item{
+    display:flex;align-items:flex-start;gap:12px;text-align:left;width:100%;
+    background:var(--panel-soft);border:1px solid var(--line);border-radius:14px;
+    padding:12px 14px;cursor:pointer;color:var(--ink);font:inherit;
+  }
+  .search-item:hover{border-color:var(--accent);}
+  .search-item .pic{
+    flex:0 0 34px;width:34px;height:34px;border-radius:9px;
+    background:var(--panel);display:grid;place-items:center;
+  }
+  .search-item .pic svg{width:20px;height:20px;}
+  .search-item .body{min-width:0;}
+  .search-item .cat{font-size:11px;color:var(--muted);margin-bottom:2px;}
+  .search-item .ttl{font-size:14.5px;font-weight:700;margin-bottom:2px;}
+  .search-item .snip{
+    font-size:12.5px;color:var(--muted);line-height:1.5;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+  }
+  .search-empty{font-size:13px;color:var(--muted);text-align:center;padding:16px 0;}
+
+  /* ---------- トースト通知 ---------- */
+  .toast{
+    position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(8px);
+    background:var(--ink);color:var(--bg);font-size:13px;font-weight:600;
+    padding:10px 18px;border-radius:999px;box-shadow:var(--shadow);
+    z-index:10000;opacity:0;pointer-events:none;transition:opacity .2s ease, transform .2s ease;
+    max-width:88vw;text-align:center;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  /* ---------- 印刷用 ---------- */
+  @media print{
+    body{background:#fff !important;color:#000 !important;}
+    .toolbar,.hotline,.crumbs,.back,.restart,.app-footer,
+    .search-wrap,
+    .speak-cta,.speak-hint,.metro-cta,.metro-rate,.video-cta,.video-wrap,.video-note,
+    .aed-cta,.call-cta,.link-cta,.area-cta,.shelter-cta,.toast{display:none !important;}
+    .wrap{zoom:1 !important;max-width:100% !important;padding:0 !important;}
+    .result{box-shadow:none !important;border:1px solid #999 !important;background:#fff !important;color:#000 !important;}
+    .result h2,.result .sub,.steps .h,.steps .d,.steps .n,.badge{color:#000 !important;}
+    .badge{background:#eee !important;border:1px solid #999;}
+    .note{background:#fff !important;border:1px solid #999 !important;color:#000 !important;}
+    .steps li{border-top:1px solid #ccc;}
+  }
+
+  /* ---------- ヘッダー ---------- */
+  header.app{
+    display:flex;align-items:center;gap:12px;
+    padding:8px 4px 18px;
+  }
+  .logo{
+    width:42px;height:42px;flex:0 0 42px;border-radius:12px;
+    background:var(--danger);display:grid;place-items:center;box-shadow:var(--shadow);
+  }
+  .logo svg{width:24px;height:24px;}
+  .app h1{font-size:19px;margin:0;letter-spacing:.02em;}
+  .app p{margin:2px 0 0;font-size:12px;color:var(--muted);}
+
+  /* ---------- 緊急ダイヤル常設バー ---------- */
+  .hotline{
+    display:flex;gap:10px;margin-bottom:18px;
+  }
+  .hotline a{
+    flex:1;text-decoration:none;color:#fff;
+    background:var(--call);border-radius:14px;
+    padding:11px 8px;text-align:center;font-weight:700;
+    display:flex;flex-direction:column;align-items:center;gap:2px;
+    box-shadow:var(--shadow);
+  }
+  .hotline a.fire{background:#ff7a45;}
+  .hotline a .num{font-size:22px;letter-spacing:.04em;line-height:1;}
+  .hotline a .lbl{font-size:11px;opacity:.95;font-weight:600;}
+
+  /* ---------- パンくず ---------- */
+  .crumbs{
+    display:flex;flex-wrap:wrap;align-items:center;gap:6px;
+    font-size:12px;color:var(--muted);min-height:20px;margin-bottom:12px;
+  }
+  .crumbs button{
+    background:none;border:none;color:var(--accent);font:inherit;
+    padding:0;cursor:pointer;text-decoration:underline;
+  }
+  .crumbs .sep{opacity:.5;}
+
+  /* ---------- カードグリッド（タブ＆選択肢共通） ---------- */
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+  .card{
+    border:1px solid var(--line);
+    background:linear-gradient(180deg,var(--panel-soft),var(--panel));
+    border-radius:var(--radius);
+    padding:18px 14px;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;gap:10px;
+    text-align:center;color:var(--ink);
+    transition:transform .12s ease, border-color .12s ease, box-shadow .12s ease;
+  }
+  .card:hover{transform:translateY(-2px);border-color:var(--accent);box-shadow:var(--shadow);}
+  .card:active{transform:scale(.97);}
+  .card .pic{width:56px;height:56px;display:grid;place-items:center;}
+  .card .pic svg{width:52px;height:52px;}
+  .card .t{font-size:16px;font-weight:700;}
+  .card .s{font-size:12px;color:var(--muted);margin-top:-4px;}
+  .card.wide{grid-column:1/-1;flex-direction:row;justify-content:flex-start;gap:14px;padding:16px;}
+  .card.wide .pic{width:40px;height:40px;flex:0 0 40px;}
+  .card.wide .pic svg{width:38px;height:38px;}
+  .card.wide .txt{text-align:left;}
+
+  .section-title{font-size:15px;font-weight:700;margin:4px 2px 14px;color:var(--ink);}
+  .section-q{font-size:18px;font-weight:700;margin:4px 2px 16px;}
+  .lead{font-size:13px;color:var(--muted);margin:-6px 2px 16px;}
+
+  /* ---------- 手順表示 ---------- */
+  .result{
+    background:linear-gradient(180deg,var(--panel-soft),var(--panel));
+    border:1px solid var(--line);border-radius:var(--radius);
+    padding:20px 18px;box-shadow:var(--shadow);
+  }
+  .result .badge{
+    display:inline-flex;align-items:center;gap:8px;
+    background:var(--danger);color:#fff;font-weight:700;font-size:13px;
+    padding:6px 12px;border-radius:999px;margin-bottom:14px;
+  }
+  .result .badge.safe{background:var(--safe);color:#06301f;}
+  .result .badge.warn{background:var(--accent);color:#3a2c00;}
+  .result h2{margin:0 0 6px;font-size:21px;}
+  .result .sub{color:var(--muted);font-size:13px;margin:0 0 18px;}
+
+  .steps{list-style:none;margin:0;padding:0;counter-reset:step;}
+  .steps li{
+    position:relative;display:flex;gap:14px;align-items:flex-start;
+    padding:16px 0;border-top:1px dashed var(--line);
+  }
+  .steps li:first-child{border-top:none;}
+  .steps .icon{
+    flex:0 0 50px;width:50px;height:50px;border-radius:14px;
+    background:var(--panel);border:1px solid var(--line);
+    display:grid;place-items:center;
+  }
+  .steps .icon svg{width:34px;height:34px;}
+  .steps .body{flex:1;}
+  .steps .body .n{
+    font-size:11px;font-weight:700;color:var(--accent);letter-spacing:.08em;
+  }
+  .steps .body .h{font-size:16px;font-weight:700;margin:1px 0 3px;}
+  .steps .body .d{font-size:14px;color:var(--muted);}
+  .steps li.crit .h{color:var(--danger);}
+  .steps li.do .h{color:var(--safe);}
+
+  .note{
+    margin-top:16px;background:rgba(255,210,63,.1);
+    border:1px solid rgba(255,210,63,.35);border-radius:14px;
+    padding:12px 14px;font-size:13px;color:#ffe89a;
+    display:flex;gap:10px;
+  }
+  .note svg{flex:0 0 20px;width:20px;height:20px;margin-top:1px;}
+  .note.danger{background:rgba(255,90,95,.12);border-color:rgba(255,90,95,.4);color:#ffc2c4;}
+  html[data-theme="light"] .note{background:rgba(224,160,0,.12);border-color:rgba(224,160,0,.4);color:#7a5900;}
+  html[data-theme="light"] .note.danger{background:rgba(214,45,50,.10);border-color:rgba(214,45,50,.35);color:#9c1c20;}
+
+  .call-cta{
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    margin-top:12px;text-decoration:none;color:#fff;font-weight:700;font-size:18px;
+    background:var(--call);border-radius:14px;padding:15px;box-shadow:var(--shadow);
+  }
+  .call-cta svg{width:24px;height:24px;flex:0 0 auto;}
+  .call-cta span{display:flex;flex-direction:column;align-items:flex-start;line-height:1.25;}
+  .call-cta small{font-size:11px;font-weight:600;opacity:.92;}
+  /* 相談窓口など、緊急度がやや低いボタン（青系） */
+  .call-cta.soft{background:#2b6cb0;}
+  /* 関連ページへのリンクボタン */
+  .link-cta{
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    margin-top:12px;border:1px solid var(--line);cursor:pointer;font:inherit;width:100%;
+    color:var(--ink);font-weight:700;font-size:15px;
+    background:var(--panel-soft);border-radius:14px;padding:13px;
+  }
+  .link-cta svg{width:20px;height:20px;color:var(--accent);}
+
+  .restart{
+    display:block;width:100%;margin-top:22px;
+    background:none;border:1px solid var(--line);color:var(--muted);
+    font:inherit;font-size:14px;padding:13px;border-radius:14px;cursor:pointer;
+  }
+  .restart:hover{border-color:var(--accent);color:var(--ink);}
+
+  .back{
+    background:none;border:1px solid var(--line);color:var(--muted);
+    font:inherit;font-size:13px;padding:9px 14px;border-radius:999px;cursor:pointer;
+    margin-bottom:16px;display:inline-flex;align-items:center;gap:6px;
+  }
+  .back:hover{border-color:var(--accent);color:var(--ink);}
+
+  @media(max-width:380px){
+    .hotline a .num{font-size:19px;}
+    .card .t{font-size:15px;}
+  }
+  @media(prefers-reduced-motion:reduce){
+    .card,.card:hover,.card:active{transition:none;transform:none;}
+  }
+
+  /* フェード */
+  #view>*{animation:fade .25s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+
+  /* ---------- AED検索 ---------- */
+  /* ホットライン行のAEDボタン（119/110と並ぶ） */
+  .hotline button.aed{
+    flex:1;border:none;cursor:pointer;font:inherit;
+    color:#08221a;background:var(--safe);border-radius:14px;
+    padding:11px 8px;text-align:center;font-weight:700;
+    display:flex;flex-direction:column;align-items:center;gap:2px;
+    box-shadow:var(--shadow);
+  }
+  .hotline button.aed .num{font-size:20px;line-height:1;display:flex;align-items:center;gap:5px;}
+  .hotline button.aed .num svg{width:20px;height:20px;}
+  .hotline button.aed .lbl{font-size:11px;opacity:.95;font-weight:700;}
+
+  /* 結果画面のAED検索CTA */
+  .aed-cta{
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    margin-top:12px;border:none;cursor:pointer;font:inherit;width:100%;
+    color:#08221a;font-weight:700;font-size:16px;
+    background:var(--safe);border-radius:14px;padding:14px;box-shadow:var(--shadow);
+  }
+  .aed-cta svg{width:22px;height:22px;}
+
+  /* 結果画面の読み上げボタン */
+  .speak-cta{
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    margin-top:12px;border:1px solid var(--line);cursor:pointer;font:inherit;width:100%;
+    color:var(--ink);font-weight:700;font-size:16px;
+    background:var(--panel-soft);border-radius:14px;padding:14px;
+  }
+  .speak-cta svg{width:22px;height:22px;color:var(--accent);}
+  .speak-cta.speaking{border-color:var(--accent);color:var(--accent);}
+  .speak-cta.speaking svg{color:var(--accent);}
+  .speak-hint{font-size:11px;color:var(--muted);text-align:center;margin-top:8px;line-height:1.6;}
+
+  /* 胸骨圧迫リズム メトロノーム */
+  .metro-cta{
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    margin-top:12px;border:1px solid var(--line);cursor:pointer;font:inherit;width:100%;
+    color:var(--ink);font-weight:700;font-size:16px;
+    background:var(--panel-soft);border-radius:14px;padding:14px;
+  }
+  .metro-cta svg{width:22px;height:22px;color:var(--danger);}
+  .metro-cta.beating{border-color:var(--danger);color:var(--danger);background:rgba(255,90,95,.10);}
+  .metro-cta.beating svg{color:var(--danger);animation:metroPulse .5s ease-in-out infinite;}
+  @keyframes metroPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.18);}}
+  .metro-rate{
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    margin-top:8px;font-size:12px;color:var(--muted);
+  }
+  .metro-rate label{font-weight:700;color:var(--ink);}
+  .metro-rate input[type=range]{flex:1;max-width:180px;accent-color:var(--danger);}
+  .metro-rate .bpm{font-variant-numeric:tabular-nums;min-width:64px;text-align:right;color:var(--ink);font-weight:700;}
+
+  /* 胸骨圧迫の動画 */
+  .video-cta{
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    margin-top:12px;border:1px solid var(--line);cursor:pointer;font:inherit;width:100%;
+    color:var(--ink);font-weight:700;font-size:16px;
+    background:var(--panel-soft);border-radius:14px;padding:14px;
+  }
+  .video-cta svg{width:22px;height:22px;color:#ff5a5f;}
+  .video-wrap{
+    margin-top:12px;border-radius:14px;overflow:hidden;border:1px solid var(--line);
+    background:#000;aspect-ratio:16/9;display:none;
+  }
+  .video-wrap.open{display:block;}
+  .video-wrap iframe{width:100%;height:100%;border:0;display:block;}
+  .video-note{font-size:11px;color:var(--muted);text-align:center;margin-top:6px;line-height:1.6;}
+
+  /* AEDモーダル */
+  .aed-overlay{
+    display:none;position:fixed;inset:0;z-index:9999;
+    background:rgba(4,10,18,.72);backdrop-filter:blur(3px);
+    align-items:center;justify-content:center;padding:18px;
+  }
+  .aed-overlay.open{display:flex;}
+  .aed-panel{
+    background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    width:100%;max-width:440px;max-height:88vh;overflow-y:auto;
+    padding:22px 20px 18px;box-shadow:var(--shadow);animation:fade .2s ease;
+  }
+  .aed-panel h2{
+    margin:0 0 4px;font-size:19px;display:flex;align-items:center;gap:9px;color:var(--ink);
+  }
+  .aed-panel h2 svg{width:24px;height:24px;color:var(--safe);}
+  .aed-panel .aed-desc{margin:0 0 16px;font-size:13px;line-height:1.7;color:var(--muted);}
+  .aed-link{
+    display:flex;align-items:flex-start;gap:12px;text-decoration:none;
+    background:var(--panel-soft);border:1px solid var(--line);border-radius:14px;
+    padding:14px;margin-bottom:12px;transition:border-color .15s;
+  }
+  .aed-link:hover{border-color:var(--safe);}
+  .aed-link .a-ico{
+    flex:0 0 auto;width:40px;height:40px;border-radius:10px;
+    background:rgba(61,220,151,.14);display:flex;align-items:center;justify-content:center;
+  }
+  .aed-link .a-ico svg{width:22px;height:22px;color:var(--safe);}
+  .aed-link .a-body{min-width:0;}
+  .aed-link .a-name{font-size:15px;font-weight:700;color:var(--ink);margin-bottom:3px;}
+  .aed-link .a-sub{font-size:12px;line-height:1.6;color:var(--muted);}
+  .aed-note{font-size:11.5px;line-height:1.6;color:var(--muted);margin:4px 0 16px;}
+  .aed-close{
+    display:block;width:100%;background:none;border:1px solid var(--line);color:var(--muted);
+    font:inherit;font-size:14px;padding:12px;border-radius:14px;cursor:pointer;
+  }
+  .aed-close:hover{border-color:var(--accent);color:var(--ink);}
+
+  /* #7119 対応地域オーバーレイ */
+  .area-panel{max-width:480px;}
+  .area-panel h2{font-size:18px;margin-bottom:14px;}
+  .area-note{
+    display:flex;gap:9px;align-items:flex-start;
+    border-radius:12px;padding:12px 13px;margin-bottom:16px;font-size:12.5px;line-height:1.65;
+  }
+  .area-note svg{width:20px;height:20px;flex:0 0 auto;}
+  .area-note.warn{background:rgba(255,90,95,.10);border:1px solid rgba(255,90,95,.4);color:var(--ink);}
+  .area-note.warn svg{color:var(--danger);}
+  .area-note b{color:var(--ink);}
+  .area-h{
+    font-size:13px;font-weight:700;color:var(--ink);
+    margin:16px 0 8px;padding-left:9px;border-left:3px solid var(--accent);
+  }
+  .area-list{display:flex;flex-direction:column;gap:7px;}
+  .area-row{
+    background:var(--panel-soft);border:1px solid var(--line);border-radius:10px;
+    padding:9px 11px;
+  }
+  .area-pref{font-size:14px;font-weight:700;color:var(--ink);margin-bottom:3px;}
+  .area-meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;}
+  .area-tag{
+    font-size:10.5px;font-weight:700;border-radius:999px;padding:2px 8px;line-height:1.5;
+  }
+  .area-tag.all{background:rgba(61,220,151,.16);color:#3ddc97;}
+  .area-tag.a15{background:rgba(77,168,255,.16);color:#4da8ff;}
+  .area-when{font-size:11.5px;color:var(--muted);}
+  .area-scope{font-size:11px;color:var(--muted);flex-basis:100%;}
+  .area-sub{font-size:11.5px;line-height:1.6;color:var(--muted);margin-top:6px;}
+  .area-foot{font-size:11px;line-height:1.6;color:var(--muted);margin:16px 0 14px;padding-top:12px;border-top:1px solid var(--line);}
+  /* 結果画面：地域確認ボタン（青系の枠） */
+  .area-cta{
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    margin-top:12px;border:1px solid #4da8ff;cursor:pointer;font:inherit;width:100%;
+    color:#4da8ff;font-weight:700;font-size:15px;
+    background:rgba(77,168,255,.08);border-radius:14px;padding:13px;
+  }
+  .area-cta svg{width:20px;height:20px;color:#4da8ff;}
+
+  /* 結果画面：避難所・一時避難所を探すボタン */
+  .shelter-cta{
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    margin-top:12px;border:1px solid var(--safe);cursor:pointer;font:inherit;width:100%;
+    color:var(--safe);font-weight:700;font-size:15px;
+    background:rgba(61,220,151,.08);border-radius:14px;padding:13px;
+  }
+  .shelter-cta svg{width:20px;height:20px;color:var(--safe);}
+
+  /* フッター（プライバシーポリシー） */
+  .app-footer{
+    margin-top:26px;padding-top:16px;border-top:1px solid var(--line);
+    display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;
+  }
+  .footer-link{
+    background:none;border:none;color:var(--muted);font:inherit;font-size:13px;
+    text-decoration:underline;cursor:pointer;padding:4px 6px;
+  }
+  .footer-link:hover{color:var(--ink);}
+  .footer-note{font-size:11px;color:var(--muted);line-height:1.6;}
+
+  /* プライバシーポリシー本文 */
+  .privacy-panel{max-width:520px;}
+  .privacy-panel h2{font-size:18px;margin-bottom:14px;}
+  .privacy-body{font-size:13px;line-height:1.8;color:var(--ink);}
+  .privacy-body .pv-lead{color:var(--muted);margin:0 0 14px;}
+  .privacy-body p{margin:0 0 12px;}
+  .pv-h{
+    font-size:13.5px;font-weight:700;color:var(--ink);
+    margin:16px 0 7px;padding-left:9px;border-left:3px solid var(--accent);
+  }
+  .pv-foot{font-size:11.5px;color:var(--muted);margin-top:16px;padding-top:12px;border-top:1px solid var(--line);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="app">
+    <div class="logo" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2 3 6v6c0 5 3.8 8.5 9 10 5.2-1.5 9-5 9-10V6z"/>
+        <path d="M12 8v5M12 16.5v.01"/>
+      </svg>
+    </div>
+    <div>
+      <h1>緊急対応マニュアル</h1>
+      <p>タップして進むと、いまやるべきことが出ます</p>
+    </div>
+  </header>
+
+  <div class="toolbar" role="toolbar" aria-label="表示設定">
+    <button type="button" class="tool-btn" id="themeBtn" onclick="toggleTheme()">
+      <span id="themeBtnIcon"></span><span id="themeBtnLabel">ライト表示</span>
+    </button>
+    <div class="tool-fs" role="group" aria-label="文字サイズ">
+      <button type="button" class="tool-btn" onclick="decFont()" aria-label="文字を小さくする">A<small>-</small></button>
+      <button type="button" class="tool-btn" onclick="incFont()" aria-label="文字を大きくする">A<small>+</small></button>
+    </div>
+    <button type="button" class="tool-btn" onclick="copyCurrent()">
+      <span id="copyBtnIcon"></span>コピー
+    </button>
+    <button type="button" class="tool-btn" onclick="printCurrent()">
+      <span id="printBtnIcon"></span>印刷
+    </button>
+    <button type="button" class="tool-btn" onclick="shareCurrent()">
+      <span id="shareBtnIcon"></span>共有
+    </button>
+  </div>
+
+  <div class="search-wrap">
+    <div class="search-input-row">
+      <span id="searchIcon"></span>
+      <input type="text" id="searchInput" inputmode="search" autocomplete="off"
+        placeholder="キーワードで探す（例：AED、車、浸水、地震）"
+        oninput="onSearchInput(this.value)" onkeydown="onSearchKeydown(event)"
+        aria-label="マニュアル内をキーワード検索">
+      <button type="button" class="search-clear" id="searchClearBtn" onclick="clearSearch()" aria-label="検索をクリア">✕</button>
+    </div>
+    <div class="search-results hidden" id="searchResults"></div>
+  </div>
+
+  <div class="hotline">
+    <a href="tel:119"><span class="num">119</span><span class="lbl">救急・火災</span></a>
+    <a href="tel:110" class="fire"><span class="num">110</span><span class="lbl">事件・事故</span></a>
+    <button type="button" class="aed" onclick="openAedModal()" aria-label="近くのAEDを探す">
+      <span class="num" id="aedBtnIcon"></span>
+      <span class="lbl">AEDを探す</span>
+    </button>
+  </div>
+
+  <div class="crumbs" id="crumbs" aria-live="polite"></div>
+
+  <div id="view"></div>
+
+  <footer class="app-footer">
+    <button type="button" class="footer-link" onclick="openPrivacyModal()">プライバシーポリシー</button>
+    <span class="footer-note">本ツールは応急対応の参考情報です。緊急時は迷わず119番／110番へ。</span>
+  </footer>
+
+</div>
+
+<!-- ===== AED検索モーダル ===== -->
+<div class="aed-overlay" id="aedOverlay" onclick="if(event.target===this)closeAedModal()">
+  <div class="aed-panel" role="dialog" aria-modal="true" aria-label="近くのAEDを探す">
+    <h2 id="aedTitle"></h2>
+    <p class="aed-desc">近くのAED（自動体外式除細動器）の設置場所を、地図で探せます。心停止の場面では、119番通報と同時にAEDの手配を。下のリンクから検索サイトを開きます。</p>
+
+    <a class="aed-link" id="aedLink1" href="https://www.qqzaidanmap.jp/" target="_blank" rel="noopener">
+      <span class="a-ico" id="aedIco1"></span>
+      <span class="a-body">
+        <span class="a-name">全国AEDマップ（日本救急医療財団）</span>
+        <span class="a-sub">厚生労働省の指示のもと運営される公的なAED設置マップ。全国の登録AEDを地図と一覧で検索できます。</span>
+      </span>
+    </a>
+
+    <a class="aed-link" id="aedLink2" href="https://aed-navi.jp/map" target="_blank" rel="noopener">
+      <span class="a-ico" id="aedIco2"></span>
+      <span class="a-body">
+        <span class="a-name">AED N@VI（AED財団）</span>
+        <span class="a-sub">市民参加型のAEDマップ。「今使える」「近くの」AED情報を共有。キーワードや現在地から検索できます。</span>
+      </span>
+    </a>
+
+    <p class="aed-note">⚠ 設置情報は各サイトの登録に基づくもので、最新の状況と異なる場合があります。緊急時はためらわず119番に通報し、周囲の人にもAEDの手配を頼んでください。</p>
+
+    <button type="button" class="aed-close" onclick="closeAedModal()">✕ 閉じる</button>
+  </div>
+</div>
+
+<!-- ===== 避難所・一時避難所検索モーダル ===== -->
+<div class="aed-overlay" id="shelterOverlay" onclick="if(event.target===this)closeShelterModal()">
+  <div class="aed-panel" role="dialog" aria-modal="true" aria-label="避難所・一時避難所を探す">
+    <h2 id="shelterTitle"></h2>
+    <p class="aed-desc">近くの指定緊急避難場所・避難所を、地図で探せます。まずは命を守るための「避難場所」へ。落ち着いたら、必要に応じて生活のための「避難所」の開設状況も確認してください。</p>
+
+    <a class="aed-link" id="shelterLink1" href="https://www.gsi.go.jp/bousaichiri/hinanbasho.html" target="_blank" rel="noopener">
+      <span class="a-ico" id="shelterIco1"></span>
+      <span class="a-body">
+        <span class="a-name">指定緊急避難場所マップ（国土地理院）</span>
+        <span class="a-sub">市区町村が指定した避難場所を、災害の種類（地震・津波など）ごとに地図で確認できる公的なサービスです。</span>
+      </span>
+    </a>
+
+    <a class="aed-link" id="shelterLink2" href="https://crisis.yahoo.co.jp/map/" target="_blank" rel="noopener">
+      <span class="a-ico" id="shelterIco2"></span>
+      <span class="a-body">
+        <span class="a-name">避難場所マップ（Yahoo!天気・災害）</span>
+        <span class="a-sub">現在地から近い避難場所を検索できます。開設中の避難所情報もあわせて確認できます。</span>
+      </span>
+    </a>
+
+    <p class="aed-note">⚠ 避難場所・避難所の情報は自治体の登録に基づくもので、統廃合や災害の状況により変わることがあります。最新の状況は各自治体の発表もあわせてご確認ください。</p>
+
+    <button type="button" class="aed-close" onclick="closeShelterModal()">✕ 閉じる</button>
+  </div>
+</div>
+
+<!-- ===== #7119 対応地域・受付時間 オーバーレイ ===== -->
+<div class="aed-overlay" id="areaOverlay" onclick="if(event.target===this)closeAreaModal()">
+  <div class="aed-panel area-panel" role="dialog" aria-modal="true" aria-label="#7119 対応地域・受付時間">
+    <h2 id="areaTitle">#7119 対応地域・受付時間</h2>
+    <div id="areaBody"></div>
+    <button type="button" class="aed-close" onclick="closeAreaModal()">✕ 閉じる</button>
+  </div>
+</div>
+
+<!-- ===== プライバシーポリシー オーバーレイ ===== -->
+<div class="aed-overlay" id="privacyOverlay" onclick="if(event.target===this)closePrivacyModal()">
+  <div class="aed-panel privacy-panel" role="dialog" aria-modal="true" aria-label="プライバシーポリシー">
+    <h2>プライバシーポリシー</h2>
+    <div class="privacy-body">
+      <p class="pv-lead">本「緊急対応マニュアル」（以下「本ツール」）は、いざという時の応急対応の手順を確認するための情報提供を目的としています。本ツールにおける個人情報・利用者情報の取り扱いについて、以下のとおり定めます。</p>
+
+      <div class="pv-h">1. 個人情報の収集について</div>
+      <p>本ツールは、氏名・住所・電話番号・メールアドレスなどの個人情報を入力する機能を持たず、これらを収集しません。お問い合わせフォームや会員登録の仕組みもありません。</p>
+
+      <div class="pv-h">2. 端末内に保存される情報</div>
+      <p>本ツールは、利用者の操作内容や閲覧履歴を端末（Cookie・ローカルストレージ等）やサーバーに保存しません。読み上げ機能・リズム音（メトロノーム）は、お使いのブラウザ内で音声を生成するもので、音声や操作の内容を外部へ送信することはありません。</p>
+
+      <div class="pv-h">3. アクセス解析・広告について</div>
+      <p>本ツール自体は、アクセス解析ツールや広告配信サービスを利用していません。利用者を識別・追跡する目的の情報収集は行いません。</p>
+
+      <div class="pv-h">4. 電話発信について</div>
+      <p>「119番」「110番」「#7119」「#8000」「#9910」などの電話ボタンを押すと、お使いの端末の電話アプリが起動します。発信や通話は各電話会社・相談窓口の管理下で行われ、本ツールが通話内容を取得することはありません。</p>
+
+      <div class="pv-h">5. 外部サイト・外部コンテンツについて</div>
+      <p>本ツールには、外部サイトへのリンクや外部コンテンツの埋め込みが含まれます。具体的には、AED設置場所の検索サイト（日本救急医療財団「全国AEDマップ」、AED財団「AED N@VI」）、避難所・避難場所の検索サイト（国土地理院「指定緊急避難場所マップ」、Yahoo!天気・災害「避難場所マップ」）へのリンク、および胸骨圧迫の解説動画（YouTube）の埋め込み表示です。</p>
+      <p>これらのリンク先・埋め込み先では、それぞれの事業者により、Cookie等を用いた情報取得が行われる場合があります。特にYouTube動画を再生した場合、Google社のプライバシーポリシーに基づき情報が取得されることがあります。外部サイト・外部サービスにおける情報の取り扱いについては、各事業者のプライバシーポリシーをご確認ください。</p>
+
+      <div class="pv-h">6. 免責事項</div>
+      <p>本ツールに掲載する応急手当・救命処置等の情報は、消防庁・日本救急医療財団・JAF・厚生労働省・国土交通省等の公開情報を参考に作成していますが、その完全性・最新性を保証するものではありません。実際の救命・救護にあたっては、119番通報時の通信指令員の指示や、医療従事者・専門機関の判断を優先してください。本ツールの利用により生じた損害について、運営者は責任を負いかねます。</p>
+
+      <div class="pv-h">7. 本ポリシーの変更</div>
+      <p>本ツールの内容変更や法令の改正等に応じて、本ポリシーを予告なく変更することがあります。</p>
+
+      <p class="pv-foot">制定日：2026年6月</p>
+    </div>
+    <button type="button" class="aed-close" onclick="closePrivacyModal()">✕ 閉じる</button>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   ピクトグラム（インラインSVG）
+   ========================================================= */
+const S = (inner, opts={}) => {
+  const stroke = opts.stroke || 'currentColor';
+  const fill = opts.fill || 'none';
+  return `<svg viewBox="0 0 48 48" fill="${fill}" stroke="${stroke}" stroke-width="2.4"
+    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`;
+};
+const ICON = {
+  quake: S('<path d="M6 30h6l3-10 5 22 4-30 4 24 3-6h6"/><path d="M4 38h40" stroke-dasharray="2 4"/>'),
+  fire: S('<path d="M24 6c2 6 8 8 8 16a8 8 0 0 1-16 0c0-4 2-6 4-9 1 3 4 3 4 6"/><path d="M24 42c8 0 14-4 14-10"/>',{}),
+  aid: S('<rect x="8" y="14" width="32" height="24" rx="4"/><path d="M24 20v12M18 26h12"/><path d="M18 14v-3a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v3"/>'),
+  storm: S('<path d="M14 18a7 7 0 1 1 4 13H10"/><path d="M30 14a6 6 0 1 1 4 11h-9"/><path d="M16 36l-3 6M24 36l-3 6M32 36l-3 6"/>'),
+  guard: S('<path d="M24 5l13 5v9c0 9-5.5 16-13 19C16.5 35 11 28 11 19v-9z"/><path d="M24 18v6M24 29v.02"/>'),
+  phone: S('<path d="M14 6h7l3 8-4 3a18 18 0 0 0 9 9l3-4 8 3v7a3 3 0 0 1-3 3C24 41 9 26 9 11a3 3 0 0 1 3-3" />',{fill:'currentColor',stroke:'none'}),
+  duck: S('<circle cx="20" cy="12" r="5"/><path d="M14 40v-8a6 6 0 0 1 6-6h0a6 6 0 0 1 6 6"/><path d="M26 30l10-6M40 16l-6 4 1 7"/>',{}),
+  door: S('<rect x="14" y="8" width="20" height="34" rx="2"/><path d="M28 25v.02"/><path d="M8 42h32"/>'),
+  off: S('<path d="M24 6v14"/><path d="M14 12a14 14 0 1 0 20 0"/>'),
+  shoes: S('<path d="M8 30h10l6 4h12a4 4 0 0 1 4 4v2H8z"/><path d="M8 30v-8l6-2 4 6"/>'),
+  water: S('<path d="M24 6c6 9 11 14 11 21a11 11 0 0 1-22 0c0-7 5-12 11-21z"/>',{}),
+  high: S('<path d="M6 40h36"/><path d="M12 40V20l8-8 8 8 8-6v26"/><path d="M20 40V28h8v12"/>'),
+  hand: S('<path d="M16 24V12a3 3 0 0 1 6 0v9M22 21V9a3 3 0 0 1 6 0v12M28 22v-7a3 3 0 0 1 6 0v15a10 10 0 0 1-10 10h-3a9 9 0 0 1-7-4l-5-7a3 3 0 0 1 5-4l3 3"/>'),
+  ear: S('<path d="M16 20a8 8 0 1 1 16 0c0 4-3 5-3 9a5 5 0 0 1-10 0"/><path d="M24 38v.02"/>',{}),
+  run: S('<circle cx="28" cy="10" r="4"/><path d="M28 16l-6 6 6 4 2 10M22 22l-8 2M30 26l6 4M22 32l-6 8"/>'),
+  light: S('<path d="M24 6a10 10 0 0 0-6 18c1 1 2 3 2 5h8c0-2 1-4 2-5a10 10 0 0 0-6-18z"/><path d="M20 35h8M21 40h6"/>'),
+  bag: S('<path d="M14 16h20l2 24H12z"/><path d="M19 16v-4a5 5 0 0 1 10 0v4"/>'),
+  cover: S('<path d="M10 34V20l14-10 14 10v14"/><path d="M16 34v-8h16v8"/><circle cx="24" cy="24" r="2"/>'),
+  window: S('<rect x="10" y="8" width="28" height="32" rx="2"/><path d="M24 8v32M10 24h28"/>'),
+  ac: S('<path d="M24 4v40M4 24h40M9 9l30 30M39 9 9 39"/>'),
+  lock: S('<rect x="12" y="20" width="24" height="18" rx="3"/><path d="M17 20v-4a7 7 0 0 1 14 0v4"/><path d="M24 27v4"/>'),
+  eye: S('<path d="M6 24s7-11 18-11 18 11 18 11-7 11-18 11S6 24 6 24z"/><circle cx="24" cy="24" r="4"/>'),
+  hush: S('<circle cx="24" cy="24" r="18"/><path d="M24 14v12M19 19l5-5 5 5"/>'),
+  car: S('<path d="M10 30l3-9a4 4 0 0 1 4-3h14a4 4 0 0 1 4 3l3 9M8 30h32v6H8z"/><circle cx="16" cy="36" r="3"/><circle cx="32" cy="36" r="3"/>'),
+  check: S('<circle cx="24" cy="24" r="18"/><path d="M16 24l6 6 12-12"/>'),
+  warn: S('<path d="M24 6 4 40h40z"/><path d="M24 20v9M24 34v.02"/>'),
+  gas: S('<rect x="14" y="10" width="20" height="28" rx="3"/><path d="M20 18h8M20 24h8"/><path d="M14 38h20"/>'),
+  heart: S('<path d="M24 40C10 30 6 22 6 16a8 8 0 0 1 15-3 8 8 0 0 1 15 3c0 6-4 14-18 24z"/><path d="M14 22h6l3-5 3 9 2-4h6"/>'),
+  speak: S('<path d="M8 19v10h7l9 7V12l-9 7z"/><path d="M30 18a8 8 0 0 1 0 12M34 14a13 13 0 0 1 0 20"/>'),
+  stop: S('<rect x="12" y="12" width="24" height="24" rx="4"/>'),
+  metro: S('<path d="M18 6h12l6 36H12z"/><path d="M24 38 31 14"/><circle cx="31" cy="14" r="2.4" fill="currentColor" stroke="none"/><path d="M16 32h16"/>'),
+  play: S('<circle cx="24" cy="24" r="19"/><path d="M20 16l12 8-12 8z" fill="currentColor" stroke="none"/>'),
+  sun: S('<circle cx="24" cy="24" r="9"/><path d="M24 4v6M24 38v6M4 24h6M38 24h6M9 9l4.2 4.2M34.8 34.8 39 39M39 9l-4.2 4.2M13.2 34.8 9 39"/>'),
+  moon: S('<path d="M35 27A14 14 0 1 1 21 7a11.5 11.5 0 0 0 14 20z"/>'),
+  copy: S('<rect x="6" y="6" width="26" height="26" rx="4"/><rect x="16" y="16" width="26" height="26" rx="4"/>'),
+  print: S('<path d="M14 18V8h20v10"/><rect x="8" y="18" width="32" height="16" rx="2"/><path d="M14 30v10h20V30"/><path d="M18 24h4"/>'),
+  share: S('<circle cx="12" cy="24" r="5"/><circle cx="36" cy="10" r="5"/><circle cx="36" cy="38" r="5"/><path d="M16.5 21.5 31.5 12.5M16.5 26.5 31.5 35.5"/>'),
+  search: S('<circle cx="20" cy="20" r="13"/><path d="M30 30l11 11"/>'),
+  shelter: S('<path d="M6 24 24 8l18 16"/><path d="M11 20v20h26V20"/><path d="M19 40V28h10v12"/>'),
+  rescue: S('<circle cx="24" cy="24" r="16"/><circle cx="24" cy="24" r="7"/><path d="M24 8v9M24 31v9M8 24h9M31 24h9"/>'),
+};
+
+/* =========================================================
+   データ：5カテゴリ × 分岐ツリー
+   node: { q, lead, options:[{label, sub, icon, next|result}] }
+   result: { badge, level, title, sub, steps:[{icon,head,desc,type}], note, call }
+   ========================================================= */
+const r = (o)=>({type:'result', ...o});
+
+const TREE = {
+  quake: {
+    title:'地震・津波', icon:'quake', color:'#ff9f45',
+    root:{
+      q:'いま、揺れていますか？', lead:'まず身の安全。状況を選んでください。',
+      options:[
+        {label:'揺れている最中', sub:'今まさに揺れている', icon:'quake', next:'during'},
+        {label:'揺れが収まった', sub:'まず火と出口の確認', icon:'check', next:'after'},
+        {label:'海・川の近くにいる', sub:'津波のおそれ', icon:'water', next:'tsunami'},
+      ]
+    },
+    nodes:{
+      during: r({
+        level:'crit', badge:'まず身を守る', title:'揺れている間の行動',
+        sub:'動き回らず、頭を守って揺れが収まるのを待ちます。',
+        steps:[
+          {icon:'duck', head:'低く・隠れて・動かない', desc:'机の下などに入り、机の脚をつかむ。なければ頭を守ってしゃがむ。', type:'do'},
+          {icon:'cover', head:'頭と首を守る', desc:'クッション・カバンで頭部を保護。落下物・転倒する家具から離れる。'},
+          {icon:'door', head:'あわてて外に出ない', desc:'落下物が一番危険。揺れの間は無理に避難しない。', type:'crit'},
+          {icon:'off', head:'火は揺れが収まってから', desc:'無理に火を消しに行かない。まず自分の安全を優先。'},
+        ],
+        note:{type:'',text:'エレベーター内なら全階のボタンを押し、止まった階で降りる。'},
+        shelter:true
+      }),
+      after: r({
+        level:'warn', badge:'揺れが収まったら', title:'収まった直後の確認',
+        sub:'二次災害を防ぎます。落ち着いて順番に。',
+        steps:[
+          {icon:'shoes', head:'足元を守る', desc:'割れたガラスでけがをしないよう、靴やスリッパを履く。', type:'do'},
+          {icon:'gas', head:'火元・ガスを確認', desc:'使用中なら火を消す。ガスの臭いがしたら元栓を閉め、窓を開ける。'},
+          {icon:'door', head:'出口を確保', desc:'ドアや窓を開けて、逃げ道を確保しておく。'},
+          {icon:'ear', head:'情報を集める', desc:'ラジオ・スマホで正しい情報を確認。余震に備える。'},
+          {icon:'bag', head:'避難の準備', desc:'危険を感じたら非常持ち出し袋を持ち、ブレーカーを落として避難。'},
+        ],
+        note:{type:'danger',text:'ガス臭がするときは火気・電気スイッチに触れない（火花で引火の危険）。'},
+        shelter:true
+      }),
+      tsunami: r({
+        level:'crit', badge:'ただちに高台へ', title:'津波からの避難',
+        sub:'警報を待たず、揺れたらすぐ逃げるのが基本です。',
+        steps:[
+          {icon:'high', head:'とにかく高く・遠くへ', desc:'海・川から離れ、できるだけ高い場所へ。津波避難ビルや高台を目指す。', type:'crit'},
+          {icon:'run', head:'すぐ・徒歩で逃げる', desc:'車は渋滞で動けなくなる。原則は徒歩で素早く。', type:'do'},
+          {icon:'warn', head:'戻らない', desc:'一度逃げたら、警報解除まで絶対に戻らない。第二波以降の方が大きいことも。', type:'crit'},
+          {icon:'ear', head:'情報より行動', desc:'「来ないだろう」と思わず、まず逃げてから情報を確認する。'},
+        ],
+        note:{type:'danger',text:'強い揺れ・長い揺れを感じたら、警報がなくても自主的に避難を。'},
+        shelter:true
+      }),
+    }
+  },
+
+  fire: {
+    title:'火災', icon:'fire', color:'#ff7a45',
+    root:{
+      q:'火の状況はどれですか？', lead:'消すか逃げるかの判断が最優先です。',
+      options:[
+        {label:'出火直後・小さい火', sub:'まだ自分の背より低い', icon:'fire', next:'small'},
+        {label:'火が大きい / 天井に届く', sub:'消火は無理', icon:'warn', next:'big'},
+        {label:'煙が充満してきた', sub:'視界・呼吸が苦しい', icon:'cover', next:'smoke'},
+      ]
+    },
+    nodes:{
+      small: r({
+        level:'warn', badge:'初期消火（30秒だけ）', title:'小さな火への対応',
+        sub:'消火は天井に火が届くまで。それ以上は迷わず逃げます。',
+        steps:[
+          {icon:'ear', head:'まず大声で知らせる', desc:'「火事だ！」と周囲に知らせ、119番通報を誰かに頼む。', type:'do'},
+          {icon:'fire', head:'消火器・水で消す', desc:'消火器は火元(炎でなく燃えている物)に。天ぷら油には水を絶対にかけない。'},
+          {icon:'door', head:'逃げ道を背にして消火', desc:'出口を背にして消す。火と出口の間に立たない。', type:'crit'},
+          {icon:'warn', head:'30秒で消えなければ撤退', desc:'天井に火が回ったら消火は不可能。ドアを閉めて避難に切り替える。', type:'crit'},
+        ],
+        note:{type:'danger',text:'油火災に水は厳禁。炎が爆発的に広がる。鍋なら蓋やぬれタオルで覆う。'},
+        call:true
+      }),
+      big: r({
+        level:'crit', badge:'すぐ逃げる', title:'大きな火・天井に届く火',
+        sub:'消火は考えず、命を守る行動だけに集中します。',
+        steps:[
+          {icon:'run', head:'ためらわず避難', desc:'荷物より命。すぐにその場を離れる。', type:'crit'},
+          {icon:'door', head:'通った扉は閉める', desc:'扉を閉めると火と煙の回りが遅くなる。ただし鍵はかけない。', type:'do'},
+          {icon:'phone', head:'安全な場所から119番', desc:'外に出てから通報。住所と「逃げ遅れの有無」を伝える。'},
+          {icon:'warn', head:'絶対に戻らない', desc:'忘れ物を取りに戻らない。中に人がいる場合も消防に伝える。', type:'crit'},
+        ],
+        call:true
+      }),
+      smoke: r({
+        level:'crit', badge:'煙から逃げる', title:'煙が充満したときの避難',
+        sub:'火より煙が危険。低い姿勢で口を覆って逃げます。',
+        steps:[
+          {icon:'cover', head:'姿勢を低く', desc:'有毒な煙は上にたまる。床近くの空気を吸いながら姿勢を低く保つ。', type:'do'},
+          {icon:'hush', head:'口と鼻を覆う', desc:'ハンカチやタオル(できれば濡らす)で口・鼻を覆い、煙を吸わない。'},
+          {icon:'door', head:'ドアは触って確認', desc:'ドアノブが熱ければ開けない。別の出口を探す。', type:'crit'},
+          {icon:'run', head:'壁づたいに出口へ', desc:'視界が悪いときは壁を伝って避難。煙の濃い方へは進まない。'},
+        ],
+        note:{type:'danger',text:'逃げられない時は窓際で外に助けを求め、ドアの隙間を布でふさぐ。'},
+        call:true
+      }),
+    }
+  },
+
+  aid: {
+    title:'急病・けが', icon:'aid', color:'#3ddc97',
+    root:{
+      q:'どんな状態ですか？', lead:'反応と呼吸の有無で対応が分かれます。',
+      options:[
+        {label:'反応がない / 倒れた', sub:'呼びかけに答えない', icon:'guard', next:'unconscious'},
+        {label:'のどに詰まらせた', sub:'息ができず苦しそう', icon:'hush', next:'choke'},
+        {label:'出血している', sub:'けが・切り傷', icon:'aid', next:'bleed'},
+        {label:'やけど', sub:'熱湯・火・油など', icon:'fire', next:'burn'},
+        {label:'救急車を呼ぶか迷う', sub:'相談先を案内します', icon:'phone', next:'consult'},
+      ]
+    },
+    nodes:{
+      unconscious: r({
+        level:'crit', badge:'命に関わる', title:'反応がない人への対応',
+        sub:'救急車を呼びながら、呼吸を確認します。',
+        steps:[
+          {icon:'ear', head:'肩をたたき反応を見る', desc:'「大丈夫ですか」と声をかけ、肩を軽くたたく。反応がなければ次へ。', type:'do'},
+          {icon:'phone', head:'119番とAEDを依頼', desc:'周囲の人を指名し「あなたは119番」「あなたはAED」と具体的に頼む。', type:'crit'},
+          {icon:'aid', head:'呼吸を確認', desc:'胸とお腹の動きを10秒見る。普段どおりの呼吸がなければ胸骨圧迫を始める。'},
+          {icon:'hand', head:'胸骨圧迫', desc:'胸の真ん中を強く速く(1分100〜120回)。救急隊が来るまで続ける。', type:'crit'},
+        ],
+        note:{type:'',text:'119番では通信指令員が手順を教えてくれます。指示に従ってください。'},
+        call:true, aed:true, cpr:true,
+        links:[{to:'aed_caution', label:'AED使用時の注意を見る', icon:'heart'}],
+        // 音声読み上げ用の読み仮名テキスト（数字・英語の誤読を防ぐ）
+        speak:[
+          'すてっぷ１。',
+          'かたをたたきはんのうをみる。',
+          '「だいじょうぶですか」とこえをかけ、かたをたたく。はんのうがなければつぎへ。',
+          'すてっぷ２。',
+          '119ばんとエーイーディーをいらい。',
+          'しゅういのひとをしめいし、「あなたは119ばん」、「あなたはエーイーディー」と、ぐたいてきにたのむ。',
+          'すてっぷ３。',
+          'こきゅうをかくにん。',
+          'むねとおなかのうごきを10びょうみる。ふだんどおりのこきゅうがなければ、「きょうこつあっぱく」をはじめる。',
+          'すてっぷ４。',
+          'きょうこつあっぱく。',
+          'むねのまんなかをつよくはやく、いっぷん100から120かい。きゅうきゅうたいいんがくるまでつづける。'
+        ].join(' ')
+      }),
+      choke: r({
+        level:'crit', badge:'窒息', title:'のどに詰まらせたとき',
+        sub:'咳ができるか・できないかで対応が変わります。',
+        steps:[
+          {icon:'ear', head:'咳ができるか確認', desc:'咳ができるなら、出るまで咳を続けさせる。声が出ない・顔が青いなら次へ。', type:'do'},
+          {icon:'hand', head:'背中を強くたたく', desc:'前かがみにさせ、肩甲骨の間を手の付け根で数回強くたたく(背部叩打)。'},
+          {icon:'guard', head:'腹部を圧迫', desc:'後ろから抱え、みぞおちの下を上に向かって圧迫(腹部突き上げ)。妊婦・乳児は除く。'},
+          {icon:'phone', head:'取れなければ119番', desc:'取れず意識がなくなったら、すぐ通報し胸骨圧迫へ。', type:'crit'},
+        ],
+        note:{type:'danger',text:'乳児(1歳未満)は腹部突き上げ禁止。背中たたきと胸部圧迫で対応。'},
+        call:true
+      }),
+      bleed: r({
+        level:'warn', badge:'止血', title:'出血しているとき',
+        sub:'押さえて止めるのが基本です。',
+        steps:[
+          {icon:'hand', head:'傷口を直接押さえる', desc:'清潔な布やガーゼを当て、手のひらで強く圧迫し続ける(直接圧迫止血)。', type:'do'},
+          {icon:'high', head:'傷を心臓より高く', desc:'可能なら出血部位を心臓より高い位置に上げると出血が減る。'},
+          {icon:'aid', head:'布は外さない', desc:'血がにじんでも外さず、上から重ねて押さえ続ける。'},
+          {icon:'phone', head:'止まらない/大量なら119番', desc:'勢いよく出血・押さえても止まらないときは救急要請。', type:'crit'},
+        ],
+        note:{type:'',text:'感染防止のため、できればビニール手袋などで相手の血液に直接触れない。'}
+      }),
+      burn: r({
+        level:'warn', badge:'やけど', title:'やけどの応急手当',
+        sub:'とにかく冷やすのが最優先です。',
+        steps:[
+          {icon:'water', head:'すぐ流水で冷やす', desc:'水道水で20〜30分冷やす。痛みがやわらぐまで。衣服の上からでもよい。', type:'do'},
+          {icon:'shoes', head:'衣類は無理にはがさない', desc:'貼りついた服は無理にはがさず、服の上から冷やす。'},
+          {icon:'warn', head:'水ぶくれは潰さない', desc:'つぶすと感染の原因に。清潔に保つ。', type:'crit'},
+          {icon:'phone', head:'広範囲・顔・重症は受診', desc:'広い範囲、顔・手足、子どもの重いやけどはすぐ医療機関へ。'},
+        ],
+        note:{type:'danger',text:'氷や保冷剤を直接当てない(凍傷の危険)。流水で冷やす。'}
+      }),
+      // ===== 救急車を呼ぶか迷うとき：相談窓口の案内フロー =====
+      consult:{
+        q:'今の状態に当てはまるものは？',
+        lead:'危険なサインがあれば、相談より先に119番です。',
+        options:[
+          {label:'意識がない・呼吸が苦しい・大量出血', sub:'唇が紫/激しい胸痛/ろれつが回らない等', icon:'warn', next:'consult_119'},
+          {label:'大人（おおむね15歳以上）の急病・けが', sub:'呼ぶか迷う／受診すべきか相談したい', icon:'guard', next:'consult_7119'},
+          {label:'子ども（おおむね15歳未満）の急病', sub:'夜間・休日に具合が悪い', icon:'duck', next:'consult_8000'},
+        ]
+      },
+      consult_119: r({
+        level:'crit', badge:'ためらわず119番', title:'すぐに救急車を',
+        sub:'これらは緊急性が高いサインです。相談より先に通報を。',
+        steps:[
+          {icon:'warn', head:'当てはまれば即119番', desc:'意識がない・呼吸が苦しい・唇が紫(チアノーゼ)・大量出血・激しい胸痛・顔のゆがみ・片側の麻痺・ろれつが回らない。', type:'crit'},
+          {icon:'phone', head:'場所と状態を伝える', desc:'住所や目印、いつから・どんな様子かを落ち着いて伝える。通信指令員の指示に従う。', type:'do'},
+        ],
+        note:{type:'danger',text:'迷ったら呼んでよい。「呼ばなくてよかった」と後で分かっても問題ありません。'},
+        call:true
+      }),
+      consult_7119: r({
+        level:'warn', badge:'大人の相談 #7119', title:'救急安心センター #7119',
+        sub:'救急車を呼ぶか、今すぐ受診すべきか、看護師等が電話で相談に応じます。',
+        steps:[
+          {icon:'phone', head:'#7119にかける', desc:'医師・看護師・相談員が症状を聞き、「119番」「受診」「様子見」の目安を案内。緊急なら救急車手配につなぐことも。', type:'do'},
+          {icon:'warn', head:'急変したら119番', desc:'相談中でも、意識・呼吸の異常や大量出血など危険なサインが出たら、ためらわず119番へ。', type:'crit'},
+        ],
+        note:{type:'',text:'#7119は全国共通ではなく、対応していない地域があります。対応地域でも受付時間が決まっている場合があります。つながらないとき・緊急のときは、ためらわず119番に電話してください。'},
+        areaInfo:true,
+        tels:[
+          {num:'#7119', label:'#7119 に電話する', sub:'大人の救急相談（対応地域のみ）', kind:'soft'}
+        ]
+      }),
+      consult_8000: r({
+        level:'warn', badge:'こども #8000', title:'子ども医療電話相談 #8000',
+        sub:'夜間・休日に子どもの具合が悪いとき、小児科医・看護師に電話で相談できます。',
+        steps:[
+          {icon:'phone', head:'#8000にかける', desc:'おおむね15歳未満の子どもが対象。家庭での対処法や、受診すべきかの助言を受けられる。受付時間は都道府県で異なる。', type:'do'},
+          {icon:'warn', head:'呼吸の異常・けいれんは119番', desc:'ぐったりして反応が鈍い、呼吸が苦しい、けいれんが続く、唇が紫などは、相談より先に119番。', type:'crit'},
+        ],
+        note:{type:'',text:'#8000は受付時間が地域で異なります。つながらない場合や緊急のときは119番へ。'},
+        tels:[
+          {num:'#8000', label:'#8000 に電話する', sub:'子どもの救急相談', kind:'soft'}
+        ]
+      }),
+      // ===== AED使用時の注意（女性のプライバシー保護を含む） =====
+      aed_caution: r({
+        level:'crit', badge:'AEDの注意', title:'AED使用時の注意',
+        sub:'電源を入れたら音声ガイダンスに従えば大丈夫。要点だけ確認します。',
+        steps:[
+          {icon:'heart', head:'電源を入れ音声に従う', desc:'ふたを開ける／電源ボタンを押すと音声で手順を案内。落ち着いて従えばよい。', type:'do'},
+          {icon:'aid', head:'パッドは肌に直接、図の位置へ', desc:'右胸の上と左わき腹の下に、肌に直接しっかり貼る。汗や水は拭き取る。', type:'do'},
+          {icon:'warn', head:'貼る位置の妨げを取り除く', desc:'湿布・貼り薬ははがして拭く。胸の出っぱり(ペースメーカー等)は避けて貼る。ネックレス等は外さなくてよいがパッドに触れさせない。'},
+          {icon:'hush', head:'ショック時は皆「離れる」', desc:'「みんな離れて」と声をかけ、誰も傷病者に触れていないのを確認してからショックボタンを押す。', type:'crit'},
+          {icon:'guard', head:'女性のプライバシーに配慮', desc:'救命が最優先。その上で、衣服ははだけすぎず必要最小限を開く／上着・タオル・人垣で周囲の視線をさえぎる／パッドを貼ったら覆える範囲は覆う。可能なら女性が対応・補助する。', type:'do'},
+        ],
+        note:{type:'',text:'胸骨圧迫は止めず、AEDの音声指示があるときだけ手を止めます。配慮は大切ですが、救命の手を止めないことが最優先です。'}
+      }),
+    }
+  },
+
+  storm: {
+    title:'台風・水害', icon:'storm', color:'#4aa3ff',
+    root:{
+      q:'いまの段階はどれですか？', lead:'早めの備えと、危険な状況での判断です。',
+      options:[
+        {label:'接近前・備える', sub:'まだ天気は荒れていない', icon:'bag', next:'before'},
+        {label:'浸水しそう / 始まった', sub:'水が迫ってきている', icon:'water', next:'flood'},
+        {label:'避難するか迷う', sub:'外も危険そう', icon:'door', next:'evac'},
+        {label:'外出中に浸水・帰宅できない', sub:'道路が冠水/歩けない', icon:'shoes', next:'stranded'},
+      ]
+    },
+    nodes:{
+      before: r({
+        level:'warn', badge:'接近前の備え', title:'台風が来る前にやること',
+        sub:'明るいうち・風が強くなる前に済ませます。',
+        steps:[
+          {icon:'window', head:'窓・雨戸を固定', desc:'雨戸やシャッターを閉める。なければ飛散防止に窓へ養生テープを。', type:'do'},
+          {icon:'bag', head:'飛ぶ物を片づける', desc:'植木鉢・物干し竿・ゴミ箱など、風で飛ぶ物を屋内へ。'},
+          {icon:'water', head:'水と電気の備え', desc:'飲料水・モバイルバッテリーを確保。浴槽に水を貯めておく。'},
+          {icon:'ear', head:'避難情報を確認', desc:'ハザードマップで自宅の危険度を確認し、早めの避難先を決める。'},
+        ],
+        note:{type:'',text:'高齢者・小さな子どもがいる家庭は「警戒レベル3」で避難開始を。'}
+      }),
+      flood: r({
+        level:'crit', badge:'浸水の危険', title:'水が迫ってきたとき',
+        sub:'無理な移動はせず、安全な高さを確保します。',
+        steps:[
+          {icon:'high', head:'高い階・高い場所へ', desc:'外が危険なら無理に出ず、建物の2階以上など高い場所へ(垂直避難)。', type:'do'},
+          {icon:'water', head:'水の中を歩かない', desc:'ひざ下でも流れがあれば危険。マンホールや側溝が見えず転落の恐れ。', type:'crit'},
+          {icon:'ac', head:'電気・ガスを止める', desc:'浸水のおそれがあればブレーカーを落とし、感電を防ぐ。'},
+          {icon:'phone', head:'孤立しそうなら通報', desc:'逃げ遅れ・救助が必要なときは119番か自治体へ連絡し、居場所を伝える。', type:'crit'},
+        ],
+        note:{type:'danger',text:'車での移動は冠水路で立ち往生・水没の危険。原則控える。'},
+        links:[{to:'walk_flood', label:'やむを得ず冠水路を歩く場合の注意', icon:'water'}]
+      }),
+      stranded: r({
+        level:'crit', badge:'帰宅困難', title:'外出中に浸水・帰宅できないとき',
+        sub:'無理に帰ろうとせず、いまいる場所の安全を優先します。',
+        steps:[
+          {icon:'high', head:'無理に移動しない', desc:'道路が冠水している、雨や風が強いときは、無理に歩いて帰ろうとしない。近くの頑丈な建物(駅・商業施設・コンビニ・オフィスなど)の高い階に留まる。', type:'crit'},
+          {icon:'phone', head:'家族・職場に連絡する', desc:'安否といまいる場所、帰れない状況を伝える。誰かが迎えに来て危険な目にあわないよう「無理に迎えに来ないで」と伝えておく。', type:'do'},
+          {icon:'ear', head:'情報を確認し続ける', desc:'自治体の避難情報・河川の水位情報・鉄道やバスの運行状況を、スマホやラジオでこまめに確認する。'},
+          {icon:'water', head:'どうしても歩く場合は特に注意', desc:'浸水した道路は見た目以上に危険。やむを得ず歩く場合の注意点を必ず確認してから動く。', type:'crit'},
+        ],
+        note:{type:'danger',text:'水位がひざ下(30cm前後)でも、流れがあれば転倒し流されるおそれがある。マンホールや側溝のふたが外れ、水面から見えなくなっていることも多い。'},
+        links:[{to:'walk_flood', label:'浸水した道路を歩く場合の注意を見る', icon:'water'}]
+      }),
+      walk_flood: r({
+        level:'crit', badge:'冠水路を歩く', title:'浸水した道路を歩くとき',
+        sub:'できる限り歩かないのが一番。やむを得ない場合の注意点です。',
+        steps:[
+          {icon:'shoes', head:'長靴でなく運動靴で', desc:'長靴は水が入ると重くなり脱げやすい。ひもでしっかり固定できる運動靴を履き、両手はあけておく。', type:'do'},
+          {icon:'warn', head:'傘や棒で足元を確認しながら', desc:'傘や杖など長い棒で、一歩ごとに足元を突いて確認しながら進む。マンホールや側溝のふたが外れ、水面から見えない落とし穴になっていることがある。', type:'crit'},
+          {icon:'high', head:'ひざ上の水位なら無理に進まない', desc:'水位がひざ上・子どもなら腰の高さを超えるようなら、その場から動かない。流れがあれば、浅い水でも転倒・流されるおそれがある。', type:'crit'},
+          {icon:'door', head:'アンダーパス・地下道は避ける', desc:'低い場所は水が集中して急激に深くなる。アンダーパスや地下道、川沿い・用水路沿いの道は通らない。'},
+          {icon:'run', head:'車の通り道や水路のそばを避ける', desc:'車が通ると波が立ち転倒しやすい。マンホール・水路のふたのそばは避け、できるだけ道路の中央寄りを進む。'},
+          {icon:'ear', head:'夜間・悪天候の移動は控える', desc:'暗く視界が悪い時間帯の移動は危険が増す。動くなら日没前、雨風が弱まっているタイミングで判断する。'},
+        ],
+        note:{type:'danger',text:'水の中で動けなくなったら、無理に進まず、近くの建物や電柱など高い場所につかまって待避し、119番か周囲の人に助けを求める。'},
+        call:true
+      }),
+      evac: r({
+        level:'warn', badge:'避難の判断', title:'避難するか迷ったら',
+        sub:'「迷ったら早めに動く」が原則です。',
+        steps:[
+          {icon:'door', head:'明るいうちに動く', desc:'夜・暴風雨の中の移動は危険。早め・明るいうちの避難を。', type:'do'},
+          {icon:'shoes', head:'歩きやすい服装で', desc:'長靴より運動靴。両手を空け、リュックで。棒で足元を確認しながら。'},
+          {icon:'high', head:'外が危険なら家の中で', desc:'すでに浸水・暴風なら無理に出ず、2階や山と反対側の部屋へ。', type:'crit'},
+          {icon:'ear', head:'一人で判断しない', desc:'近所と声をかけ合い、要援護者がいれば一緒に避難する。'},
+        ],
+        note:{type:'',text:'警戒レベル4「避難指示」で全員避難。レベル5は手遅れの段階です。'}
+      }),
+    }
+  },
+
+  guard: {
+    title:'不審者・防犯', icon:'guard', color:'#b78cff',
+    root:{
+      q:'どんな状況ですか？', lead:'距離を取り、人のいる方へ逃げるのが基本です。',
+      options:[
+        {label:'家に侵入された / 物音', sub:'在宅中に誰かいる', icon:'lock', next:'intruder'},
+        {label:'外でつけられている', sub:'尾行・待ち伏せの不安', icon:'eye', next:'follow'},
+        {label:'声をかけられ怖い', sub:'子ども・女性など', icon:'hush', next:'approach'},
+        {label:'不審な電話・訪問', sub:'詐欺かもしれない', icon:'phone', next:'fraud'},
+      ]
+    },
+    nodes:{
+      intruder: r({
+        level:'crit', badge:'侵入の疑い', title:'家に誰かいるかもしれない',
+        sub:'対決せず、自分の安全と通報を最優先にします。',
+        steps:[
+          {icon:'run', head:'鉢合わせを避ける', desc:'相手と対決しない。可能なら静かに家の外、または別室へ移動する。', type:'crit'},
+          {icon:'lock', head:'部屋に立てこもる', desc:'出られなければ部屋に入り鍵をかけ、家具でドアをふさぐ。', type:'do'},
+          {icon:'phone', head:'110番通報', desc:'小声でよいので住所と状況を伝える。話せないなら繋いだままにする。'},
+          {icon:'ear', head:'音で居場所を知らせない', desc:'スマホは音・バイブを切る。明かりや物音で気づかれないように。'},
+        ],
+        note:{type:'danger',text:'金品は惜しまない。物より命。相手を刺激しないことを最優先に。'},
+        call110:true
+      }),
+      follow: r({
+        level:'warn', badge:'尾行の不安', title:'つけられていると感じたら',
+        sub:'確かめるより、人のいる場所へ向かいます。',
+        steps:[
+          {icon:'eye', head:'人通りの多い方へ', desc:'暗い道・近道を避け、コンビニや店など明るく人のいる場所へ向かう。', type:'do'},
+          {icon:'door', head:'店や交番に入る', desc:'不安ならためらわず店員に「つけられている」と伝える。交番に駆け込む。', type:'crit'},
+          {icon:'phone', head:'家族に居場所を共有', desc:'歩きスマホは避けつつ、現在地を家族に知らせる。通話しながら歩くのも有効。'},
+          {icon:'run', head:'家に直接帰らない', desc:'自宅を知られないよう、まず安全な場所に入り、相手をやり過ごす。'},
+        ],
+        note:{type:'',text:'危険を感じたら迷わず110番。「気のせいかも」でも通報して構いません。'},
+        call110:true
+      }),
+      approach: r({
+        level:'warn', badge:'声かけ', title:'知らない人に声をかけられた',
+        sub:'近づかず、はっきり断って離れます。',
+        steps:[
+          {icon:'hand', head:'距離を取る', desc:'車や人に近づかない。腕一本分以上の距離を保つ。', type:'do'},
+          {icon:'hush', head:'はっきり断る', desc:'「いりません」「行きません」と短くはっきり。会話を続けない。'},
+          {icon:'run', head:'逆方向へ逃げる', desc:'車で来ているなら、車が進みにくい逆方向へ走って逃げる。', type:'crit'},
+          {icon:'ear', head:'大声・防犯ブザー', desc:'「助けて」と大声を出す、防犯ブザーを鳴らして周囲に知らせる。'},
+        ],
+        note:{type:'',text:'子どもには「いかのおすし」(いかない・のらない・おおごえ・すぐにげる・しらせる)を。'},
+        call110:true
+      }),
+      fraud: r({
+        level:'warn', badge:'詐欺の疑い', title:'不審な電話・訪問',
+        sub:'その場で決めない・お金の話は疑うのが鉄則です。',
+        steps:[
+          {icon:'phone', head:'一度切る・その場で決めない', desc:'「今すぐ」「あなただけ」は危険信号。一度電話を切り、自分から正規の番号にかけ直す。', type:'do'},
+          {icon:'lock', head:'お金・カードは渡さない', desc:'警察・銀行・役所がATM操作やカード受け取りを求めることはない。', type:'crit'},
+          {icon:'ear', head:'家族・周囲に相談', desc:'一人で判断せず、必ず家族や周りの人に話す。'},
+          {icon:'phone', head:'警察相談 #9110', desc:'詐欺かもと思ったら、緊急でなければ警察相談専用電話#9110へ。'},
+        ],
+        note:{type:'',text:'訪問販売はドアを開けず対応。不安ならインターホン越しに断る。'}
+      }),
+    }
+  },
+
+  car: {
+    title:'交通事故・車のトラブル', icon:'car', color:'#4da8ff',
+    root:{
+      q:'どんな状況ですか？',
+      lead:'まず自分と周囲の安全。次にけが人の確認です。',
+      options:[
+        {label:'事故が起きた直後', sub:'まず何をする？', icon:'warn', next:'crash'},
+        {label:'けが人がいる', sub:'負傷者の対応', icon:'aid', next:'injured'},
+        {label:'ガソリン臭・液体漏れ・煙', sub:'出火のおそれ', icon:'fire', next:'fuel'},
+        {label:'車が水に落ちた / 水没', sub:'脱出できない', icon:'water', next:'submerge'},
+        {label:'路上・高速で動けない', sub:'故障・立ち往生', icon:'car', next:'stuck'},
+      ]
+    },
+    nodes:{
+      crash: r({
+        level:'crit', badge:'事故直後', title:'交通事故が起きたら',
+        sub:'安全確保 → 負傷者救護 → 通報の順です。',
+        steps:[
+          {icon:'off', head:'停車し安全を確保', desc:'エンジンを止め、ハザードを点ける。後続車に注意し、安全な場所(ガードレールの外など)へ避難。', type:'do'},
+          {icon:'warn', head:'発炎筒・三角表示板', desc:'可能なら後方に発炎筒や三角表示板を置き、二次事故を防ぐ。高速道路では特に重要。'},
+          {icon:'aid', head:'けが人を確認', desc:'負傷者がいれば救護。意識・呼吸を確認し、必要なら応急手当・心肺蘇生へ。', type:'crit'},
+          {icon:'phone', head:'110番と119番', desc:'警察(110番)へ必ず連絡。けが人がいれば119番も。事故の場所・状況・負傷者の数を伝える。', type:'crit'},
+        ],
+        note:{type:'danger',text:'けが人を不用意に動かさない(首・背骨の損傷悪化のおそれ)。ただし火災や水没など危険が迫る場合は安全な場所へ移す。'},
+        call:true,
+        links:[
+          {to:'injured', label:'けが人の対応を見る', icon:'aid'},
+          {to:'fuel', label:'ガソリン漏れ・出火のおそれ', icon:'fire'},
+        ]
+      }),
+      injured: r({
+        level:'crit', badge:'負傷者の救護', title:'けが人がいるとき',
+        sub:'反応と呼吸を確認し、必要な手当へ進みます。',
+        steps:[
+          {icon:'guard', head:'二次事故を防ぐ', desc:'まず周囲の交通を止める／避難。救護する人自身の安全を最優先に。', type:'do'},
+          {icon:'ear', head:'反応・呼吸を確認', desc:'声をかけ肩をたたく。反応がなく普段どおりの呼吸がなければ、ただちに心肺蘇生(胸骨圧迫)。', type:'crit'},
+          {icon:'hand', head:'むやみに動かさない', desc:'頭・首・背中を打った可能性。意識があっても首を動かさないよう支える。危険が迫る時のみ移動。'},
+          {icon:'aid', head:'出血は圧迫止血', desc:'大きな出血は清潔な布で強く押さえ続ける。', type:'do'},
+          {icon:'phone', head:'119番・110番', desc:'救急車と警察へ。場所・人数・状態を伝え、指示に従う。', type:'crit'},
+        ],
+        note:{type:'danger',text:'バイク事故などでヘルメットは原則外さない。呼吸ができない等やむを得ない時のみ、首を動かさないよう慎重に。'},
+        call:true,
+        links:[{to:'aed_caution_car', label:'AED使用時の注意を見る', icon:'heart'}]
+      }),
+      // 交通事故フローからもAEDの注意へ飛べるよう、同内容を別キーで用意
+      aed_caution_car: r({
+        level:'crit', badge:'AEDの注意', title:'AED使用時の注意',
+        sub:'電源を入れたら音声ガイダンスに従えば大丈夫。要点だけ確認します。',
+        steps:[
+          {icon:'heart', head:'電源を入れ音声に従う', desc:'ふたを開ける／電源ボタンを押すと音声で手順を案内。落ち着いて従えばよい。', type:'do'},
+          {icon:'aid', head:'パッドは肌に直接、図の位置へ', desc:'右胸の上と左わき腹の下に、肌に直接しっかり貼る。汗や水は拭き取る。', type:'do'},
+          {icon:'warn', head:'貼る位置の妨げを取り除く', desc:'湿布・貼り薬ははがして拭く。胸の出っぱり(ペースメーカー等)は避けて貼る。'},
+          {icon:'hush', head:'ショック時は皆「離れる」', desc:'「みんな離れて」と声をかけ、誰も触れていないのを確認してからショックボタンを押す。', type:'crit'},
+          {icon:'guard', head:'女性のプライバシーに配慮', desc:'救命が最優先。その上で、衣服ははだけすぎず必要最小限を開く／上着・タオル・人垣で視線をさえぎる／貼ったら覆える範囲は覆う。可能なら女性が対応・補助する。', type:'do'},
+        ],
+        note:{type:'',text:'配慮は大切ですが、救命の手を止めないことが最優先です。'}
+      }),
+      fuel: r({
+        level:'crit', badge:'出火のおそれ', title:'ガソリン漏れ・煙・異臭',
+        sub:'引火の危険。すぐ離れて通報します。',
+        steps:[
+          {icon:'run', head:'すぐ車から離れる', desc:'ガソリン臭・燃料漏れ・煙が見えたら、全員ただちに風上の安全な場所へ避難。車から十分距離をとる。', type:'crit'},
+          {icon:'off', head:'火気は厳禁', desc:'タバコ・ライターはもちろん、エンジン始動や電装品の操作も火花の原因に。スマホ操作も車から離れて。', type:'crit'},
+          {icon:'phone', head:'119番・110番', desc:'消防(119番)と警察(110番)へ。漏れている・煙が出ていることを伝える。', type:'crit'},
+          {icon:'warn', head:'消火は無理をしない', desc:'初期の小さな火で消火器があれば試みてよいが、炎が大きい・燃料に引火したら無理せず退避を優先。'},
+        ],
+        note:{type:'danger',text:'漏れた液体に色・臭い・粘り気がある時は燃料やオイルの可能性。エンジンをかけ直さず、車に近づかないこと。'},
+        call:true
+      }),
+      submerge: r({
+        level:'crit', badge:'水没・転落', title:'車が水に落ちたとき',
+        sub:'シートベルトを外し、沈む前に窓から脱出します。',
+        steps:[
+          {icon:'hand', head:'まずシートベルトを外す', desc:'落ち着いて、すぐシートベルトを外す。シートベルトは水中でも外せる。', type:'do'},
+          {icon:'window', head:'窓を開けて脱出', desc:'窓が水面より上のうちに窓を開けて脱出。電動でも作動することがあるので、あきらめず開けてみる。', type:'crit'},
+          {icon:'warn', head:'開かなければ窓を割る', desc:'脱出用ハンマーで、水没していない側面・後方の窓の「端」を割る。フロントガラスは合わせガラスで割れない。', type:'crit'},
+          {icon:'warn', head:'ハンマーが無ければヘッドレストを使う', desc:'脱出用ハンマーが車内に無い場合は、座席のヘッドレストを引き抜く。下側の金属の支柱(差し込み部分)をドアとガラスのすき間に差し込み、てこの原理で強く力を加えると、側面・後方の窓ガラスを割れることがある。フロントガラス(合わせガラス)には効かない。', type:'crit'},
+          {icon:'duck', head:'同乗者・子どもを先に', desc:'子どもや動けない人を先に外へ。全員を出してから自分が最後に脱出する。', type:'do'},
+          {icon:'water', head:'開かない時は水位差を待つ', desc:'ドアは水圧で開かない。車内に水が入り、内外の水位差が小さくなった瞬間が最後のチャンス。大きく息を吸い一気にドアを押し開ける。'},
+        ],
+        note:{type:'danger',text:'車はすぐには沈まず数分は浮く。慌てず、窓からの脱出を最優先に。脱出用ハンマー(シートベルトカッター付き)を普段から車内に常備しておくのが一番確実だが、無ければヘッドレストの支柱も代用できる。'},
+        call:true
+      }),
+      stuck: r({
+        level:'warn', badge:'立ち往生', title:'路上・高速で動けない',
+        sub:'車内に留まらず、ガードレールの外へ避難します。',
+        steps:[
+          {icon:'off', head:'ハザードで合図', desc:'ハザードランプを点け、できれば路肩など安全な場所へ車を寄せる。', type:'do'},
+          {icon:'warn', head:'発炎筒・三角表示板', desc:'後方に発炎筒・三角表示板を置き、後続車に知らせる(高速道路では義務)。'},
+          {icon:'run', head:'車内に残らない', desc:'特に高速道路では車内や車のそばに留まると追突の危険。ガードレールの外側など安全な場所へ避難する。', type:'crit'},
+          {icon:'phone', head:'救援を呼ぶ', desc:'高速道路は非常電話か#9910(道路緊急ダイヤル)。一般道はJAFや任意保険のロードサービスへ。事故・負傷があれば110番・119番。', type:'do'},
+        ],
+        note:{type:'',text:'高速道路の本線上での停車は非常に危険。まず人の安全を確保してから救援を呼ぶ。'},
+        tels:[
+          {num:'#9910', label:'#9910 道路緊急ダイヤル', sub:'道路の異常・落下物・故障', kind:'soft'}
+        ]
+      }),
+    }
+  },
+
+  rescue: {
+    title:'救助してよいか判断', icon:'rescue', color:'#ffd23f',
+    root:{
+      q:'目の前で助けが必要な人がいます。状況はどれですか？', lead:'まず「自分が安全に動けるか」を判断してから進みます。無理な救助は、助ける人・助けられる人の両方を危険にします。',
+      options:[
+        {label:'水の中で溺れている人', sub:'川・海・用水路・プールなど', icon:'water', next:'water_judge'},
+        {label:'火災に取り残された人', sub:'建物・車両などの火災', icon:'fire', next:'fire_judge'},
+        {label:'事故現場にけが人がいる', sub:'交通事故・車両事故', icon:'car', next:'traffic_judge'},
+        {label:'倒壊物の下敷きになった人', sub:'地震・崩落・土砂など', icon:'warn', next:'collapse_judge'},
+      ]
+    },
+    nodes:{
+      /* ===== 水難：直接水に入らず助けられるかどうかの判断 ===== */
+      water_judge:{
+        q:'今すぐ水に入らずに、助けられそうですか？', lead:'浮き輪・ロープ・タオル・棒など、投げたり差し出したりできる物が近くにありますか？',
+        options:[
+          {label:'入らずに投げる/差し出せる物がある', sub:'浮くもの・ロープ・棒など', icon:'check', next:'water_throw'},
+          {label:'泳いで直接近づこうとしている', sub:'物がない/届かないので自分が入るしかない', icon:'run', next:'water_swim_warn'},
+          {label:'方法が思いつかない・距離が遠い', sub:'何もできそうにない', icon:'warn', next:'water_no_go'},
+        ]
+      },
+      water_throw: r({
+        level:'safe', badge:'この方法なら救助してよい', title:'水に入らず助ける（投げる・伸ばす）',
+        sub:'直接水に入らないことが、あなた自身の命を守る最優先の原則です。',
+        steps:[
+          {icon:'ear', head:'まず大声で人を集め、119番', desc:'一人で抱え込まない。周囲に助けを求め、誰かに具体的に「あなたは119番」と頼む。', type:'do'},
+          {icon:'water', head:'浮くものを投げる', desc:'浮き輪・ペットボトル・クーラーボックスなど、浮くものを本人の近くに投げ入れる。', type:'do'},
+          {icon:'hand', head:'ロープ・棒を差し出す', desc:'ロープや長い棒、衣服をつないだものなどを、岸や安全な場所から差し出して引き寄せる。'},
+          {icon:'warn', head:'自分の体は水に入れない', desc:'足だけでも水に入ると、流れや水底の急な深みで自分もおぼれる危険がある。踏み込まない。', type:'crit'},
+        ],
+        note:{type:'danger',text:'「投げる→伸ばす→こぐ(船)→泳ぐ」の順が原則で、泳いで近づくのは最後の手段です。自信がなければ無理をせず、専門の救助を待ってください。'},
+        call:true
+      }),
+      water_swim_warn: r({
+        level:'crit', badge:'原則、直接は入らないで', title:'泳いで助けようとしているとき',
+        sub:'溺れている人はパニック状態でしがみつき、助けに行った人も溺れる事故が多く起きています。',
+        steps:[
+          {icon:'warn', head:'まず立ち止まって考える', desc:'投げる・差し出せる物が本当にないか、もう一度周囲を確認する。物があれば水に入らない方法へ切り替える。', type:'crit'},
+          {icon:'phone', head:'先に119番・周囲に応援要請', desc:'泳いで向かう前に、必ず誰かに通報と応援を頼む。位置を伝えられる人を岸に残す。', type:'do'},
+          {icon:'guard', head:'浮くものを持って入る', desc:'どうしても入る場合は、必ず浮力のある物（浮き輪・ペットボトルなど）を持って入る。何も持たずに素手で近づかない。'},
+          {icon:'hand', head:'背後から声だけかけて近づく', desc:'正面からつかまれるとしがみつかれ沈められる。浮くものを持たせてから、自分は距離を保つ。', type:'crit'},
+        ],
+        note:{type:'danger',text:'少しでも「無理かもしれない」と感じたら、入らない選択が正解です。助けようとした人が新たな要救助者にならないことが最優先です。'},
+        call:true
+      }),
+      water_no_go: r({
+        level:'crit', badge:'今は救助せず、待つ・呼ぶ', title:'直接の救助はできない状況',
+        sub:'あなたにできるのは「つなぐこと」です。それも立派な救助行動です。',
+        steps:[
+          {icon:'phone', head:'ただちに119番', desc:'場所（目印・住所）、要救助者の人数、水の状況をできるだけ具体的に伝える。', type:'crit'},
+          {icon:'eye', head:'目を離さない', desc:'可能なら誰か一人が要救助者から目を離さず、位置を指し続ける（見失うと捜索が困難になる）。', type:'do'},
+          {icon:'ear', head:'周囲に助けを求める', desc:'浮くもの・ロープを持っている人、泳ぎが得意な人が近くにいないか、大声で周囲に呼びかける。'},
+          {icon:'door', head:'到着した救助隊を案内', desc:'消防・警察・海上保安庁が到着したら、最短のルートと状況をすぐ伝えられるようにしておく。'},
+        ],
+        note:{type:'danger',text:'何もできないように感じても、通報し、位置を伝え続けることが救命率を大きく左右します。無理に飛び込まないでください。'},
+        call:true
+      }),
+
+      /* ===== 火災：中に入って助けようとしているかどうかの判断 ===== */
+      fire_judge:{
+        q:'炎や煙の中に入って助けようとしていますか？', lead:'火災現場での救助は、専門装備なしでは非常に危険です。',
+        options:[
+          {label:'すでに外に出ている人を誘導したい', sub:'避難の呼びかけ・誘導', icon:'run', next:'fire_guide'},
+          {label:'煙や炎の中に入ろうとしている', sub:'屋内に取り残された人がいる', icon:'fire', next:'fire_no_go'},
+        ]
+      },
+      fire_guide: r({
+        level:'safe', badge:'この範囲なら対応してよい', title:'外からできる誘導・通報',
+        sub:'建物の中に入らずにできることに徹します。',
+        steps:[
+          {icon:'phone', head:'119番にかけながら誘導', desc:'通報しつつ、外に出てきた人を風上側・建物から十分離れた場所へ誘導する。', type:'do'},
+          {icon:'ear', head:'「まだ中に人がいるか」を確認', desc:'外に出た人・近隣住民に、取り残されている人の有無と、いる場所（何階・部屋）を聞き取る。', type:'do'},
+          {icon:'phone', head:'聞き取った情報を消防に伝える', desc:'取り残されている人数・場所・特徴を、到着した消防隊にすぐ伝えられるようにしておく。', type:'crit'},
+          {icon:'warn', head:'絶対に中へは戻らない・入らない', desc:'助けたい気持ちがあっても、炎・煙・崩落の危険がある建物内には入らない。', type:'crit'},
+        ],
+        note:{type:'danger',text:'あなたが火災現場で最も価値のある行動は「消防隊が動きやすいよう正確な情報を渡すこと」です。'},
+        call:true
+      }),
+      fire_no_go: r({
+        level:'crit', badge:'中に入っての救助はできない', title:'煙・炎の中への進入は避ける',
+        sub:'有毒ガス・視界不良・崩落・爆発的燃焼など、訓練なしでは判断できない危険が重なっています。',
+        steps:[
+          {icon:'phone', head:'ただちに119番', desc:'取り残されている人数・場所（何階・部屋の位置）を、できる限り具体的に伝える。', type:'crit'},
+          {icon:'warn', head:'自分は入らない', desc:'消防隊員でさえ、専用装備と訓練、複数人での連携を前提に進入を判断しています。', type:'crit'},
+          {icon:'ear', head:'周囲に呼びかけて情報を集める', desc:'近隣住民や避難してきた人から、取り残されている人の場所の手がかりを集める。'},
+          {icon:'door', head:'到着した消防隊にすぐ伝える', desc:'集めた情報を、最初に到着した隊員へ最優先で伝える。'},
+        ],
+        note:{type:'danger',text:'「まだ大丈夫そう」という感覚が一番危険です。煙や火の勢いは数十秒〜数分単位で急変します。'},
+        call:true
+      }),
+
+      /* ===== 交通事故：二次事故の安全確保ができているかどうかの判断 ===== */
+      traffic_judge:{
+        q:'後続車などの二次的な危険は止められていますか？', lead:'ハザードランプ・三角表示板・誘導などで、安全が確保できているかを確認します。',
+        options:[
+          {label:'安全確保できている', sub:'表示・誘導ができ、後続車から見える状態', icon:'check', next:'traffic_ok'},
+          {label:'まだ安全確保できていない', sub:'車道上・見通しの悪い場所など', icon:'warn', next:'traffic_secure_first'},
+        ]
+      },
+      traffic_ok: r({
+        level:'safe', badge:'けが人の対応をしてよい', title:'安全を確保したうえでの救護',
+        sub:'安全が確保できていれば、できる範囲の応急手当に進めます。',
+        steps:[
+          {icon:'phone', head:'110番・119番', desc:'警察と、けが人がいれば救急にも連絡。場所・状況・けが人の数を伝える。', type:'crit'},
+          {icon:'ear', head:'反応・呼吸を確認', desc:'声をかけ肩をたたく。反応がなく普段どおりの呼吸がなければ、ただちに胸骨圧迫へ。', type:'do'},
+          {icon:'hand', head:'むやみに動かさない', desc:'頭・首・背中を打った可能性があるため、危険が迫らない限り動かさない。'},
+          {icon:'aid', head:'出血は圧迫止血', desc:'大きな出血は清潔な布で強く押さえ続ける。'},
+        ],
+        note:{type:'',text:'自分の安全確保が保てなくなったら、無理に救護を続けず、いったん安全な場所へ下がってください。'},
+        call:true,
+        links:[{to:'rescue_aed_caution', label:'AED使用時の注意を見る', icon:'heart'}]
+      }),
+      rescue_aed_caution: r({
+        level:'crit', badge:'AEDの注意', title:'AED使用時の注意',
+        sub:'電源を入れたら音声ガイダンスに従えば大丈夫。要点だけ確認します。',
+        steps:[
+          {icon:'heart', head:'電源を入れ音声に従う', desc:'ふたを開ける／電源ボタンを押すと音声で手順を案内。落ち着いて従えばよい。', type:'do'},
+          {icon:'aid', head:'パッドは肌に直接、図の位置へ', desc:'右胸の上と左わき腹の下に、肌に直接しっかり貼る。汗や水は拭き取る。', type:'do'},
+          {icon:'warn', head:'貼る位置の妨げを取り除く', desc:'湿布・貼り薬ははがして拭く。胸の出っぱり(ペースメーカー等)は避けて貼る。'},
+          {icon:'hush', head:'ショック時は皆「離れる」', desc:'「みんな離れて」と声をかけ、誰も触れていないのを確認してからショックボタンを押す。', type:'crit'},
+        ],
+        note:{type:'',text:'配慮は大切ですが、救命の手を止めないことが最優先です。'}
+      }),
+      traffic_secure_first: r({
+        level:'warn', badge:'まず安全確保が先', title:'安全確保ができていないとき',
+        sub:'けが人に近づく前に、二次事故を防ぐ行動が最優先です。',
+        steps:[
+          {icon:'off', head:'ハザードランプを点ける', desc:'自車・付近の車のハザードを点灯させ、後続車に異常を知らせる。', type:'do'},
+          {icon:'warn', head:'発炎筒・三角表示板を置く', desc:'可能なら後方に設置し、後続車から見える距離を確保する。高速道路では特に重要。', type:'crit'},
+          {icon:'run', head:'安全な場所に人を集める', desc:'車道上に立たず、ガードレールの外など安全な場所に要救助者・自分を移動させる（動かせない事情がなければ）。'},
+          {icon:'phone', head:'110番で状況を伝える', desc:'安全確保が難しいこと自体も伝え、警察に交通規制の対応を依頼する。', type:'do'},
+        ],
+        note:{type:'danger',text:'安全が確保できないまま車道上でけが人に近づくのは危険です。まず「止める」ことに専念してください。'},
+        call110:true,
+        links:[{to:'traffic_ok', label:'安全確保できたら → けが人の対応へ', icon:'aid'}]
+      }),
+
+      /* ===== 倒壊・下敷き：崩落の危険が残っているかどうかの判断 ===== */
+      collapse_judge:{
+        q:'建物やがれきが、今も崩れる・沈む危険はありますか？', lead:'不安定な状態での救出は、二次的な倒壊を招く危険があります。',
+        options:[
+          {label:'安定していて、軽い物なら取り除ける', sub:'表面のがれき程度', icon:'check', next:'collapse_light'},
+          {label:'崩れそう・不安定、または重機が必要', sub:'自分の手には負えない規模', icon:'warn', next:'collapse_no_go'},
+        ]
+      },
+      collapse_light: r({
+        level:'safe', badge:'この範囲なら対応してよい', title:'表面のがれきを取り除く範囲の救助',
+        sub:'無理に引き出さず、できる範囲だけを慎重に行います。',
+        steps:[
+          {icon:'phone', head:'119番で状況を伝える', desc:'下敷きになっている人数、建物の状況、周囲の危険（ガス臭・電線など）を伝える。', type:'crit'},
+          {icon:'hand', head:'表面の軽いがれきだけ除く', desc:'手で持ち上がる範囲の物だけを慎重に取り除く。無理に引っ張り出さない。', type:'do'},
+          {icon:'ear', head:'声をかけ続ける', desc:'反応の有無、痛む場所を確認しながら、意識を保たせるよう声をかけ続ける。'},
+          {icon:'warn', head:'不安定さを感じたら即中止', desc:'少しでも崩れる気配やきしみを感じたら、ただちに離れて安全な場所へ。', type:'crit'},
+        ],
+        note:{type:'danger',text:'頭・首・背中を痛めている可能性がある場合、強い力で引き出すと損傷を悪化させることがあります。危険が迫る場合を除き、無理に動かさないでください。'},
+        call:true
+      }),
+      collapse_no_go: r({
+        level:'crit', badge:'今は近づかず、通報を', title:'崩落の危険が残る現場',
+        sub:'不安定な建物・がれきの下への進入は、訓練・重機なしでは非常に危険です。',
+        steps:[
+          {icon:'phone', head:'ただちに119番', desc:'場所、下敷きになっている人数、周囲の危険（ガス漏れ・出火・電線など）を伝える。', type:'crit'},
+          {icon:'run', head:'周囲の人を近づけない', desc:'野次馬も含め、不安定な建物・がれきの周囲から人を離す。二次倒壊に巻き込まれないため。', type:'crit'},
+          {icon:'ear', head:'声をかけ続ける', desc:'直接触れずに、外から声をかけ、反応や声が聞こえるかを確認する。'},
+          {icon:'door', head:'到着した救助隊に情報を伝える', desc:'位置・状況・聞こえた反応などを、最初に到着した隊員へ伝える。'},
+        ],
+        note:{type:'danger',text:'重機や専用装備が必要な救出を人力で行おうとすると、さらなる崩落で救助者自身が被災する危険があります。'},
+        call:true
+      }),
+    }
+  },
+};
+
+/* =========================================================
+   文字検索：全カテゴリの対処法ページを対象にキーワード検索
+   ========================================================= */
+function normalizeSearchText(s){
+  return String(s || '')
+    .replace(/[Ａ-Ｚａ-ｚ０-９]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0xFEE0))
+    .toLowerCase();
+}
+function buildSearchIndex(){
+  const idx = [];
+  Object.entries(TREE).forEach(([catKey, cat])=>{
+    Object.entries(cat.nodes || {}).forEach(([nodeKey, res])=>{
+      if(!res || res.type !== 'result') return;
+      const steps = res.steps || [];
+      const noteText = res.note ? res.note.text : '';
+      const haystack = [cat.title, res.badge, res.title, res.sub, noteText,
+        ...steps.map(s=>s.head + ' ' + s.desc)].join(' ');
+      idx.push({
+        catKey, nodeKey,
+        catTitle: cat.title, catIcon: cat.icon, catColor: cat.color,
+        badge: res.badge, title: res.title, sub: res.sub,
+        steps, note: res.note || null,
+        haystack: normalizeSearchText(haystack)
+      });
+    });
+  });
+  return idx;
+}
+const SEARCH_INDEX = buildSearchIndex();
+
+function searchManual(query){
+  const q = normalizeSearchText(query).trim();
+  if(!q) return [];
+  return SEARCH_INDEX
+    .filter(e => e.haystack.includes(q))
+    .map(e=>{
+      let snip = e.sub || '';
+      const titleHit = normalizeSearchText(e.title).includes(q);
+      const badgeHit = normalizeSearchText(e.badge).includes(q);
+      const subHit = normalizeSearchText(e.sub).includes(q);
+      if(!titleHit && !badgeHit && !subHit){
+        const hitStep = e.steps.find(s => normalizeSearchText(s.head + ' ' + s.desc).includes(q));
+        if(hitStep) snip = hitStep.head + '：' + hitStep.desc;
+        else if(e.note && normalizeSearchText(e.note.text).includes(q)) snip = e.note.text;
+      }
+      return Object.assign({}, e, {snip});
+    })
+    .slice(0, 20);
+}
+
+/* =========================================================
+   状態管理 & 描画
+   ========================================================= */
+const view = document.getElementById('view');
+const crumbsEl = document.getElementById('crumbs');
+let path = []; // {cat, nodeKey, label}
+/* コピー/共有/印刷のために、いま表示中の内容を保持 */
+let _currentRes = null;
+let _currentNode = null;
+
+function renderHome(){
+  stopSpeak(); resetCprAids();
+  path = [];
+  _currentRes = null; _currentNode = null;
+  renderCrumbs();
+  const cats = Object.entries(TREE).map(([k,c])=>`
+    <button class="card" onclick="pickCat('${k}')">
+      <span class="pic" style="color:${c.color}">${ICON[c.icon]}</span>
+      <span class="t">${c.title}</span>
+    </button>`).join('');
+  view.innerHTML = `
+    <div class="section-title">対応したい事故・災害を選んでください</div>
+    <div class="grid">${cats}
+      <div class="card wide" onclick="pickCat('aid')" style="cursor:pointer">
+        <span class="pic" style="color:var(--danger)">${ICON.phone}</span>
+        <span class="txt"><span class="t" style="font-size:15px">迷ったら：意識がない・大出血・大きな火</span>
+        <span class="s">→ ためらわず 119番</span></span>
+      </div>
+    </div>`;
+}
+
+function pickCat(catKey){
+  const cat = TREE[catKey];
+  path = [{label:cat.title, catKey}];
+  renderNode(catKey, 'root');
+}
+
+function renderNode(catKey, nodeKey){
+  stopSpeak(); resetCprAids();
+  const cat = TREE[catKey];
+  const node = nodeKey==='root' ? cat.root : cat.nodes[nodeKey];
+  if(node.type==='result'){ return renderResult(catKey, node); }
+  _currentRes = null; _currentNode = node;
+  renderCrumbs();
+  const opts = node.options.map((o,i)=>`
+    <button class="card wide" onclick="choose('${catKey}','${o.next}','${escapeAttr(o.label)}')">
+      <span class="pic" style="color:${cat.color}">${ICON[o.icon]||''}</span>
+      <span class="txt">
+        <span class="t">${o.label}</span>
+        ${o.sub?`<span class="s">${o.sub}</span>`:''}
+      </span>
+    </button>`).join('');
+  view.innerHTML = `
+    <button class="back" onclick="goBack()">‹ もどる</button>
+    <div class="section-q">${node.q}</div>
+    ${node.lead?`<div class="lead">${node.lead}</div>`:''}
+    <div class="grid"><div style="grid-column:1/-1;display:flex;flex-direction:column;gap:12px">${opts}</div></div>`;
+}
+
+function choose(catKey, next, label){
+  path.push({label, catKey, nodeKey:next});
+  renderNode(catKey, next);
+}
+
+function renderResult(catKey, res){
+  stopSpeak(); resetCprAids();
+  _currentRes = res; _currentNode = null;
+  renderCrumbs();
+  const badgeClass = res.level==='crit'?'':res.level==='safe'?'safe':'warn';
+  const steps = res.steps.map((s,i)=>`
+    <li class="${s.type||''}">
+      <span class="icon" style="color:${TREE[catKey].color}">${ICON[s.icon]||ICON.check}</span>
+      <span class="body">
+        <span class="n">STEP ${i+1}</span>
+        <span class="h">${s.head}</span>
+        <span class="d">${s.desc}</span>
+      </span>
+    </li>`).join('');
+  let cta = '';
+  if(res.call) cta = `<a class="call-cta" href="tel:119">${ICON.phone}<span>119番に電話する</span></a>`;
+  else if(res.call110) cta = `<a class="call-cta" href="tel:110">${ICON.phone}<span>110番に電話する</span></a>`;
+  // 任意の電話ボタン（#7119・#8000 など）。tels:[{num,label,sub,kind}]
+  if(Array.isArray(res.tels)){
+    cta += res.tels.map(t=>{
+      const kind = t.kind==='soft' ? ' soft' : '';
+      const sub = t.sub ? `<small>${t.sub}</small>` : '';
+      return `<a class="call-cta${kind}" href="tel:${t.num}">${ICON.phone}<span>${t.label}${sub}</span></a>`;
+    }).join('');
+  }
+  const aedCta = res.aed ? `<button type="button" class="aed-cta" onclick="openAedModal()">${ICON.heart}<span>近くのAEDを探す</span></button>` : '';
+  const shelterCta = res.shelter ? `<button type="button" class="shelter-cta" onclick="openShelterModal()">${ICON.shelter}<span>避難所・一時避難所を探す</span></button>` : '';
+  const note = res.note ? `
+    <div class="note ${res.note.type==='danger'?'danger':''}">
+      ${ICON.warn}<span>${res.note.text}</span>
+    </div>` : '';
+  // 読み上げ用テキスト（タイトル→概要→各ステップ→注意）を組み立てる
+  const speakText = buildSpeakText(res);
+  _speakText = speakText;
+  const speakBtn = (speakText && _speechSupported) ? `
+    <button type="button" class="speak-cta" id="speakBtn" onclick="toggleSpeak()">
+      <span id="speakBtnIcon">${ICON.speak}</span><span id="speakBtnLabel">手順を読み上げる</span>
+    </button>
+    <div class="speak-hint">音声で手順を読み上げます。もう一度押すと停止します。</div>` : '';
+  // 胸骨圧迫の補助（リズム音・動画）：cpr フラグのある結果のみ
+  let cprAids = '';
+  if(res.cpr){
+    const metroBtn = _audioSupported ? `
+    <button type="button" class="metro-cta" id="metroBtn" onclick="toggleMetro()">
+      <span id="metroBtnIcon">${ICON.metro}</span><span id="metroBtnLabel">圧迫リズム音を鳴らす</span>
+    </button>
+    <div class="metro-rate">
+      <label for="metroRange">テンポ</label>
+      <input type="range" id="metroRange" min="100" max="120" step="1" value="110" oninput="setMetroRate(this.value)">
+      <span class="bpm"><span id="metroBpm">110</span> 回/分</span>
+    </div>` : '';
+    const videoBtn = `
+    <button type="button" class="video-cta" id="videoBtn" onclick="toggleVideo()">
+      ${ICON.play}<span>胸骨圧迫の動画を見る</span>
+    </button>
+    <div class="video-wrap" id="videoWrap"></div>
+    <div class="video-note">出典: 総務省消防庁「応急手当WEB講習」関連動画（YouTube）</div>`;
+    cprAids = metroBtn + videoBtn;
+  }
+  // 関連する別ページへのリンク（例：AED使用時の注意）
+  let linkBtns = '';
+  if(Array.isArray(res.links)){
+    linkBtns = res.links.map(l=>
+      `<button type="button" class="link-cta" onclick="goNode('${catKey}','${l.to}','${escapeAttr(l.label)}')">${ICON[l.icon]||ICON.check}<span>${l.label}</span></button>`
+    ).join('');
+  }
+  // #7119 の対応地域・受付時間を確認するボタン
+  const areaBtn = res.areaInfo ? `
+    <button type="button" class="area-cta" onclick="openAreaModal()">${ICON.eye}<span>対応地域・受付時間を確認</span></button>` : '';
+  view.innerHTML = `
+    <button class="back" onclick="goBack()">‹ もどる</button>
+    <div class="result">
+      <span class="badge ${badgeClass}">${ICON.warn}${res.badge}</span>
+      <h2>${res.title}</h2>
+      <p class="sub">${res.sub}</p>
+      <ul class="steps">${steps}</ul>
+      ${note}
+      ${speakBtn}
+      ${cprAids}
+      ${linkBtns}
+      ${areaBtn}
+      ${cta}
+      ${aedCta}
+      ${shelterCta}
+    </div>
+    <button class="restart" onclick="renderHome()">↺ 最初の画面にもどる</button>`;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function goBack(){
+  if(path.length<=1){ renderHome(); return; }
+  path.pop();
+  const last = path[path.length-1];
+  if(path.length===1){ renderNode(last.catKey,'root'); }
+  else { renderNode(last.catKey, last.nodeKey); }
+}
+
+/* 関連ページへ移動（パンくずにも積む） */
+function goNode(catKey, nodeKey, label){
+  path.push({label:label||'', catKey, nodeKey});
+  renderNode(catKey, nodeKey);
+}
+
+function renderCrumbs(){
+  if(path.length===0){ crumbsEl.innerHTML=''; return; }
+  const parts = ['<button onclick="renderHome()">ホーム</button>'];
+  path.forEach((p,i)=>{
+    parts.push('<span class="sep">›</span>');
+    if(i===path.length-1){ parts.push(`<span>${p.label}</span>`); }
+    else {
+      const idx=i;
+      parts.push(`<button onclick="jumpTo(${idx})">${p.label}</button>`);
+    }
+  });
+  crumbsEl.innerHTML = parts.join(' ');
+}
+
+function jumpTo(idx){
+  path = path.slice(0, idx+1);
+  const last = path[path.length-1];
+  if(path.length===1) renderNode(last.catKey,'root');
+  else renderNode(last.catKey, last.nodeKey);
+}
+
+function escapeAttr(s){return String(s).replace(/'/g,"\\'");}
+
+/* =========================================================
+   検索UIの制御
+   ========================================================= */
+function renderSearchResults(query){
+  const wrap = document.getElementById('searchResults');
+  const clearBtn = document.getElementById('searchClearBtn');
+  if(!wrap) return;
+  const q = (query || '').trim();
+  if(!q){
+    wrap.classList.add('hidden');
+    wrap.innerHTML = '';
+    if(clearBtn) clearBtn.classList.remove('show');
+    return;
+  }
+  if(clearBtn) clearBtn.classList.add('show');
+  const results = searchManual(q);
+  if(results.length === 0){
+    wrap.innerHTML = '<div class="search-empty">一致する項目が見つかりません</div>';
+    wrap.classList.remove('hidden');
+    return;
+  }
+  wrap.innerHTML = results.map(r=>`
+    <button type="button" class="search-item" onclick="goSearchResult('${r.catKey}','${r.nodeKey}')">
+      <span class="pic" style="color:${r.catColor}">${ICON[r.catIcon] || ''}</span>
+      <span class="body">
+        <span class="cat">${r.catTitle} ・ ${r.badge}</span>
+        <span class="ttl">${r.title}</span>
+        <span class="snip">${r.snip}</span>
+      </span>
+    </button>`).join('');
+  wrap.classList.remove('hidden');
+}
+function onSearchInput(val){
+  renderSearchResults(val);
+}
+function onSearchKeydown(e){
+  if(e.key === 'Enter'){
+    const results = searchManual(e.target.value);
+    if(results.length) goSearchResult(results[0].catKey, results[0].nodeKey);
+  } else if(e.key === 'Escape'){
+    clearSearch();
+    e.target.blur();
+  }
+}
+function goSearchResult(catKey, nodeKey){
+  const cat = TREE[catKey];
+  const res = cat.nodes[nodeKey];
+  if(!cat || !res) return;
+  path = [{label: cat.title, catKey}, {label: res.title, catKey, nodeKey}];
+  renderNode(catKey, nodeKey);
+  clearSearch();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+function clearSearch(){
+  const input = document.getElementById('searchInput');
+  if(input) input.value = '';
+  renderSearchResults('');
+}
+
+/* =========================================================
+   表示設定：ダーク/ライト・文字サイズ・コピー・印刷・共有
+   ========================================================= */
+
+/* ----- トースト通知 ----- */
+let _toastTimer = null;
+function showToast(msg){
+  let t = document.getElementById('appToast');
+  if(!t){
+    t = document.createElement('div');
+    t.id = 'appToast';
+    t.className = 'toast';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(()=>{ t.classList.remove('show'); }, 2200);
+}
+
+/* ----- ダーク/ライト切替 ----- */
+function applyTheme(mode){
+  document.documentElement.setAttribute('data-theme', mode);
+  const icoEl = document.getElementById('themeBtnIcon');
+  const lblEl = document.getElementById('themeBtnLabel');
+  if(icoEl) icoEl.innerHTML = (mode === 'light') ? ICON.moon : ICON.sun;
+  if(lblEl) lblEl.textContent = (mode === 'light') ? 'ダーク表示' : 'ライト表示';
+}
+function toggleTheme(){
+  const cur = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+  const next = cur === 'light' ? 'dark' : 'light';
+  try{ localStorage.setItem('dwa_theme', next); }catch(e){}
+  applyTheme(next);
+}
+(function initTheme(){
+  let saved = null;
+  try{ saved = localStorage.getItem('dwa_theme'); }catch(e){}
+  if(!saved){
+    saved = (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark';
+  }
+  applyTheme(saved);
+})();
+
+/* ----- 文字サイズ（拡大・縮小） ----- */
+const FS_MIN = 0.85, FS_MAX = 1.3, FS_STEP = 0.1;
+function applyFontZoom(z){
+  z = Math.min(FS_MAX, Math.max(FS_MIN, Math.round(z * 100) / 100));
+  document.documentElement.style.setProperty('--fs-zoom', z);
+  try{ localStorage.setItem('dwa_fszoom', String(z)); }catch(e){}
+  return z;
+}
+function currentFontZoom(){
+  const v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--fs-zoom'));
+  return isNaN(v) ? 1 : v;
+}
+function incFont(){
+  if(currentFontZoom() >= FS_MAX){ showToast('これ以上大きくできません'); return; }
+  applyFontZoom(currentFontZoom() + FS_STEP);
+}
+function decFont(){
+  if(currentFontZoom() <= FS_MIN){ showToast('これ以上小さくできません'); return; }
+  applyFontZoom(currentFontZoom() - FS_STEP);
+}
+(function initFont(){
+  let saved = null;
+  try{ saved = localStorage.getItem('dwa_fszoom'); }catch(e){}
+  applyFontZoom(saved ? parseFloat(saved) : 1);
+})();
+
+/* ----- 表示中の内容をテキスト化（コピー・共有で利用） ----- */
+function buildCopyText(res){
+  const lines = [];
+  lines.push('【' + res.badge + '】' + res.title);
+  if(res.sub) lines.push(res.sub);
+  lines.push('');
+  res.steps.forEach((s, i)=>{ lines.push((i + 1) + '. ' + s.head + ' … ' + s.desc); });
+  if(res.note) lines.push('\n※ ' + res.note.text);
+  lines.push('\n出典: 緊急対応マニュアル (' + location.href + ')');
+  return lines.join('\n');
+}
+function currentText(){
+  if(_currentRes) return buildCopyText(_currentRes);
+  if(_currentNode){
+    const lines = [_currentNode.q];
+    if(_currentNode.lead) lines.push(_currentNode.lead);
+    lines.push('');
+    (_currentNode.options || []).forEach(o=>{ lines.push('・' + o.label + (o.sub ? '（' + o.sub + '）' : '')); });
+    lines.push('\n' + location.href);
+    return lines.join('\n');
+  }
+  return '緊急対応マニュアル\nタップして進むと、いまやるべきことが出ます。\n' + location.href;
+}
+
+/* ----- コピー ----- */
+async function copyCurrent(){
+  const text = currentText();
+  try{
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      await navigator.clipboard.writeText(text);
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+    showToast('コピーしました');
+  }catch(e){
+    showToast('コピーできませんでした');
+  }
+}
+
+/* ----- 印刷 ----- */
+function printCurrent(){
+  window.print();
+}
+
+/* ----- 共有 ----- */
+async function shareCurrent(){
+  const text = currentText();
+  const title = (_currentRes && _currentRes.title) || '緊急対応マニュアル';
+  if(navigator.share){
+    try{
+      await navigator.share({ title, text, url: location.href });
+    }catch(e){ /* キャンセル時は何もしない */ }
+    return;
+  }
+  try{
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      await navigator.clipboard.writeText(location.href);
+    }
+    showToast('共有機能が使えないため、リンクをコピーしました');
+  }catch(e){
+    showToast('共有できませんでした');
+  }
+}
+
+/* ===== 手順の音声読み上げ（Web Speech API） ===== */
+const _speechSupported = ('speechSynthesis' in window) && (typeof SpeechSynthesisUtterance !== 'undefined');
+let _speakText = '';
+let _speaking = false;
+
+/* 一部ブラウザは getVoices() が初回空になるため、音声リストを事前に読み込む */
+if(_speechSupported){
+  try { window.speechSynthesis.getVoices(); } catch(e){}
+  try { window.speechSynthesis.onvoiceschanged = function(){ try{ window.speechSynthesis.getVoices(); }catch(e){} }; } catch(e){}
+  // ページを離れる・隠れるときは読み上げを止める
+  window.addEventListener('pagehide', function(){ try{ window.speechSynthesis.cancel(); }catch(e){} });
+  document.addEventListener('visibilitychange', function(){ if(document.hidden){ stopSpeak(); } });
+}
+/* 読み上げに依存しない、リズム音の停止（ページ非表示・離脱時） */
+window.addEventListener('pagehide', function(){ try{ stopMetro(); }catch(e){} });
+document.addEventListener('visibilitychange', function(){ if(document.hidden){ try{ stopMetro(); }catch(e){} } });
+
+/* 結果データから読み上げ用の文章を組み立てる */
+function buildSpeakText(res){
+  if(!res) return '';
+  // 専用の読み仮名テキスト（res.speak）があればそれを優先（数字・英語の誤読防止）
+  if(res.speak){
+    const tmp0 = document.createElement('div');
+    tmp0.innerHTML = res.speak;
+    return (tmp0.textContent || tmp0.innerText || '').replace(/\s+/g,' ').trim();
+  }
+  const parts = [];
+  if(res.title) parts.push(res.title + '。');
+  if(res.sub) parts.push(res.sub);
+  (res.steps||[]).forEach((s,i)=>{
+    const head = s.head ? s.head : '';
+    const desc = s.desc ? s.desc : '';
+    parts.push(`手順${i+1}。${head}。${desc}`);
+  });
+  if(res.note && res.note.text) parts.push('注意。' + res.note.text);
+  // タグやHTMLが混ざっていても読み上げないよう、テキストだけにする
+  const tmp = document.createElement('div');
+  tmp.innerHTML = parts.join(' ');
+  return (tmp.textContent || tmp.innerText || '').replace(/\s+/g,' ').trim();
+}
+
+/* 読み上げ開始・停止のトグル */
+function toggleSpeak(){
+  if(!_speechSupported){ return; }
+  if(_speaking){ stopSpeak(); return; }
+  if(!_speakText){ return; }
+  try {
+    window.speechSynthesis.cancel(); // 念のため既存をクリア
+    const u = new SpeechSynthesisUtterance(_speakText);
+    u.lang = 'ja-JP';
+    u.rate = 0.95;   // 少しゆっくりめ（緊急時に聞き取りやすく）
+    u.pitch = 1.0;
+    // 日本語の音声があれば優先的に選ぶ
+    try {
+      const voices = window.speechSynthesis.getVoices() || [];
+      const ja = voices.find(v=>/ja(-|_)?JP/i.test(v.lang) || /Japanese/i.test(v.name));
+      if(ja) u.voice = ja;
+    } catch(e){}
+    u.onend = function(){ _speaking = false; updateSpeakBtn(); };
+    u.onerror = function(){ _speaking = false; updateSpeakBtn(); };
+    window.speechSynthesis.speak(u);
+    _speaking = true;
+    updateSpeakBtn();
+  } catch(e){ _speaking = false; updateSpeakBtn(); }
+}
+
+/* 読み上げ停止 */
+function stopSpeak(){
+  try { if(_speechSupported) window.speechSynthesis.cancel(); } catch(e){}
+  _speaking = false;
+  updateSpeakBtn();
+}
+
+/* ボタンの見た目（再生中／停止）を更新 */
+function updateSpeakBtn(){
+  const btn = document.getElementById('speakBtn');
+  if(!btn) return;
+  const ico = document.getElementById('speakBtnIcon');
+  const lbl = document.getElementById('speakBtnLabel');
+  if(_speaking){
+    btn.classList.add('speaking');
+    if(ico) ico.innerHTML = ICON.stop;
+    if(lbl) lbl.textContent = '読み上げを停止';
+  } else {
+    btn.classList.remove('speaking');
+    if(ico) ico.innerHTML = ICON.speak;
+    if(lbl) lbl.textContent = '手順を読み上げる';
+  }
+}
+
+/* ===== 胸骨圧迫リズム メトロノーム（Web Audio API） ===== */
+const _AudioCtx = window.AudioContext || window.webkitAudioContext;
+const _audioSupported = !!_AudioCtx;
+let _audioCtx = null;
+let _metroTimer = null;
+let _metroOn = false;
+let _metroBpm = 110; // 100〜120の中間。胸骨圧迫の推奨テンポ
+
+/* 「ポン」という短いビープを1回鳴らす */
+function metroBeep(){
+  if(!_audioCtx) return;
+  const now = _audioCtx.currentTime;
+  const osc = _audioCtx.createOscillator();
+  const gain = _audioCtx.createGain();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(900, now);
+  // 短い減衰でクリックっぽい「ポン」に
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(0.6, now + 0.005);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.09);
+  osc.connect(gain).connect(_audioCtx.destination);
+  osc.start(now);
+  osc.stop(now + 0.1);
+}
+
+function toggleMetro(){
+  if(!_audioSupported){ return; }
+  if(_metroOn){ stopMetro(); return; }
+  try {
+    if(!_audioCtx) _audioCtx = new _AudioCtx();
+    if(_audioCtx.state === 'suspended') _audioCtx.resume();
+  } catch(e){ return; }
+  _metroOn = true;
+  updateMetroBtn();
+  metroBeep(); // すぐ1回鳴らす
+  scheduleMetro();
+}
+
+function scheduleMetro(){
+  if(_metroTimer){ clearInterval(_metroTimer); }
+  const interval = 60000 / _metroBpm; // 1拍の間隔(ms)
+  _metroTimer = setInterval(function(){ if(_metroOn) metroBeep(); }, interval);
+}
+
+function setMetroRate(v){
+  _metroBpm = Math.max(100, Math.min(120, parseInt(v,10)||110));
+  const lbl = document.getElementById('metroBpm');
+  if(lbl) lbl.textContent = _metroBpm;
+  if(_metroOn) scheduleMetro(); // 再生中はテンポを即反映
+}
+
+function stopMetro(){
+  _metroOn = false;
+  if(_metroTimer){ clearInterval(_metroTimer); _metroTimer = null; }
+  updateMetroBtn();
+}
+
+function updateMetroBtn(){
+  const btn = document.getElementById('metroBtn');
+  if(!btn) return;
+  const ico = document.getElementById('metroBtnIcon');
+  const lbl = document.getElementById('metroBtnLabel');
+  if(_metroOn){
+    btn.classList.add('beating');
+    if(lbl) lbl.textContent = 'リズム音を停止';
+  } else {
+    btn.classList.remove('beating');
+    if(lbl) lbl.textContent = '圧迫リズム音を鳴らす';
+  }
+}
+
+/* ===== 胸骨圧迫の動画（YouTube埋め込み） ===== */
+/* 総務省消防庁の応急手当WEB講習 関連動画「成人及び小児に対する胸骨圧迫」 */
+const CPR_VIDEO_ID = 'RoDSpte7_PQ';
+let _videoOpen = false;
+function toggleVideo(){
+  const wrap = document.getElementById('videoWrap');
+  const btn = document.getElementById('videoBtn');
+  if(!wrap) return;
+  if(_videoOpen){
+    wrap.classList.remove('open');
+    wrap.innerHTML = ''; // iframe除去で再生停止
+    _videoOpen = false;
+    if(btn) btn.querySelector('span').textContent = '胸骨圧迫の動画を見る';
+  } else {
+    wrap.innerHTML = '<iframe src="https://www.youtube.com/embed/' + CPR_VIDEO_ID +
+      '?rel=0&playsinline=1" title="胸骨圧迫の動画" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+    wrap.classList.add('open');
+    _videoOpen = true;
+    if(btn) btn.querySelector('span').textContent = '動画を閉じる';
+    try { wrap.scrollIntoView({behavior:'smooth', block:'nearest'}); } catch(e){}
+  }
+}
+/* 画面遷移時に動画とリズム音を止めるためのリセット */
+function resetCprAids(){
+  stopMetro();
+  if(_videoOpen){
+    const wrap = document.getElementById('videoWrap');
+    if(wrap){ wrap.classList.remove('open'); wrap.innerHTML=''; }
+    _videoOpen = false;
+  }
+}
+
+/* ===== AED検索モーダル ===== */
+function openAedModal(){
+  const ov = document.getElementById('aedOverlay');
+  if(ov){ ov.classList.add('open'); }
+}
+function closeAedModal(){
+  const ov = document.getElementById('aedOverlay');
+  if(ov){ ov.classList.remove('open'); }
+}
+/* ===== 避難所・一時避難所検索モーダル ===== */
+function openShelterModal(){
+  const ov = document.getElementById('shelterOverlay');
+  if(ov){ ov.classList.add('open'); }
+}
+function closeShelterModal(){
+  const ov = document.getElementById('shelterOverlay');
+  if(ov){ ov.classList.remove('open'); }
+}
+/* Escキーで閉じる */
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape'){ closeAedModal(); closeShelterModal(); closeAreaModal(); closePrivacyModal(); }
+});
+/* ハートアイコンを各所に流し込む */
+(function initAedIcons(){
+  const set = (id)=>{ const el = document.getElementById(id); if(el) el.innerHTML = ICON.heart; };
+  set('aedBtnIcon'); set('aedIco1'); set('aedIco2');
+  const t = document.getElementById('aedTitle');
+  if(t) t.innerHTML = ICON.heart + '<span>近くのAEDを探す</span>';
+})();
+/* 避難所アイコンを各所に流し込む */
+(function initShelterIcons(){
+  const set = (id)=>{ const el = document.getElementById(id); if(el) el.innerHTML = ICON.shelter; };
+  set('shelterIco1'); set('shelterIco2');
+  const t = document.getElementById('shelterTitle');
+  if(t) t.innerHTML = ICON.shelter + '<span>避難所・一時避難所を探す</span>';
+})();
+/* 表示設定ツールバー（コピー・印刷・共有）のアイコンを流し込む */
+(function initToolbarIcons(){
+  const set = (id, ico)=>{ const el = document.getElementById(id); if(el) el.innerHTML = ico; };
+  set('copyBtnIcon', ICON.copy);
+  set('printBtnIcon', ICON.print);
+  set('shareBtnIcon', ICON.share);
+  set('searchIcon', ICON.search);
+})();
+
+/* ===== #7119 対応地域・受付時間（出典：総務省消防庁 appropriate007.html） =====
+   ※対応地域・受付時間・対象年齢は変動します。最新は消防庁ページでご確認ください。 */
+const AREA_UPDATED = '2026年6月時点';
+// scope: 'full'=都道府県全域 / 'part'=一部地域のみ
+// age: '全年齢' / '15+'（概ね15歳以上、15歳未満は#8000）
+const AREA_7119 = [
+  {pref:'北海道', scope:'part', area:'札幌市・石狩市・北広島市・恵庭市・栗山町・南幌町・長沼町・当別町・新篠津村・島牧村', age:'全年齢', hours:'全日24時間'},
+  {pref:'青森県', scope:'full', area:'県内全域', age:'15+', hours:'全日24時間'},
+  {pref:'岩手県', scope:'full', area:'県内全域', age:'15+', hours:'全日24時間'},
+  {pref:'宮城県', scope:'full', area:'県内全域', age:'15+', hours:'全日24時間'},
+  {pref:'山形県', scope:'full', area:'県内全域', age:'15+', hours:'全日 18時〜翌8時'},
+  {pref:'福島県', scope:'full', area:'県内全域', age:'15+', hours:'全日24時間'},
+  {pref:'茨城県', scope:'full', area:'県内全域', age:'15+', hours:'全日24時間'},
+  {pref:'栃木県', scope:'full', area:'県内全域', age:'15+', hours:'平日 16時〜翌10時 / 土日祝 10時〜翌10時'},
+  {pref:'群馬県', scope:'full', area:'県内全域', age:'全年齢', hours:'全日24時間'},
+  {pref:'埼玉県', scope:'full', area:'県内全域', age:'全年齢', hours:'全日24時間'},
+  {pref:'千葉県', scope:'full', area:'県内全域', age:'15+', hours:'全日24時間'},
+  {pref:'東京都', scope:'full', area:'都内全域', age:'全年齢', hours:'全日24時間'},
+  {pref:'神奈川県', scope:'full', area:'県内全域', age:'全年齢', hours:'全日24時間'},
+  {pref:'新潟県', scope:'full', area:'県内全域', age:'15+', hours:'全日 18時〜翌8時（連休・年末年始は24時間）'},
+  {pref:'富山県', scope:'full', area:'県内全域', age:'15+', hours:'平日 19時〜翌9時 / 土 13時〜翌9時 / 日祝 9時〜翌9時'},
+  {pref:'石川県', scope:'full', area:'県内全域', age:'15+', hours:'全日24時間'},
+  {pref:'福井県', scope:'full', area:'県内全域', age:'15+', hours:'全日24時間'},
+  {pref:'山梨県', scope:'full', area:'県内全域', age:'全年齢', hours:'全日24時間'},
+  {pref:'長野県', scope:'full', area:'県内全域', age:'15+', hours:'平日 19時〜翌8時 / 土日祝・年末年始 8時〜翌8時'},
+  {pref:'岐阜県', scope:'full', area:'県内全域', age:'全年齢', hours:'全日24時間'},
+  {pref:'静岡県', scope:'full', area:'県内全域', age:'15+', hours:'全日24時間'},
+  {pref:'愛知県', scope:'part', area:'名古屋市', age:'15+', hours:'全日24時間'},
+  {pref:'滋賀県', scope:'full', area:'県内全域', age:'15+', hours:'全日24時間'},
+  {pref:'京都府', scope:'full', area:'府内全域', age:'全年齢', hours:'全日24時間'},
+  {pref:'大阪府', scope:'full', area:'府内全域', age:'全年齢', hours:'全日24時間'},
+  {pref:'兵庫県', scope:'full', area:'県内全域', age:'全年齢', hours:'全日24時間'},
+  {pref:'奈良県', scope:'full', area:'県内全域', age:'全年齢', hours:'全日24時間'},
+  {pref:'和歌山県', scope:'part', area:'田辺市・美浜町・日高町・由良町・印南町・みなべ町・日高川町・白浜町・上富田町・すさみ町', age:'全年齢', hours:'全日24時間'},
+  {pref:'鳥取県', scope:'full', area:'県内全域', age:'15+', hours:'全日24時間'},
+  {pref:'岡山県', scope:'part', area:'岡山市・倉敷市・津山市など県内主要17市町', age:'15+', hours:'平日 19時〜翌8時 / 土 18時〜翌8時 / 日祝・年末年始 8時〜翌8時'},
+  {pref:'広島県', scope:'part', area:'大崎上島町を除く県内市町（広島広域都市圏・備後圏域）', age:'全年齢', hours:'全日24時間'},
+  {pref:'山口県', scope:'part', area:'県内（岩国市・和木町・萩市・阿武町を除く）', age:'15+', hours:'全日24時間'},
+  {pref:'徳島県', scope:'full', area:'県内全域', age:'15+', hours:'月〜土 18時〜翌8時 / 日祝・年末年始 24時間'},
+  {pref:'香川県', scope:'full', area:'県内全域', age:'15+', hours:'全日 19時〜翌8時'},
+  {pref:'愛媛県', scope:'full', area:'県内全域', age:'15+', hours:'全日24時間'},
+  {pref:'高知県', scope:'full', area:'県内全域', age:'全年齢', hours:'全日24時間'},
+  {pref:'福岡県', scope:'full', area:'県内全域', age:'全年齢', hours:'全日24時間'},
+  {pref:'長崎県', scope:'full', area:'県内全域', age:'全年齢', hours:'全日24時間'},
+  {pref:'熊本県', scope:'full', area:'県内全域', age:'15+', hours:'全日24時間'},
+  {pref:'大分県', scope:'full', area:'県内全域', age:'15+', hours:'平日・土 19時〜翌8時 / 日祝 8時〜翌8時'},
+  {pref:'沖縄県', scope:'part', area:'県内（北大東村・与那国町を除く）', age:'全年齢', hours:'全日24時間'},
+];
+// 47都道府県のうち、上記に「全域(full)」が無い県は #7119 未対応（または一部のみ）
+const ALL_PREFS = ['北海道','青森県','岩手県','宮城県','秋田県','山形県','福島県','茨城県','栃木県','群馬県','埼玉県','千葉県','東京都','神奈川県','新潟県','富山県','石川県','福井県','山梨県','長野県','岐阜県','静岡県','愛知県','三重県','滋賀県','京都府','大阪府','兵庫県','奈良県','和歌山県','鳥取県','島根県','岡山県','広島県','山口県','徳島県','香川県','愛媛県','高知県','福岡県','佐賀県','長崎県','熊本県','大分県','宮崎県','鹿児島県','沖縄県'];
+
+function buildAreaModal(){
+  const body = document.getElementById('areaBody');
+  if(!body) return;
+  const fullList = AREA_7119.filter(a=>a.scope==='full');
+  const partList = AREA_7119.filter(a=>a.scope==='part');
+  const listedPrefs = new Set(AREA_7119.map(a=>a.pref));
+  const noPrefs = ALL_PREFS.filter(p=>!listedPrefs.has(p)); // 一覧に全く無い県＝未対応
+  const row = (a)=>`
+    <div class="area-row">
+      <div class="area-pref">${a.pref}</div>
+      <div class="area-meta">
+        <span class="area-tag ${a.age==='全年齢'?'all':'a15'}">${a.age==='全年齢'?'全年齢':'15歳以上'}</span>
+        <span class="area-when">${a.hours}</span>
+        ${a.scope==='part'?`<span class="area-scope">対象地域: ${a.area}</span>`:''}
+      </div>
+    </div>`;
+  body.innerHTML = `
+    <div class="area-note warn">${ICON.warn}<span><b>#7119は全国共通ではありません。</b>対応していない地域があります。お住まい・滞在中の地域が対応していても受付時間外のことがあります。<b>つながらないとき・緊急のときは、ためらわず119番</b>に電話してください。</span></div>
+
+    <div class="area-h">✅ 都道府県全域で対応</div>
+    <div class="area-list">${fullList.map(row).join('')}</div>
+
+    <div class="area-h">◐ 一部の地域のみ対応</div>
+    <div class="area-list">${partList.map(row).join('')}</div>
+
+    <div class="area-h">✕ #7119では未対応の地域（一覧に無い県）</div>
+    <div class="area-list">
+      <div class="area-row"><div class="area-pref" style="font-weight:600;color:var(--muted)">${noPrefs.join('・')||'なし'}</div></div>
+      <div class="area-sub">これらの地域では#7119が使えないか、#7119以外の番号で救急電話相談を行っている場合があります。各都道府県の窓口や消防庁アプリ「Q助」をご利用ください。</div>
+    </div>
+
+    <div class="area-foot">出典: 総務省消防庁「救急安心センター事業（#7119）」（${AREA_UPDATED}）。地域・受付時間・対象年齢は変わることがあります。最新情報は各自治体・消防庁のページでご確認ください。</div>`;
+}
+function openAreaModal(){
+  buildAreaModal();
+  const ov = document.getElementById('areaOverlay');
+  if(ov){ ov.classList.add('open'); }
+}
+function closeAreaModal(){
+  const ov = document.getElementById('areaOverlay');
+  if(ov){ ov.classList.remove('open'); }
+}
+
+/* ===== プライバシーポリシー モーダル ===== */
+function openPrivacyModal(){
+  const ov = document.getElementById('privacyOverlay');
+  if(ov){ ov.classList.add('open'); }
+}
+function closePrivacyModal(){
+  const ov = document.getElementById('privacyOverlay');
+  if(ov){ ov.classList.remove('open'); }
+}
+
+renderHome();</script>
+
+<!-- ============================================================
+     アクセス計測タグ（緊急対応マニュアル → 防災情報センターGASへ記録）
+     ============================================================ -->
+<script>
+(function () {
+  var GAS_URL = "https://script.google.com/macros/s/AKfycby8yqQ-1sIZrcpKfzi1D7teL7ogBQHQWUKjzEAYjE8qe76y0biy2IHvkULjeEWuzoCHNA/exec";
+
+  var uid = "";
+  try {
+    try {
+      uid = localStorage.getItem("dwa_visit_uid") || "";
+      if (!uid) {
+        uid = "v_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 8);
+        localStorage.setItem("dwa_visit_uid", uid);
+      }
+    } catch (e) { uid = ""; }
+
+    var params =
+      "type=visit&action=log" +
+      "&site=manual" +
+      "&uid=" + encodeURIComponent(uid) +
+      "&page=" + encodeURIComponent(location.pathname) +
+      "&ref=" + encodeURIComponent(document.referrer || "");
+
+    var img = new Image();
+    img.src = GAS_URL + "?" + params;
+  } catch (e) {}
+
+  // ===== 緊急電話ボタン（tel:リンク）のタップ数を記録 =====
+  try {
+    document.addEventListener("click", function (ev) {
+      var a = ev.target && ev.target.closest ? ev.target.closest('a[href^="tel:"]') : null;
+      if (!a) return;
+      var tel = a.getAttribute("href") || "";
+      var num = tel.replace(/^tel:/i, "");
+      var eparams =
+        "type=event" +
+        "&site=manual" +
+        "&uid=" + encodeURIComponent(uid) +
+        "&tel=" + encodeURIComponent(tel) +
+        "&name=" + encodeURIComponent(num) +
+        "&page=" + encodeURIComponent(location.pathname) +
+        "&ref=" + encodeURIComponent(document.referrer || "");
+      var eimg = new Image();
+      eimg.src = GAS_URL + "?" + eparams;
+      // 記録は発信を妨げない（既定の tel: 動作はそのまま進む）
+    }, true);
+  } catch (e) {}
+})();
+</script>
+</body>
+</html>
