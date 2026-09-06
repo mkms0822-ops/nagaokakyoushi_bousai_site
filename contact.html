@@ -21,6 +21,20 @@
   --border: rgba(0,180,255,0.12);
   --glow-blue: 0 0 24px rgba(0,180,255,0.25);
 }
+html[data-theme="light"]{
+  --bg: #eef3f8;
+  --surface: #ffffff;
+  --surface2: #f4f8fc;
+  --accent: #d81f1f;
+  --accent2: #d1541f;
+  --safe: #1f9d57;
+  --blue: #1565c0;
+  --cyan: #0f9bb0;
+  --text: #16212b;
+  --muted: #5b6b78;
+  --border: rgba(20,60,100,0.14);
+  --glow-blue: 0 0 18px rgba(21,101,192,0.12);
+}
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -457,7 +471,10 @@ main {
       <span class="logo-sub">BOUSAI INFORMATION CENTER · CONTACT</span>
     </div>
   </a>
-  <a href="index.html" class="back-btn">← サイトに戻る</a>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <button type="button" id="themeBtn" class="back-btn" onclick="toggleTheme()" aria-label="ライト・ダーク切替" style="cursor:pointer;">🌙 ダーク</button>
+    <a href="index.html" class="back-btn">← サイトに戻る</a>
+  </div>
 </header>
 
 <main>
@@ -686,6 +703,21 @@ document.getElementById('contactForm').addEventListener('submit', function(e) {
     if (err) err.style.display = 'none';
   });
 });
+</script>
+<script>
+function applyTheme(mode){
+  document.documentElement.setAttribute('data-theme', mode);
+  var b=document.getElementById('themeBtn');
+  if(b){ b.textContent = mode==='light' ? '☀️ ライト' : '🌙 ダーク'; }
+}
+function toggleTheme(){
+  var cur=document.documentElement.getAttribute('data-theme')==='light'?'light':'dark';
+  applyTheme(cur==='light'?'dark':'light');
+}
+(function(){
+  var prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+  applyTheme(prefersLight ? 'light' : 'dark');
+})();
 </script>
 </body>
 </html>

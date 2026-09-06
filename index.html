@@ -109,6 +109,19 @@
     background:#c62828; color:#fff; border:3px solid #fff; border-radius:14px; cursor:pointer; }
   #sosFlashStop.show{ display:block; }
 
+  /* ===== SOSパネル ライトモード ===== */
+  #sosPanel[data-sostheme="light"]{ background:rgba(238,243,248,.98); color:#16212b; }
+  #sosPanel[data-sostheme="light"] .sos-title{ color:#c62828; }
+  #sosPanel[data-sostheme="light"] .sos-close{ border-color:#b0bec5; color:#37474f; }
+  #sosPanel[data-sostheme="light"] .sos-sec{ background:#ffffff; border-color:#d8e2ec; }
+  #sosPanel[data-sostheme="light"] .sos-sec h3{ color:#0f7a8b; }
+  #sosPanel[data-sostheme="light"] .sos-note{ color:#5b6b78; }
+  #sosPanel[data-sostheme="light"] .sos-toggle{ color:#2a3a47; }
+  #sosPanel[data-sostheme="light"] .sos-status{ color:#a06a00; }
+  #sosPanel[data-sostheme="light"] .sos-theme-btn{ border-color:#b0bec5; color:#37474f; }
+  .sos-theme-btn{ background:none; border:1px solid #546e7a; color:#b0bec5;
+    border-radius:8px; padding:8px 12px; font-size:13px; cursor:pointer; margin-right:8px; }
+
   .menu .grp{padding:14px 18px 6px;font-size:11px;font-weight:800;color:var(--sub);letter-spacing:.04em;background:#f6f9fb;border-bottom:1px solid #eef2f6}
 </style>
 </head>
@@ -197,7 +210,10 @@
   <div class="sos-wrap">
     <div class="sos-head">
       <div class="sos-title">// 緊急SOSビーコン</div>
-      <button class="sos-close" type="button" onclick="sosClosePanel()">閉じる ✕</button>
+      <div style="display:flex;align-items:center;">
+        <button class="sos-theme-btn" type="button" id="sosThemeBtn" onclick="sosToggleTheme()">🌙 ダーク</button>
+        <button class="sos-close" type="button" onclick="sosClosePanel()">閉じる ✕</button>
+      </div>
     </div>
 
     <div class="sos-sec">
@@ -752,6 +768,22 @@ function closeMenuThenSOS(){
        document.body.style.overflow=''; }catch(e){}
   try{ sosOpenPanel(); }catch(e){}
 }
+function sosApplyTheme(mode){
+  var p=document.getElementById('sosPanel');
+  var b=document.getElementById('sosThemeBtn');
+  if(!p) return;
+  if(mode==='light'){ p.setAttribute('data-sostheme','light'); if(b) b.textContent='☀️ ライト'; }
+  else{ p.removeAttribute('data-sostheme'); if(b) b.textContent='🌙 ダーク'; }
+}
+function sosToggleTheme(){
+  var p=document.getElementById('sosPanel');
+  var cur=(p && p.getAttribute('data-sostheme')==='light')?'light':'dark';
+  sosApplyTheme(cur==='light'?'dark':'light');
+}
+(function(){
+  var prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+  sosApplyTheme(prefersLight ? 'light' : 'dark');
+})();
 </script>
 </body>
 </html>
