@@ -5,6 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DWA防災情報センター｜長岡京市認定 市民活動団体</title>
 <meta name="description" content="長岡京市認定 市民活動団体 DWA防災情報センター。タップで助かる、災害時デジタル後方支援。防災マップ・緊急対応マニュアル・SOSビーコンを提供します。">
+<!-- PWA / ホーム画面に追加 -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#e3392e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="DWA防災">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-192.png">
 <style>
   :root{
     --ink:#16212b; --sub:#5b6b78; --line:#e2e8ee; --bg:#eef2f5; --panel:#ffffff;
@@ -123,6 +131,28 @@
     border-radius:8px; padding:8px 12px; font-size:13px; cursor:pointer; margin-right:8px; }
 
   .menu .grp{padding:14px 18px 6px;font-size:11px;font-weight:800;color:var(--sub);letter-spacing:.04em;background:#f6f9fb;border-bottom:1px solid #eef2f6}
+  /* ホーム画面に追加ボタン */
+  .q.install{background:#0f2a3f;border-color:#0f2a3f;color:#fff;grid-column:1 / -1;justify-content:center;font-size:15px}
+  /* インストール案内モーダル */
+  #installModal{display:none;position:fixed;inset:0;z-index:3000;background:rgba(10,20,30,.55);align-items:center;justify-content:center;padding:18px}
+  #installModal.open{display:flex}
+  .im-card{background:var(--panel);border-radius:16px;max-width:420px;width:100%;max-height:86vh;overflow-y:auto;box-shadow:0 18px 50px rgba(0,0,0,.3)}
+  .im-head{display:flex;align-items:center;gap:10px;padding:18px 18px 8px}
+  .im-head .im-ic{font-size:24px}
+  .im-head h2{font-size:17px;margin:0;font-weight:800}
+  .im-close{margin-left:auto;background:none;border:0;font-size:24px;line-height:1;color:var(--sub);cursor:pointer}
+  .im-body{padding:6px 18px 20px}
+  .im-os{display:flex;gap:6px;margin:6px 0 14px}
+  .im-os button{flex:1;border:1.5px solid var(--line);background:#fff;border-radius:9px;padding:9px;font-size:13px;font-weight:700;cursor:pointer;color:var(--ink)}
+  .im-os button.active{background:#0f2a3f;border-color:#0f2a3f;color:#fff}
+  .im-steps{display:none}
+  .im-steps.show{display:block}
+  .im-step{display:flex;gap:11px;padding:9px 0;border-bottom:1px solid #f0f4f7}
+  .im-step:last-child{border-bottom:none}
+  .im-num{flex:0 0 26px;height:26px;border-radius:50%;background:#e3392e;color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center}
+  .im-tx{font-size:13.5px;line-height:1.6}
+  .im-tx b{color:var(--brand2)}
+  .im-note{font-size:12px;color:var(--sub);background:var(--note-bg,#f6f9fb);border-radius:9px;padding:10px 12px;margin-top:12px;line-height:1.6}
 </style>
 </head>
 <body>
@@ -145,6 +175,7 @@
       <a class="q near" href="https://bousai0111.info/#near"><span class="qi">📍</span>近くを探す</a>
       <a class="q manual" href="Manual.html"><span class="qi">📖</span>緊急対応<br>マニュアル</a>
       <a class="q" href="https://bousai0111.info/drill.html"><span class="qi">🚨</span>デジタル<br>避難訓練</a>
+      <button type="button" class="q install" onclick="openInstallGuide()"><span class="qi">📲</span>アプリとして<br>ホーム画面に追加</button>
     </div>
 
     <p class="tagline">
@@ -784,6 +815,77 @@ function sosToggleTheme(){
   var prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
   sosApplyTheme(prefersLight ? 'light' : 'dark');
 })();
+</script>
+<!-- ===== ホーム画面に追加 案内モーダル ===== -->
+<div id="installModal" role="dialog" aria-label="ホーム画面に追加">
+  <div class="im-card">
+    <div class="im-head">
+      <span class="im-ic">📲</span>
+      <h2>アプリとしてホーム画面に追加</h2>
+      <button class="im-close" onclick="closeInstallGuide()" aria-label="閉じる">×</button>
+    </div>
+    <div class="im-body">
+      <p style="font-size:13px;color:var(--sub);margin:0 0 6px;line-height:1.6">ホーム画面に追加すると、アプリのようにワンタップで開けます。ご利用の端末を選んでください。</p>
+      <div class="im-os">
+        <button id="osIphone" class="active" onclick="imShow('iphone')">iPhone</button>
+        <button id="osAndroid" onclick="imShow('android')">Android</button>
+        <button id="osPc" onclick="imShow('pc')">パソコン</button>
+      </div>
+
+      <div class="im-steps show" id="stepIphone">
+        <div class="im-step"><div class="im-num">1</div><div class="im-tx"><b>Safari</b>でこのサイトを開きます（Chrome等では追加できないことがあります）。</div></div>
+        <div class="im-step"><div class="im-num">2</div><div class="im-tx">画面下の中央にある<b>共有ボタン</b>（□に↑の矢印マーク）をタップします。</div></div>
+        <div class="im-step"><div class="im-num">3</div><div class="im-tx">メニューを下にスクロールし、<b>「ホーム画面に追加」</b>をタップします。</div></div>
+        <div class="im-step"><div class="im-num">4</div><div class="im-tx">右上の<b>「追加」</b>をタップすれば完了です。ホーム画面にDWAのアイコンが追加されます。</div></div>
+        <div class="im-note">💡 共有ボタンが見当たらないときは、画面を一度上にスクロールするか、Safariのタブバーをタップすると出てきます。</div>
+      </div>
+
+      <div class="im-steps" id="stepAndroid">
+        <div class="im-step"><div class="im-num">1</div><div class="im-tx"><b>Chrome</b>でこのサイトを開きます。</div></div>
+        <div class="im-step"><div class="im-num">2</div><div class="im-tx">画面右上の<b>「⋮」（メニュー）</b>をタップします。</div></div>
+        <div class="im-step"><div class="im-num">3</div><div class="im-tx"><b>「ホーム画面に追加」</b>または「アプリをインストール」をタップします。</div></div>
+        <div class="im-step"><div class="im-num">4</div><div class="im-tx"><b>「追加」</b>をタップすれば完了です。</div></div>
+        <div class="im-note">💡 対応環境では、下に「インストール」ボタンが自動で表示されることがあります。その場合はそれを押すだけで追加できます。</div>
+      </div>
+
+      <div class="im-steps" id="stepPc">
+        <div class="im-step"><div class="im-num">1</div><div class="im-tx"><b>Chrome</b>または<b>Edge</b>でこのサイトを開きます。</div></div>
+        <div class="im-step"><div class="im-num">2</div><div class="im-tx">アドレスバーの右端にある<b>インストールアイコン</b>（⊕やモニターのマーク）をクリックします。</div></div>
+        <div class="im-step"><div class="im-num">3</div><div class="im-tx"><b>「インストール」</b>をクリックすれば、アプリとして起動できるようになります。</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+function openInstallGuide(){
+  var ua=navigator.userAgent||'';
+  var os='iphone';
+  if(/android/i.test(ua)) os='android';
+  else if(/iphone|ipad|ipod/i.test(ua)) os='iphone';
+  else os='pc';
+  imShow(os);
+  document.getElementById('installModal').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeInstallGuide(){
+  document.getElementById('installModal').classList.remove('open');
+  document.body.style.overflow='';
+}
+function imShow(os){
+  ['iphone','android','pc'].forEach(function(k){
+    var step=document.getElementById('step'+k.charAt(0).toUpperCase()+k.slice(1));
+    var btn=document.getElementById('os'+k.charAt(0).toUpperCase()+k.slice(1));
+    if(step) step.classList.toggle('show', k===os);
+    if(btn) btn.classList.toggle('active', k===os);
+  });
+}
+document.getElementById('installModal').addEventListener('click',function(e){
+  if(e.target===this) closeInstallGuide();
+});
+// Android等：ブラウザがインストール可能と判断したら、案内文を補強
+window.addEventListener('beforeinstallprompt', function(e){
+  e.preventDefault(); window._dwaInstallEvent=e;
+});
 </script>
 </body>
 </html>
