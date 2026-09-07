@@ -55,6 +55,21 @@
   .chip:active{transform:scale(.96)}
   .haz{padding:10px 12px;border-bottom:1px solid var(--line)}
   .haz .ht{font-size:11px;color:var(--sub);font-weight:700;margin-bottom:7px}
+  .dmode{padding:11px 12px;border-bottom:1px solid var(--line);background:#f8fafb}
+  .dmode .ht{font-size:11px;color:var(--sub);font-weight:800;margin-bottom:8px}
+  .dmode-btns{display:flex;gap:6px}
+  .dmode .dm{flex:1;border:1.5px solid var(--line);background:#fff;color:var(--ink);border-radius:8px;padding:9px 4px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
+  .dmode .dm.active{background:var(--emg);border-color:var(--emg);color:#fff}
+  .dmode .dm[data-mode="flood"].active{background:#1667c0;border-color:#1667c0}
+  .dmode .dm[data-mode="sediment"].active{background:#8a5a1f;border-color:#8a5a1f}
+  .dmode-note{font-size:10.5px;color:var(--sub);line-height:1.5;margin-top:8px}
+  .marker-pin.ng{filter:grayscale(1);opacity:.55}
+  .marker-pin.ng::after{content:"✕";position:absolute;font-size:15px;color:#c0143c;font-weight:900;transform:rotate(45deg)}
+  .pop .pavail{margin-top:9px;font-size:12.5px;font-weight:800;border-radius:8px;padding:8px 10px;line-height:1.5}
+  .pop .pavail.ok{background:#e6f4ea;color:#1f7a4d}
+  .pop .pavail.ng{background:#fdeaea;color:#c0143c}
+  .pop .pavail.caution{background:#fff4e0;color:#a06a00}
+  .pop .pavail.limited{background:#eaf0fb;color:#1667c0}
   .haz label{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:4px 2px;cursor:pointer}
   .haz input{width:16px;height:16px;accent-color:var(--emg)}
   #list{flex:1;overflow-y:auto;padding:4px 0}
@@ -127,6 +142,15 @@
         <button id="closeSide" onclick="document.getElementById('side').classList.remove('open')">×</button>
       </div>
       <div class="filters" id="filters"></div>
+      <div class="dmode">
+        <div class="ht">災害モード（避難できるか判定）</div>
+        <div class="dmode-btns">
+          <button class="dm active" data-mode="normal" onclick="setMode('normal')">通常</button>
+          <button class="dm" data-mode="flood" onclick="setMode('flood')">🌊 洪水</button>
+          <button class="dm" data-mode="sediment" onclick="setMode('sediment')">⛰️ 土砂災害</button>
+        </div>
+        <div class="dmode-note" id="dmodeNote">すべての避難所を表示しています。災害を選ぶと、その災害で避難できない施設を判定します。</div>
+      </div>
       <div class="haz">
         <div class="ht">危険箇所レイヤー（国土地理院・重ねると正確に表示）</div>
         <label><input type="checkbox" id="hz-dosha"> 土砂災害警戒区域（土石流・急傾斜地・地すべり）</label>
@@ -147,7 +171,9 @@
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
-const DATA = {"shelters": [{"name": "神足小学校", "addr": "長岡京市神足3丁目2-1", "kinds": ["緊急", "一般"], "stock": true}, {"name": "長法寺小学校", "addr": "長岡京市長法寺川原谷31", "kinds": ["緊急", "一般"], "stock": true}, {"name": "長岡第三小学校", "addr": "長岡京市今里4丁目5-10", "kinds": ["緊急", "一般"], "stock": true}, {"name": "長岡第四小学校", "addr": "長岡京市友岡1丁目2-4", "kinds": ["緊急", "一般"], "stock": true}, {"name": "長岡第五小学校", "addr": "長岡京市下海印寺東山1", "kinds": ["緊急", "一般"], "stock": true}, {"name": "長岡第六小学校", "addr": "長岡京市長岡2丁目3-1", "kinds": ["緊急", "一般"], "stock": true}, {"name": "長岡第七小学校", "addr": "長岡京市今里北ノ町35", "kinds": ["緊急", "一般"], "stock": true}, {"name": "長岡第八小学校", "addr": "長岡京市勝竜寺29-1", "kinds": ["緊急", "一般"], "stock": true}, {"name": "長岡第九小学校", "addr": "長岡京市東神足2丁目17-1", "kinds": ["緊急", "一般"], "stock": true}, {"name": "長岡第十小学校", "addr": "長岡京市井ノ内玉ノ上22", "kinds": ["緊急", "一般"], "stock": true}, {"name": "長岡中学校", "addr": "長岡京市天神4丁目5-1", "kinds": ["緊急", "一般"], "stock": true}, {"name": "長岡第二中学校", "addr": "長岡京市今里5丁目20-1", "kinds": ["緊急", "一般"], "stock": true}, {"name": "長岡第三中学校", "addr": "長岡京市勝竜寺28-1", "kinds": ["緊急", "一般"], "stock": true}, {"name": "長岡第四中学校", "addr": "長岡京市下海印寺西山田1-1", "kinds": ["緊急", "一般"], "stock": true}, {"name": "乙訓高等学校", "addr": "長岡京市友岡1丁目1-1", "kinds": ["緊急", "一般"]}, {"name": "西乙訓高等学校", "addr": "長岡京市下海印寺西明寺41", "kinds": ["緊急", "一般"]}, {"name": "京都西山短期大学", "addr": "長岡京市粟生西条26", "kinds": ["一般"]}, {"name": "立命館中学校・高等学校", "addr": "長岡京市調子1丁目1-1", "kinds": ["緊急", "一般"]}, {"name": "開田保育所", "addr": "長岡京市神足3丁目2-20", "kinds": ["緊急", "福祉"]}, {"name": "滝ノ町保育所", "addr": "長岡京市滝ノ町2丁目2-26", "kinds": ["緊急", "福祉"]}, {"name": "新田保育所", "addr": "長岡京市長岡2丁目3-2", "kinds": ["緊急", "福祉"]}, {"name": "深田保育所", "addr": "長岡京市野添2丁目3-3", "kinds": ["緊急", "福祉"]}, {"name": "こうたり保育園", "addr": "長岡京市東神足2丁目17-2", "kinds": ["緊急", "福祉"]}, {"name": "友岡こども園", "addr": "長岡京市友岡3丁目8-18", "kinds": ["緊急", "福祉"]}, {"name": "海印寺こども園", "addr": "長岡京市奥海印寺坂ノ尻2-5", "kinds": ["緊急", "福祉"]}, {"name": "海印寺乳児園", "addr": "長岡京市奥海印寺三反畑10-2", "kinds": ["福祉"]}, {"name": "今里こども園", "addr": "長岡京市今里北ノ町35-2", "kinds": ["緊急", "福祉"]}, {"name": "きりしま保育園", "addr": "長岡京市神足森本13-1", "kinds": ["福祉"]}, {"name": "西山公園体育館", "addr": "長岡京市長法寺谷山1", "kinds": ["緊急", "一般"]}, {"name": "長岡京市スポーツセンター", "addr": "長岡京市神足下八ノ坪1", "kinds": ["一般"]}, {"name": "中央公民館", "addr": "長岡京市天神4丁目1-1", "kinds": ["緊急", "一般"]}, {"name": "多世代交流ふれあいセンター", "addr": "長岡京市長法寺谷山13-1", "kinds": ["一般"]}, {"name": "図書館", "addr": "長岡京市天神4丁目1-1", "kinds": ["一般"]}, {"name": "バンビオ", "addr": "長岡京市神足2丁目3-1", "kinds": ["一般"]}, {"name": "地域福祉センターきりしま苑", "addr": "長岡京市東神足2丁目15-2", "kinds": ["福祉"], "stock": true}, {"name": "健幸すぽっと（のびのび苑）", "addr": "長岡京市井ノ内朝日寺12", "kinds": ["福祉"]}, {"name": "乙訓ポニーの学校", "addr": "長岡京市井ノ内西ノ口17-8", "kinds": ["福祉"]}, {"name": "乙訓の里", "addr": "長岡京市下海印寺川向イ20-3", "kinds": ["福祉"]}, {"name": "乙訓若竹苑", "addr": "長岡京市井ノ内西ノ口17-8", "kinds": ["福祉"]}, {"name": "向日が丘支援学校", "addr": "長岡京市今里南平尾8-1", "kinds": ["福祉"]}, {"name": "乙訓楽苑", "addr": "長岡京市勝竜寺長黒1-3", "kinds": ["福祉"]}, {"name": "特別養護老人ホーム旭が丘ホーム", "addr": "長岡京市井ノ内朝日寺23", "kinds": ["福祉"]}, {"name": "特別養護老人ホーム竹の里ホーム", "addr": "長岡京市奥海印寺走田1-1", "kinds": ["福祉"]}, {"name": "特別養護老人ホーム天神の杜", "addr": "長岡京市天神2丁目3-10", "kinds": ["福祉"]}, {"name": "特別養護老人ホーム第二天神の杜", "addr": "長岡京市奥海印寺竹ノ下19", "kinds": ["福祉"]}, {"name": "老人保健施設アゼリアガーデン", "addr": "長岡京市友岡4丁目114", "kinds": ["福祉"]}, {"name": "介護老人保健施設マムフローラ", "addr": "長岡京市奥海印寺奥ノ院25-2", "kinds": ["福祉"]}, {"name": "チャーム長岡京", "addr": "長岡京市神足太田1-4", "kinds": ["福祉"]}, {"name": "介護老人保健施設 春風", "addr": "長岡京市久貝1丁目6-23", "kinds": ["福祉"]}, {"name": "介護複合施設今里", "addr": "長岡京市今里庄ノ渕32", "kinds": ["福祉"]}, {"name": "せんしゅんかい小規模多機能型居宅介護事業所あさつゆ", "addr": "長岡京市久貝2丁目15-17", "kinds": ["福祉"]}, {"name": "せんしゅんかいデイサービスセンター友岡", "addr": "長岡京市友岡川原29-11", "kinds": ["福祉"]}, {"name": "せんしゅんかいデイサービスセンター滝ノ町", "addr": "長岡京市滝ノ町2丁目9-7", "kinds": ["福祉"]}, {"name": "せんしゅんかいデイサービスセンター風車", "addr": "長岡京市馬場井料田4-7", "kinds": ["福祉"]}, {"name": "保育・高齢複合施設 友岡", "addr": "長岡京市友岡1丁目2-3", "kinds": ["福祉"]}, {"name": "地域密着型特別養護老人ホーム サニーリッジbio", "addr": "長岡京市井ノ内南内畑67-11", "kinds": ["福祉"]}], "fire": [{"name": "乙訓消防組合消防本部・長岡京消防署", "addr": "長岡京市神足芝本9", "tel": "075-954-0119"}, {"name": "長岡京消防署 東分署", "addr": "長岡京市天神4丁目2-1", "tel": "075-957-0119"}], "police": [{"name": "向日町警察署（本署）", "addr": "向日市上植野町上川原5", "tel": "075-921-0110", "note": "長岡京市の管轄警察署（市外）"}, {"name": "長岡京交番", "addr": "長岡京市開田3丁目3-4", "tel": "075-951-1238", "note": "市役所の向かい"}, {"name": "神足交番", "addr": "長岡京市神足1丁目602-4", "tel": ""}, {"name": "今里交番", "addr": "長岡京市今里庄ノ渕35-3", "tel": ""}, {"name": "海印寺交番", "addr": "長岡京市梅が丘3丁目50-1", "tel": "075-955-0057"}, {"name": "西山天王山交番", "addr": "長岡京市友岡4丁目22-11", "tel": "075-951-0110"}], "cityhall": {"name": "長岡京市役所", "addr": "長岡京市開田1丁目1-1", "tel": "075-951-2121"}, "temp": [{"name": "長岡公園", "addr": "長岡京市天神2丁目"}, {"name": "川原公園", "addr": "長岡京市今里川原"}, {"name": "新田公園", "addr": "長岡京市長岡1丁目"}, {"name": "野添公園", "addr": "長岡京市一文橋2丁目"}, {"name": "中開田公園", "addr": "長岡京市長岡1丁目"}, {"name": "八ノ坪公園", "addr": "長岡京市長岡3丁目"}, {"name": "今里大塚古墳公園", "addr": "長岡京市天神5丁目"}, {"name": "光明寺", "addr": "長岡京市粟生西条内"}, {"name": "神足公園", "addr": "長岡京市東神足2丁目"}, {"name": "三菱電機（株）", "addr": "長岡京市馬場図所1"}, {"name": "長岡天満宮", "addr": "長岡京市天神2丁目"}, {"name": "西山公園", "addr": "長岡京市長法寺"}, {"name": "勝竜寺城公園", "addr": "長岡京市勝竜寺13-1"}, {"name": "西代里山公園", "addr": "長岡京市奥海印寺西代"}, {"name": "調子馬ノ池公園", "addr": "長岡京市調子2丁目"}, {"name": "下海印寺西条公園", "addr": "長岡京市下海印寺西条"}, {"name": "こがねが丘ホタル公園", "addr": "長岡京市高台1丁目"}], "hospital": [{"name": "京都済生会病院", "addr": "長岡京市下海印寺下内田101", "tel": "075-955-0111", "lat": 34.916306, "lng": 135.6863, "note": "京都府指定の地域災害拠点病院／救急告示病院。乙訓地域唯一の公的総合病院（288床）。"}, {"name": "乙訓休日応急診療所", "addr": "長岡京市下海印寺下内田101 京都済生会病院内 別棟2階", "tel": "075-955-3320", "lat": 34.916306, "lng": 135.6863, "note": "休日の初期救急を担う診療所（内科・小児科等）。済生会病院の敷地内。"}], "shakyo": [{"name": "長岡京市社会福祉協議会", "addr": "長岡京市神足2丁目3-1 バンビオ1番館内", "tel": "075-963-5508", "note": "災害時に「災害ボランティアセンター」を立ち上げ、支援ニーズの受付とボランティアの調整を担う拠点。JR長岡京駅西口すぐ。"}]};
+const DATA = {"shelters": [{"name": "神足小学校", "addr": "長岡京市神足3丁目2-1", "kinds": ["緊急", "一般"], "stock": true, "note": "敷地周辺が浸水する可能性あり", "hazard": {"flood": "caution"}}, {"name": "長法寺小学校", "addr": "長岡京市長法寺川原谷31", "kinds": ["緊急", "一般"], "stock": true, "note": "南西校舎を使用禁止", "hazard": {"flood": "limited"}}, {"name": "長岡第三小学校", "addr": "長岡京市今里4丁目5-10", "kinds": ["緊急", "一般"], "stock": true}, {"name": "長岡第四小学校", "addr": "長岡京市友岡1丁目2-4", "kinds": ["緊急", "一般"], "stock": true}, {"name": "長岡第五小学校", "addr": "長岡京市下海印寺東山1", "kinds": ["緊急", "一般"], "stock": true}, {"name": "長岡第六小学校", "addr": "長岡京市長岡2丁目3-1", "kinds": ["緊急", "一般"], "stock": true}, {"name": "長岡第七小学校", "addr": "長岡京市今里北ノ町35", "kinds": ["緊急", "一般"], "stock": true}, {"name": "長岡第八小学校", "addr": "長岡京市勝竜寺29-1", "kinds": ["緊急", "一般"], "stock": true}, {"name": "長岡第九小学校", "addr": "長岡京市東神足2丁目17-1", "kinds": ["緊急", "一般"], "stock": true}, {"name": "長岡第十小学校", "addr": "長岡京市井ノ内玉ノ上22", "kinds": ["緊急", "一般"], "stock": true, "note": "敷地周辺が浸水する可能性あり", "hazard": {"flood": "caution"}}, {"name": "長岡中学校", "addr": "長岡京市天神4丁目5-1", "kinds": ["緊急", "一般"], "stock": true}, {"name": "長岡第二中学校", "addr": "長岡京市今里5丁目20-1", "kinds": ["緊急", "一般"], "stock": true}, {"name": "長岡第三中学校", "addr": "長岡京市勝竜寺28-1", "kinds": ["緊急", "一般"], "stock": true, "note": "洪水時は建物の2階以上を使用", "hazard": {"flood": "limited"}}, {"name": "長岡第四中学校", "addr": "長岡京市下海印寺西山田1-1", "kinds": ["緊急", "一般"], "stock": true, "note": "体育館を使用禁止", "hazard": {"flood": "limited"}}, {"name": "乙訓高等学校", "addr": "長岡京市友岡1丁目1-1", "kinds": ["緊急", "一般"]}, {"name": "西乙訓高等学校", "addr": "長岡京市下海印寺西明寺41", "kinds": ["緊急", "一般"]}, {"name": "京都西山短期大学", "addr": "長岡京市粟生西条26", "kinds": ["一般"], "note": "土砂災害警戒区域内のため緊急避難は禁止", "hazard": {"sediment": "ng"}}, {"name": "立命館中学校・高等学校", "addr": "長岡京市調子1丁目1-1", "kinds": ["緊急", "一般"]}, {"name": "開田保育所", "addr": "長岡京市神足3丁目2-20", "kinds": ["緊急", "福祉"], "note": "洪水時は建物の2階以上を使用", "hazard": {"flood": "limited"}}, {"name": "滝ノ町保育所", "addr": "長岡京市滝ノ町2丁目2-26", "kinds": ["緊急", "福祉"], "note": "洪水時は建物の2階以上を使用", "hazard": {"flood": "limited"}}, {"name": "新田保育所", "addr": "長岡京市長岡2丁目3-2", "kinds": ["緊急", "福祉"]}, {"name": "深田保育所", "addr": "長岡京市野添2丁目3-3", "kinds": ["緊急", "福祉"], "note": "洪水時は建物の2階以上を使用", "hazard": {"flood": "limited"}}, {"name": "こうたり保育園", "addr": "長岡京市東神足2丁目17-2", "kinds": ["緊急", "福祉"]}, {"name": "友岡こども園", "addr": "長岡京市友岡3丁目8-18", "kinds": ["緊急", "福祉"]}, {"name": "海印寺こども園", "addr": "長岡京市奥海印寺坂ノ尻2-5", "kinds": ["緊急", "福祉"]}, {"name": "海印寺乳児園", "addr": "長岡京市奥海印寺三反畑10-2", "kinds": ["福祉"]}, {"name": "今里こども園", "addr": "長岡京市今里北ノ町35-2", "kinds": ["緊急", "福祉"]}, {"name": "きりしま保育園", "addr": "長岡京市神足森本13-1", "kinds": ["福祉"], "note": "土砂災害警戒区域内のため緊急避難は禁止", "hazard": {"sediment": "ng"}}, {"name": "西山公園体育館", "addr": "長岡京市長法寺谷山1", "kinds": ["緊急", "一般"], "note": "使用する際は山側を警戒", "hazard": {"sediment": "caution"}}, {"name": "長岡京市スポーツセンター", "addr": "長岡京市神足下八ノ坪1", "kinds": ["一般"], "note": "浸水深3.0〜5.0mのため洪水時の緊急避難は禁止", "hazard": {"flood": "ng"}}, {"name": "中央公民館", "addr": "長岡京市天神4丁目1-1", "kinds": ["緊急", "一般"]}, {"name": "多世代交流ふれあいセンター", "addr": "長岡京市長法寺谷山13-1", "kinds": ["一般"], "note": "浸水深5.0m以上のため洪水時の緊急避難は禁止", "hazard": {"flood": "ng"}}, {"name": "図書館", "addr": "長岡京市天神4丁目1-1", "kinds": ["一般"]}, {"name": "バンビオ", "addr": "長岡京市神足2丁目3-1", "kinds": ["一般"]}, {"name": "地域福祉センターきりしま苑", "addr": "長岡京市東神足2丁目15-2", "kinds": ["福祉"], "stock": true}, {"name": "健幸すぽっと（のびのび苑）", "addr": "長岡京市井ノ内朝日寺12", "kinds": ["福祉"]}, {"name": "乙訓ポニーの学校", "addr": "長岡京市井ノ内西ノ口17-8", "kinds": ["福祉"]}, {"name": "乙訓の里", "addr": "長岡京市下海印寺川向イ20-3", "kinds": ["福祉"]}, {"name": "乙訓若竹苑", "addr": "長岡京市井ノ内西ノ口17-8", "kinds": ["福祉"]}, {"name": "向日が丘支援学校", "addr": "長岡京市今里南平尾8-1", "kinds": ["福祉"]}, {"name": "乙訓楽苑", "addr": "長岡京市勝竜寺長黒1-3", "kinds": ["福祉"]}, {"name": "特別養護老人ホーム旭が丘ホーム", "addr": "長岡京市井ノ内朝日寺23", "kinds": ["福祉"]}, {"name": "特別養護老人ホーム竹の里ホーム", "addr": "長岡京市奥海印寺走田1-1", "kinds": ["福祉"]}, {"name": "特別養護老人ホーム天神の杜", "addr": "長岡京市天神2丁目3-10", "kinds": ["福祉"]}, {"name": "特別養護老人ホーム第二天神の杜", "addr": "長岡京市奥海印寺竹ノ下19", "kinds": ["福祉"]}, {"name": "老人保健施設アゼリアガーデン", "addr": "長岡京市友岡4丁目114", "kinds": ["福祉"]}, {"name": "介護老人保健施設マムフローラ", "addr": "長岡京市奥海印寺奥ノ院25-2", "kinds": ["福祉"]}, {"name": "チャーム長岡京", "addr": "長岡京市神足太田1-4", "kinds": ["福祉"]}, {"name": "介護老人保健施設 春風", "addr": "長岡京市久貝1丁目6-23", "kinds": ["福祉"]}, {"name": "介護複合施設今里", "addr": "長岡京市今里庄ノ渕32", "kinds": ["福祉"]}, {"name": "せんしゅんかい小規模多機能型居宅介護事業所あさつゆ", "addr": "長岡京市久貝2丁目15-17", "kinds": ["福祉"]}, {"name": "せんしゅんかいデイサービスセンター友岡", "addr": "長岡京市友岡川原29-11", "kinds": ["福祉"]}, {"name": "せんしゅんかいデイサービスセンター滝ノ町", "addr": "長岡京市滝ノ町2丁目9-7", "kinds": ["福祉"]}, {"name": "せんしゅんかいデイサービスセンター風車", "addr": "長岡京市馬場井料田4-7", "kinds": ["福祉"]}, {"name": "保育・高齢複合施設 友岡", "addr": "長岡京市友岡1丁目2-3", "kinds": ["福祉"]}, {"name": "地域密着型特別養護老人ホーム サニーリッジbio", "addr": "長岡京市井ノ内南内畑67-11", "kinds": ["福祉"]}], "fire": [{"name": "乙訓消防組合消防本部・長岡京消防署", "addr": "長岡京市神足芝本9", "tel": "075-954-0119"}, {"name": "長岡京消防署 東分署", "addr": "長岡京市天神4丁目2-1", "tel": "075-957-0119"}], "police": [{"name": "向日町警察署（本署）", "addr": "向日市上植野町上川原5", "tel": "075-921-0110", "note": "長岡京市の管轄警察署（市外）"}, {"name": "長岡京交番", "addr": "長岡京市開田3丁目3-4", "tel": "075-951-1238", "note": "市役所の向かい"}, {"name": "神足交番", "addr": "長岡京市神足1丁目602-4", "tel": ""}, {"name": "今里交番", "addr": "長岡京市今里庄ノ渕35-3", "tel": ""}, {"name": "海印寺交番", "addr": "長岡京市梅が丘3丁目50-1", "tel": "075-955-0057"}, {"name": "西山天王山交番", "addr": "長岡京市友岡4丁目22-11", "tel": "075-951-0110"}], "cityhall": {"name": "長岡京市役所", "addr": "長岡京市開田1丁目1-1", "tel": "075-951-2121"}, "temp": [{"name": "長岡公園", "addr": "長岡京市天神2丁目"}, {"name": "川原公園", "addr": "長岡京市今里川原"}, {"name": "新田公園", "addr": "長岡京市長岡1丁目"}, {"name": "野添公園", "addr": "長岡京市一文橋2丁目"}, {"name": "中開田公園", "addr": "長岡京市長岡1丁目"}, {"name": "八ノ坪公園", "addr": "長岡京市長岡3丁目"}, {"name": "今里大塚古墳公園", "addr": "長岡京市天神5丁目"}, {"name": "光明寺", "addr": "長岡京市粟生西条内"}, {"name": "神足公園", "addr": "長岡京市東神足2丁目"}, {"name": "三菱電機（株）", "addr": "長岡京市馬場図所1"}, {"name": "長岡天満宮", "addr": "長岡京市天神2丁目"}, {"name": "西山公園", "addr": "長岡京市長法寺"}, {"name": "勝竜寺城公園", "addr": "長岡京市勝竜寺13-1"}, {"name": "西代里山公園", "addr": "長岡京市奥海印寺西代"}, {"name": "調子馬ノ池公園", "addr": "長岡京市調子2丁目"}, {"name": "下海印寺西条公園", "addr": "長岡京市下海印寺西条"}, {"name": "こがねが丘ホタル公園", "addr": "長岡京市高台1丁目"}], "hospital": [{"name": "京都済生会病院", "addr": "長岡京市下海印寺下内田101", "tel": "075-955-0111", "lat": 34.916306, "lng": 135.6863, "note": "京都府指定の地域災害拠点病院／救急告示病院。乙訓地域唯一の公的総合病院（288床）。"}, {"name": "乙訓休日応急診療所", "addr": "長岡京市下海印寺下内田101 京都済生会病院内 別棟2階", "tel": "075-955-3320", "lat": 34.916306, "lng": 135.6863, "note": "休日の初期救急を担う診療所（内科・小児科等）。済生会病院の敷地内。"}], "shakyo": [{"name": "長岡京市社会福祉協議会", "addr": "長岡京市神足2丁目3-1 バンビオ1番館内", "tel": "075-963-5508", "note": "災害時に「災害ボランティアセンター」を立ち上げ、支援ニーズの受付とボランティアの調整を担う拠点。JR長岡京駅西口すぐ。"}], "kyotei": [{"name": "向日市立向陽小学校", "addr": "向日市向日町南山3", "note": "相互利用協定避難所（市境を越えて避難が必要な場合に利用）"}, {"name": "向日コミュニティセンター", "addr": "向日市向日町南山3-3", "note": "相互利用協定避難所（市境を越えて避難が必要な場合に利用）"}], "kyoryoku": [{"name": "京和設備 第2工場・製品倉庫", "addr": "長岡京市神足橋本1-1", "note": "協力協定避難所（大規模災害時に市の要請で開設）"}], "suigai": [{"name": "長岡京スカイハイツ", "addr": "長岡京市馬場見場走り26-3", "note": "水害時における一時避難場所（緊急的に使用）"}, {"name": "シャルマンコーポ神足", "addr": "長岡京市神足木寺町3-1", "note": "水害時における一時避難場所（緊急的に使用）"}, {"name": "ダイハツ工業(株)長岡京寮", "addr": "長岡京市勝竜寺三枚田14", "note": "水害時における一時避難場所（緊急的に使用）"}, {"name": "フレッシュバザール長岡京店", "addr": "長岡京市神足大張13", "note": "水害時における一時避難場所（緊急的に使用）"}]};
+let disasterMode = 'normal';
+let markers = [];
 
 const CATS = {
   emg:{label:'緊急避難場所',color:'#e3392e',icon:'🏃'},
@@ -158,7 +184,10 @@ const CATS = {
   hall:{label:'市役所',color:'#4a4a4a',icon:'🏛'},
   temp:{label:'一時避難場所（公園・企業等）',color:'#0f9bb0',icon:'🌳'},
   hosp:{label:'災害拠点病院・救急',color:'#c0143c',icon:'🏥'},
-  shakyo:{label:'社会福祉協議会（災害VC）',color:'#e08a00',icon:'🤝'}
+  shakyo:{label:'社会福祉協議会（災害VC）',color:'#e08a00',icon:'🤝'},
+  kyotei:{label:'相互利用協定避難所（市外）',color:'#5c7a9e',icon:'🤝'},
+  kyoryoku:{label:'協力協定避難所',color:'#8a7b5c',icon:'📦'},
+  suigai:{label:'水害時の一時避難場所',color:'#2a8fb0',icon:'🌊'}
 };
 
 const map = L.map('map',{zoomControl:true}).setView([34.926, 135.695], 14);
@@ -186,9 +215,9 @@ Object.keys(HAZ).forEach(id=>{
 });
 document.getElementById('stockOnly').addEventListener('change',e=>{ stockOnly=e.target.checked; render(); });
 
-function mkIcon(cat){
+function mkIcon(cat, ng){
   const c = CATS[cat];
-  return L.divIcon({className:'',html:'<div class="marker-pin" style="background:'+c.color+'"><span>'+c.icon+'</span></div>',
+  return L.divIcon({className:'',html:'<div class="marker-pin'+(ng?' ng':'')+'" style="background:'+c.color+';position:relative"><span>'+c.icon+'</span></div>',
     iconSize:[26,26],iconAnchor:[13,26],popupAnchor:[0,-24]});
 }
 function catsOf(s){
@@ -201,16 +230,19 @@ let points = [];
 DATA.shelters.forEach(s=>{
   const cs = catsOf(s);
   const primary = cs.includes('emg')?'emg':(cs.includes('gen')?'gen':'wel');
-  points.push({name:s.name,addr:s.addr,cat:primary,kinds:s.kinds||[],tel:'',stock:!!s.stock});
+  points.push({name:s.name,addr:s.addr,cat:primary,kinds:s.kinds||[],tel:'',stock:!!s.stock,note:s.note||'',hazard:s.hazard||null});
 });
 DATA.police.forEach(p=> points.push({name:p.name,addr:p.addr,cat:'pol',tel:p.tel||'',note:p.note||''}));
 DATA.fire.forEach(f=> points.push({name:f.name,addr:f.addr,cat:'fire',tel:f.tel||''}));
 if(DATA.cityhall) points.push({name:DATA.cityhall.name,addr:DATA.cityhall.addr,cat:'hall',tel:DATA.cityhall.tel||''});
-if(DATA.temp) DATA.temp.forEach(t=> points.push({name:t.name,addr:t.addr,cat:'temp',tel:'',note:'一時避難場所（火災・地震直後に一時的に身を寄せる屋外スペース）'}));
+if(DATA.temp) DATA.temp.forEach(t=> points.push({name:t.name,addr:t.addr,cat:'temp',tel:'',note:t.note||'一時避難場所（火災・地震直後に一時的に身を寄せる屋外スペース）',hazard:t.hazard||null}));
 if(DATA.hospital) DATA.hospital.forEach(h=> points.push({name:h.name,addr:h.addr,cat:'hosp',tel:h.tel||'',note:h.note||'',lat:h.lat,lng:h.lng}));
 if(DATA.shakyo) DATA.shakyo.forEach(x=> points.push({name:x.name,addr:x.addr,cat:'shakyo',tel:x.tel||'',note:x.note||''}));
+if(DATA.kyotei) DATA.kyotei.forEach(x=> points.push({name:x.name,addr:x.addr,cat:'kyotei',tel:'',note:x.note||''}));
+if(DATA.kyoryoku) DATA.kyoryoku.forEach(x=> points.push({name:x.name,addr:x.addr,cat:'kyoryoku',tel:'',note:x.note||''}));
+if(DATA.suigai) DATA.suigai.forEach(x=> points.push({name:x.name,addr:x.addr,cat:'suigai',tel:'',note:x.note||''}));
 
-const active = {emg:true,gen:true,wel:true,pol:true,fire:true,hall:true,temp:true,hosp:true,shakyo:true};
+const active = {emg:true,gen:true,wel:true,pol:true,fire:true,hall:true,temp:true,hosp:true,shakyo:true,kyotei:true,kyoryoku:true,suigai:true};
 let stockOnly = false;
 
 const fEl = document.getElementById('filters');
@@ -223,6 +255,39 @@ Object.keys(CATS).forEach(k=>{
   fEl.appendChild(chip);
 });
 
+// 災害モードでの避難可否を判定
+// 戻り値: {level:'ok'|'ng'|'caution'|'limited', text:'...'}
+function availability(p){
+  if(disasterMode==='normal') return null;
+  const isShelter = ['emg','gen','wel','temp','suigai','kyotei','kyoryoku'].includes(p.cat);
+  if(!isShelter) return null;
+  const h = p.hazard || {};
+  // 水害時の一時避難場所は洪水時の受け皿
+  if(disasterMode==='flood'){
+    if(p.cat==='suigai') return {level:'ok',text:'水害時の一時避難場所として利用できます'};
+    if(h.flood==='ng') return {level:'ng',text:'洪水時は避難できません（'+(p.note||'浸水想定区域内')+'）'};
+    if(h.flood==='limited') return {level:'limited',text:'洪水時は条件付きで利用（'+(p.note||'一部のみ使用')+'）'};
+    if(h.flood==='caution') return {level:'caution',text:'洪水時は注意が必要（'+(p.note||'浸水の可能性')+'）'};
+    return {level:'ok',text:'洪水時に避難できます'};
+  }
+  if(disasterMode==='sediment'){
+    if(h.sediment==='ng') return {level:'ng',text:'土砂災害時は緊急避難できません（'+(p.note||'土砂災害警戒区域内')+'）'};
+    if(h.sediment==='caution') return {level:'caution',text:'土砂災害時は注意が必要（'+(p.note||'山側を警戒')+'）'};
+    return {level:'ok',text:'土砂災害時に避難できます'};
+  }
+  return null;
+}
+
+function setMode(mode){
+  disasterMode=mode;
+  document.querySelectorAll('.dmode .dm').forEach(b=>b.classList.toggle('active', b.dataset.mode===mode));
+  const note=document.getElementById('dmodeNote');
+  if(mode==='normal') note.textContent='すべての避難所を表示しています。災害を選ぶと、その災害で避難できない施設を判定します。';
+  else if(mode==='flood') note.textContent='🌊 洪水モード：洪水時に避難できない施設は✕印とグレーで表示されます。ピンをタップで詳細を確認できます。';
+  else note.textContent='⛰️ 土砂災害モード：土砂災害時に緊急避難できない施設は✕印とグレーで表示されます。';
+  render();
+}
+
 function popupHtml(p){
   const kindTags = (p.kinds||[]).map(k=>{
     const cls = k==='緊急'?'emg':(k==='一般'?'gen':'wel');
@@ -231,20 +296,23 @@ function popupHtml(p){
   const tel = p.tel?'<div class="ptel">☎ <a href="tel:'+p.tel.replace(/-/g,'')+'">'+p.tel+'</a></div>':'';
   const note = p.note?'<div class="pnote">'+p.note+'</div>':'';
   const stock = p.stock?'<div class="pstock">🍚 災害用備蓄倉庫あり（食料・水・生活必需品を配備）</div>':'';
+  const av = availability(p);
+  const avail = av?'<div class="pavail '+av.level+'">'+(av.level==='ng'?'⛔ ':av.level==='ok'?'✅ ':'⚠️ ')+av.text+'</div>':'';
   const q = encodeURIComponent(p.addr+' '+p.name);
   return '<div class="pop"><div class="pn">'+p.name+'</div><div class="pa">'+p.addr+'</div>'+
-    (kindTags?'<div class="pk">'+kindTags+'</div>':'')+tel+note+stock+
+    (kindTags?'<div class="pk">'+kindTags+'</div>':'')+avail+tel+note+stock+
     '<div class="proute"><a href="https://www.google.com/maps/dir/?api=1&destination='+q+'" target="_blank" rel="noopener">🧭 ここへの経路</a></div></div>';
 }
 
-let markers = [];
 function render(){
   markers.forEach(m=>map.removeLayer(m.mk)); markers=[];
   const listEl=document.getElementById('list'); listEl.innerHTML='';
   points.forEach(p=>{
     if(!p.lat||!active[p.cat]) return;
     if(stockOnly && !p.stock) return;
-    const mk=L.marker([p.lat,p.lng],{icon:mkIcon(p.cat)}).bindPopup(popupHtml(p));
+    const av=availability(p);
+    const isNg = av && av.level==='ng';
+    const mk=L.marker([p.lat,p.lng],{icon:mkIcon(p.cat, isNg)}).bindPopup(popupHtml(p));
     mk.addTo(map); markers.push({mk,p});
     const it=document.createElement('div'); it.className='item';
     const tags=(p.kinds||[]).map(k=>{const cls=k==='緊急'?'emg':(k==='一般'?'gen':'wel');return '<span class="tag '+cls+'">'+k+'</span>';}).join('');
