@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>団体案内｜DWA防災情報センター</title>
+<meta name="description" content="長岡京市認定 市民活動団体 DWA防災情報センターの活動案内・スタッフ紹介・事務局・アクセス・問い合わせ窓口。">
+<style>
+  :root{
+    --ink:#16212b; --sub:#5b6b78; --line:#e2e8ee; --bg:#eef2f5; --panel:#ffffff;
+    --navy:#0f2c4a; --navy2:#173e63; --teal:#2f7d78; --green:#3f7a4e; --flame:#e8541e; --flame2:#f5a623;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;color:var(--ink);background:var(--bg);line-height:1.8}
+  .bar{position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:10px;padding:11px 16px;
+    background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff}
+  .bar a.back{text-decoration:none;color:#fff;font-weight:800;font-size:14px;display:inline-flex;align-items:center;gap:6px}
+  .bar .name{margin-left:auto;font-size:12px;color:#bfe0dd;font-weight:700}
+  .hero{background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 60%,#12406a 100%);color:#fff;padding:22px 20px 24px;text-align:center}
+  .hero .kicker{display:inline-block;font-size:11px;letter-spacing:.2em;font-weight:700;color:#bfe0dd;border:1px solid rgba(191,224,221,.5);padding:3px 12px;border-radius:20px;margin-bottom:10px}
+  .hero h1{font-size:22px;font-weight:800;letter-spacing:.02em}
+  .hero h1 .ac{color:var(--flame2)}
+  .hero .tag{margin-top:8px;font-size:12.5px;color:#dbe6ee}
+  main{max-width:760px;margin:0 auto;padding:8px 16px 60px}
+  section{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 18px 20px;margin:16px 0;box-shadow:0 2px 10px rgba(20,40,60,.05)}
+  .sec-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .sec-head .no{width:28px;height:28px;border-radius:7px;background:var(--teal);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:14px;flex:none}
+  .sec-head h2{font-size:16px;color:var(--navy)}
+  .lead{font-size:13.5px;color:#33404c;margin-bottom:6px}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+  .card{border:1px solid var(--line);border-left:4px solid var(--teal);border-radius:8px;padding:11px 13px;font-size:13px;color:#3a4550;line-height:1.6}
+  .card b{display:block;color:var(--navy);font-size:13.5px;margin-bottom:3px}
+  .card.flame{border-left-color:var(--flame)} .card.navy{border-left-color:var(--navy)} .card.green{border-left-color:var(--green)}
+  ul.plain{list-style:none;display:flex;flex-direction:column;gap:7px;margin-top:4px}
+  ul.plain li{font-size:13.5px;padding-left:20px;position:relative;color:#2a3540}
+  ul.plain li::before{content:"";position:absolute;left:0;top:8px;width:9px;height:9px;background:var(--flame);clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%)}
+  ul.plain li b{color:var(--flame)}
+  .badges{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+  .badge{font-size:12px;font-weight:700;color:var(--navy);background:#fff;border:1px solid var(--teal);border-radius:20px;padding:4px 12px}
+  .staff{display:flex;flex-direction:column;gap:12px}
+  .person{display:flex;align-items:center;gap:14px;border:1px solid var(--line);border-radius:10px;padding:13px 15px}
+  .person .av{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--navy2));color:#fff;font-weight:800;font-size:18px;display:flex;align-items:center;justify-content:center;flex:none}
+  .person .role{font-size:11.5px;color:var(--teal);font-weight:800;letter-spacing:.03em}
+  .person .pname{font-size:15px;font-weight:800;color:var(--navy);margin-top:1px}
+  .info-table{width:100%;border-collapse:collapse;font-size:13.5px}
+  .info-table th{text-align:left;vertical-align:top;white-space:nowrap;color:#fff;background:var(--teal);font-size:11.5px;font-weight:700;padding:6px 10px;border-radius:5px;width:74px}
+  .info-table td{padding:6px 12px;color:#2a3540}
+  .info-table tr+tr th,.info-table tr+tr td{padding-top:11px}
+  .contact-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px}
+  .cc{display:flex;flex-direction:column;align-items:center;text-align:center;border-radius:12px;padding:18px 14px;text-decoration:none;color:#fff}
+  .cc.tel{background:linear-gradient(135deg,var(--green),var(--teal))}
+  .cc.mail{background:linear-gradient(135deg,var(--navy2),var(--navy))}
+  .cc .ic{font-size:28px;margin-bottom:6px}
+  .cc .lb{font-size:12px;font-weight:700;opacity:.9;letter-spacing:.05em}
+  .cc .val{font-size:16px;font-weight:800;margin-top:3px;word-break:break-all}
+  .cc .sub{font-size:11px;opacity:.85;margin-top:5px;line-height:1.5}
+  .note{font-size:12px;color:var(--sub);background:#f6f9fb;border-radius:9px;padding:11px 13px;margin-top:12px;line-height:1.6}
+  .note a{color:var(--teal);font-weight:700}
+  .map-embed{margin-top:10px;border-radius:10px;overflow:hidden;border:1px solid var(--line)}
+  .map-embed iframe{width:100%;height:220px;border:0;display:block}
+  .disc{font-size:11.5px;color:var(--sub);line-height:1.6;margin-top:18px;text-align:center;border-top:1px solid var(--line);padding-top:16px}
+  footer{background:linear-gradient(135deg,var(--navy),var(--navy2));color:#cdd9e2;text-align:center;font-size:11.5px;padding:18px 16px 40px;line-height:1.8}
+  footer a{color:#bfe0dd}
+  @media(max-width:560px){ .cards,.contact-cards{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+  <div class="bar">
+    <a class="back" href="index.html">← ホームへ</a>
+    <span class="name">DWA防災情報センター</span>
+  </div>
+
+  <div class="hero">
+    <span class="kicker">長岡京市認定 市民活動団体</span>
+    <h1>DWA<span class="ac">防災</span>情報センター</h1>
+    <div class="tag">DISASTER READY ― そなえる。つながる。命を守る。</div>
+  </div>
+
+  <main>
+    <!-- 1 活動案内 -->
+    <section id="activity">
+      <div class="sec-head"><span class="no">1</span><h2>活動案内</h2></div>
+      <p class="lead">地震・火山・気象警報から、事件・事故・国民保護まで。命に関わる情報を、地域の皆さまへリアルタイムで発信しています。</p>
+      <div class="cards">
+        <div class="card flame"><b>🌋 災害情報の発信</b>地震・火山・津波・気象警報など、命に直結する情報をいち早くお届けします。</div>
+        <div class="card navy"><b>🛡️ 安全・安心の見守り</b>事件・事故・国民保護（Jアラート等）の情報も幅広くカバーします。</div>
+        <div class="card green"><b>💧 デジタル後方支援</b>災害の現地を、デジタル情報で後方から支えます。</div>
+        <div class="card"><b>🤝 地域とのつながり</b>福祉・介助の知見を活かし、支援が必要な方に寄り添う防災を進めます。</div>
+      </div>
+      <h3 style="font-size:13.5px;color:var(--teal);margin:16px 0 4px;">📌 実績・取り組み</h3>
+      <ul class="plain">
+        <li><b>【実績】</b>熊本地震にて、現地をデジタル情報で後方支援しました</li>
+        <li>大規模自然災害時に、デジタル情報による後方支援を行っています</li>
+        <li>長岡京市災害ボランティアセンター・災害時パートナーシップ協定締結に向けて協議中</li>
+      </ul>
+    </section>
+
+    <!-- 2 スタッフ紹介 -->
+    <section id="staff">
+      <div class="sec-head"><span class="no">2</span><h2>スタッフ紹介</h2></div>
+      <div class="staff">
+        <div class="person">
+          <div class="av">古</div>
+          <div>
+            <div class="role">運営責任者・システム開発</div>
+            <div class="pname">古谷 浩二</div>
+          </div>
+        </div>
+        <div class="person">
+          <div class="av">古</div>
+          <div>
+            <div class="role">広報・マーケティング担当</div>
+            <div class="pname">古谷 優希</div>
+          </div>
+        </div>
+      </div>
+      <h3 style="font-size:13.5px;color:var(--teal);margin:16px 0 4px;">保有資格・専門性</h3>
+      <div class="badges">
+        <span class="badge">介護福祉士</span>
+        <span class="badge">防災介助士</span>
+        <span class="badge">介護実務者研修 修了</span>
+        <span class="badge">乙種第4類危険物取扱者</span>
+        <span class="badge">防災WEBデザイナー</span>
+        <span class="badge">手話奉仕員養成講座 受講中</span>
+        <span class="badge">障害福祉関連資格 多数所持</span>
+      </div>
+    </section>
+
+    <!-- 3 事務局 -->
+    <section id="office">
+      <div class="sec-head"><span class="no">3</span><h2>事務局</h2></div>
+      <table class="info-table">
+        <tr><th>団体名</th><td>DWA防災情報センター（長岡京市認定 市民活動団体）</td></tr>
+        <tr><th>所在地</th><td>〒（京都府）長岡京市神足芝本19-2　アクエルド長岡京 305</td></tr>
+        <tr><th>WEB</th><td><a href="http://bousai0111.info" target="_blank" rel="noopener">http://bousai0111.info</a></td></tr>
+        <tr><th>運営責任者</th><td>古谷 浩二（システム開発）</td></tr>
+      </table>
+    </section>
+
+    <!-- 4 アクセス -->
+    <section id="access">
+      <div class="sec-head"><span class="no">4</span><h2>アクセス</h2></div>
+      <p class="lead">事務局所在地：京都府長岡京市神足芝本19-2 アクエルド長岡京 305</p>
+      <div class="map-embed">
+        <iframe loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+          src="https://www.google.com/maps?q=%E4%BA%AC%E9%83%BD%E5%BA%9C%E9%95%B7%E5%B2%A1%E4%BA%AC%E5%B8%82%E7%A5%9E%E8%B6%B3%E8%8A%9D%E6%9C%AC19-2&output=embed"
+          title="DWA防災情報センター 事務局の地図"></iframe>
+      </div>
+      <div class="note">最寄りはJR「長岡京」駅周辺エリアです。お越しの際は、事前にお電話またはメールでご連絡いただけますと確実です。</div>
+    </section>
+
+    <!-- 5 問い合わせ窓口 -->
+    <section id="contact">
+      <div class="sec-head"><span class="no">5</span><h2>問い合わせ窓口</h2></div>
+      <p class="lead">お電話またはメールで直接ご連絡ください。下のボタンからそのまま発信・作成できます。</p>
+      <div class="contact-cards">
+        <a class="cc tel" href="tel:09081263532">
+          <span class="ic">📞</span>
+          <span class="lb">お電話でのご連絡</span>
+          <span class="val">090-8126-3532</span>
+          <span class="sub">タップでそのまま発信できます</span>
+        </a>
+        <a class="cc mail" href="mailto:dwa8791@bousai0111.info">
+          <span class="ic">✉️</span>
+          <span class="lb">メールでのご連絡</span>
+          <span class="val">dwa8791@bousai0111.info</span>
+          <span class="sub">タップでメール作成画面が開きます</span>
+        </a>
+      </div>
+      <div class="note">
+        ※ フォームからのお問い合わせをご希望の方は <a href="contact.html">お問い合わせフォーム</a> もご利用いただけます。<br>
+        ※ 災害時など緊急の場合は、状況に応じて 119番（消防・救急）・110番（警察）など公的機関へご連絡ください。
+      </div>
+    </section>
+
+    <p class="disc">
+      DWA防災情報センターは市民団体として、公的機関の発表を補完し、地域の防災力向上を目的に活動しています。<br>
+      避難などの判断は、必ず気象庁・自治体などの公式発表もあわせてご確認ください。
+    </p>
+  </main>
+
+  <footer>
+    長岡京市認定 市民活動団体　DWA防災情報センター<br>
+    <a href="index.html">ホーム</a>　·　<a href="map.html">防災マップ</a>　·　<a href="contact.html">お問い合わせフォーム</a>
+  </footer>
+</body>
+</html>
