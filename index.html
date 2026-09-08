@@ -104,14 +104,39 @@
   .menu .mfoot{padding:16px 18px 24px;border-top:1px solid var(--line);font-size:11px;color:var(--sub);line-height:1.7}
 
   @media(min-width:720px){
-    /* PC：ポスター左・ボタン右の横並び。画面幅を広く使う */
-    main{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:minmax(320px,1fr) 1.1fr;gap:40px;align-items:center;padding:40px 40px 30px}
-    .hero{padding:0;justify-content:center}
-    .hero img{max-width:100%;width:100%}
-    .quick{max-width:none;margin:0;padding:0;grid-template-columns:1fr 1fr;gap:14px}
-    .quick .q{padding:18px;font-size:15px}
-    .quick .q.sos{font-size:17px;padding:20px}
-    .tagline{grid-column:1 / -1;max-width:none;margin:8px auto 0;font-size:14px}
+    /* PC：ランディングページ構成。全幅で縦に積む */
+    main{max-width:none;margin:0;display:block;padding:0}
+    /* 勝竜寺城の画像を画面いっぱいに大きく */
+    .hero{padding:0;display:block}
+    .hero img{max-width:none;width:100vw;height:auto;display:block;margin:0}
+    /* 緊急スイッチを画像の下に全幅で横並び */
+    .quick{max-width:1100px;margin:36px auto 0;padding:0 24px;grid-template-columns:repeat(4,1fr);gap:16px}
+    .quick .q{padding:20px;font-size:15px}
+    .quick .q.sos{grid-column:1 / -1;font-size:19px;padding:22px}
+    .tagline{max-width:900px;margin:26px auto 40px;font-size:15px;padding:0 24px}
+  }
+  /* 団体紹介記事（LP下部） */
+  .intro-article{margin-top:10px}
+  .ia-msg{background:var(--panel,#fff);padding:34px 20px}
+  .ia-in{max-width:820px;margin:0 auto}
+  .ia-msg h2{font-size:22px;font-weight:800;text-align:center;color:var(--navy,#0f2c4a);margin-bottom:18px}
+  .ia-msg p{font-size:14px;color:#28323c;line-height:2;margin-bottom:14px}
+  .ia-msg .em{font-weight:800;color:var(--navy,#0f2c4a);font-size:16px;text-align:center}
+  .ia-msg .en{font-weight:800;color:var(--teal,#2f7d78);text-align:center;font-size:15px;margin:2px 0 14px}
+  .ia-imgs{max-width:1000px;margin:0 auto;display:block}
+  .ia-imgs img{width:100%;height:auto;display:block}
+  .ia-vision{background:linear-gradient(135deg,#0f2c4a,#0d2b47);color:#fff;padding:34px 20px}
+  .ia-vision .ia-in{max-width:820px}
+  .ia-vision .lead{font-size:17px;font-weight:800;text-align:center;color:#f5a623;margin-bottom:16px}
+  .ia-vision p{font-size:13.5px;color:#e5eef5;line-height:2;margin-bottom:12px}
+  .ia-more{text-align:center;padding:26px 20px 6px}
+  .ia-more a{display:inline-block;background:var(--teal,#2f7d78);color:#fff;text-decoration:none;font-weight:800;font-size:15px;padding:13px 28px;border-radius:10px}
+  @media(min-width:720px){
+    .ia-msg{padding:52px 24px}
+    .ia-msg h2{font-size:28px}
+    .ia-msg p{font-size:15.5px}
+    .ia-vision{padding:52px 24px}
+    .ia-imgs{max-width:1100px}
   }
 
   /* ===== SOSビーコン（bousai0111.info本体より移植） ===== */
@@ -204,6 +229,37 @@
       タップで助かる、災害時デジタル後方支援。
     </p>
   </main>
+
+  <!-- ===== 団体紹介記事（ランディングページ下部） ===== -->
+  <article class="intro-article">
+    <section class="ia-msg">
+      <div class="ia-in">
+        <h2>メッセージ</h2>
+        <p>近年、自然災害の規模が大きくなり、激甚化しつつあります。原因は気候変動、温室効果ガスの増加であると指摘されています。また、太陽活動や地球の自転軸の変動など、様々な要因により自然災害の規模や性質が複雑化しています。</p>
+        <p>私たちに今できること。それが「備え」です。自宅備蓄、避難袋の備え、生活水の備蓄、ハザードマップの再点検、避難所経路のシミュレーション、家族との連絡手段の確立、防災アプリの導入やSNSでの情報収集、電源の確保など、できることは沢山あります。</p>
+        <p class="em">「一人はみんなのために、みんなは一人のために」</p>
+        <p class="en">― One for all, All for one ―</p>
+        <p>この言葉を胸に、一緒に長岡京市に防災の輪を広めていきましょう。</p>
+      </div>
+    </section>
+
+    <div class="ia-imgs"><img src="sec-overview.png" alt="概要：活動の歩み・ミッション・見据える未来。2018年1月のTwitterアカウント開設から約8年を経てDWA防災情報センターとしてリスタート。"></div>
+    <div class="ia-imgs"><img src="sec-stats.png" alt="災害を数値化：年間地震回数 約250回前後、年間台風発生件数 11〜12個、年間労災死亡者数 750人前後、年間火災件数 3万7141件・死者数1451人（2024年度）。"></div>
+    <div class="ia-imgs"><img src="sec-resilience.png" alt="Resilience Together. 高齢者・乳幼児、女性・妊産婦、障がい者・外国人など、避難行動要支援者の避難システムの構築を目指します。"></div>
+
+    <section class="ia-vision">
+      <div class="ia-in">
+        <p class="lead">2030年　誰も取りこぼさない防災社会の実現へ</p>
+        <p>「発信」から「実装」へ。現在運用中の防災サイトと支援ツールは、行政の手が届きにくい「発災直後の空白の時間」を埋めるためのものです。</p>
+        <p>特に喫緊の課題である避難行動要支援者の個別避難計画については、支援の目途が立っていない方が大半です。自治体や消防と緊密に連携し、デジタル技術を駆使して「誰が、どこで、誰を助けるか」を可視化するシステム構築を目指します。</p>
+        <p>一人ひとりが確実な支援を受けられるレジリエンス（回復力）の高い社会を、共につくり上げていきましょう。</p>
+      </div>
+    </section>
+
+    <div class="ia-more">
+      <a href="activity.html">活動と目標をくわしく見る →</a>
+    </div>
+  </article>
 
   <footer>
     長岡京市認定 市民活動団体　DWA防災情報センター<br>
