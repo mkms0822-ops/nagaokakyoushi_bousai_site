@@ -61,6 +61,26 @@
   .disc{font-size:11.5px;color:var(--sub);line-height:1.6;margin-top:18px;text-align:center;border-top:1px solid var(--line);padding-top:16px}
   footer{background:linear-gradient(135deg,var(--navy),var(--navy2));color:#cdd9e2;text-align:center;font-size:11.5px;padding:18px 16px 40px;line-height:1.8}
   footer a{color:#bfe0dd}
+  /* スタッフ アコーディオン */
+  .staff details{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff}
+  .staff details[open]{border-color:var(--teal)}
+  .staff summary{display:flex;align-items:center;gap:14px;padding:13px 15px;cursor:pointer;list-style:none;user-select:none}
+  .staff summary::-webkit-details-marker{display:none}
+  .staff summary .av{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--navy2));color:#fff;font-weight:800;font-size:18px;display:flex;align-items:center;justify-content:center;flex:none}
+  .staff summary .role{font-size:11.5px;color:var(--teal);font-weight:800;letter-spacing:.03em}
+  .staff summary .pname{font-size:15px;font-weight:800;color:var(--navy);margin-top:1px}
+  .staff summary .chev{margin-left:auto;color:var(--sub);font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px}
+  .staff summary .chev .tap{font-size:10.5px;background:var(--teal);color:#fff;border-radius:12px;padding:2px 9px}
+  .staff details[open] summary .chev .arr{transform:rotate(180deg)}
+  .staff summary .chev .arr{transition:transform .2s;display:inline-block}
+  .detail{padding:0 15px 16px}
+  .detail .photo{width:100%;max-width:150px;aspect-ratio:3/4;margin:4px auto 14px;border-radius:10px;border:2px dashed var(--line);background:#f6f9fb;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--sub);text-align:center;gap:4px;overflow:hidden}
+  .detail .photo img{width:100%;height:100%;object-fit:cover}
+  .detail .photo .ph-ic{font-size:26px}
+  .detail .photo .ph-tx{font-size:10.5px;line-height:1.4;padding:0 8px}
+  .detail .rescard{margin-top:10px;background:#f6f9fb;border-radius:9px;padding:11px 13px}
+  .detail .rescard .rt{font-size:11.5px;font-weight:800;color:var(--teal);margin-bottom:6px}
+  .detail .rescard .rb{font-size:12.5px;color:#2a3540;line-height:1.7}
   @media(max-width:560px){ .cards,.contact-cards{grid-template-columns:1fr} }
 </style>
 </head>
@@ -98,31 +118,63 @@
     <!-- 2 スタッフ紹介 -->
     <section id="staff">
       <div class="sec-head"><span class="no">2</span><h2>スタッフ紹介</h2></div>
+      <p class="lead">お名前をタップすると、経歴・保有資格の詳細が開きます。</p>
       <div class="staff">
-        <div class="person">
-          <div class="av">古</div>
-          <div>
-            <div class="role">運営責任者・システム開発</div>
-            <div class="pname">古谷 浩二</div>
+
+        <details>
+          <summary>
+            <span class="av">古</span>
+            <span>
+              <span class="role">運営責任者・システム開発</span>
+              <span class="pname">古谷 浩二</span>
+            </span>
+            <span class="chev"><span class="tap">詳細</span><span class="arr">▼</span></span>
+          </summary>
+          <div class="detail">
+            <!-- 写真を載せるとき：下の photo の中身を <img src="staff-koji.jpg" alt="古谷 浩二"> に置き換えてください -->
+            <div class="photo">
+              <span class="ph-ic">📷</span>
+              <span class="ph-tx">写真は後日掲載します</span>
+            </div>
+            <table class="info-table">
+              <tr><th>出身</th><td>大阪市平野区</td></tr>
+              <tr><th>学歴</th><td>大阪府立東住吉工業高等学校 卒業</td></tr>
+              <tr><th>職歴</th><td>某電機メーカー100%出資子会社にてエレベーター設置業務に従事。現場作業の経験を経て安全衛生責任者へ昇格し、現場監督として各現場を管理・監督。安全への配慮と指導の実績を積み、安全配慮のスキルを身につける。退職後は介護職、スマートフォンの操作案内オペレーションの会社を経て、現在はWEBデザイナーとして大阪市内のデジタル開発企業に在籍（在宅勤務）。</td></tr>
+            </table>
+            <div class="rescard">
+              <div class="rt">保有資格</div>
+              <div class="rb">防災介助士／介護実務者研修 修了／同行援護従業者／ガイドヘルパー／乙種第4類危険物取扱者／足場組立責任者　など</div>
+            </div>
           </div>
-        </div>
-        <div class="person">
-          <div class="av">古</div>
-          <div>
-            <div class="role">広報・マーケティング担当</div>
-            <div class="pname">古谷 優希</div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="av">古</span>
+            <span>
+              <span class="role">広報・マーケティング担当</span>
+              <span class="pname">古谷 優希</span>
+            </span>
+            <span class="chev"><span class="tap">詳細</span><span class="arr">▼</span></span>
+          </summary>
+          <div class="detail">
+            <!-- 写真を載せるとき：下の photo の中身を <img src="staff-yuki.jpg" alt="古谷 優希"> に置き換えてください -->
+            <div class="photo">
+              <span class="ph-ic">📷</span>
+              <span class="ph-tx">写真は後日掲載します</span>
+            </div>
+            <table class="info-table">
+              <tr><th>出身</th><td>北海道登別市</td></tr>
+              <tr><th>学歴</th><td>京都女子大学 現代社会学部 卒業</td></tr>
+              <tr><th>職歴</th><td>学生時代にボランティア活動にて、困窮世帯の児童への学習支援を行っていました。卒業後、介護関係企業にて実績を積み、その後、障害福祉分野へシフト。京都市内の事業所にて実績を積み、現在は大阪市内の就労継続支援A型事業所にて職業指導員として勤務。</td></tr>
+            </table>
+            <div class="rescard">
+              <div class="rt">保有資格</div>
+              <div class="rb">介護福祉士／福祉住環境コーディネーター2級／介護職員等の喀痰吸引等研修（特定の者対象）第3号研修／同行援護従業者／ガイドヘルパー／手話奉仕員養成講座 受講中</div>
+            </div>
           </div>
-        </div>
-      </div>
-      <h3 style="font-size:13.5px;color:var(--teal);margin:16px 0 4px;">保有資格・専門性</h3>
-      <div class="badges">
-        <span class="badge">介護福祉士</span>
-        <span class="badge">防災介助士</span>
-        <span class="badge">介護実務者研修 修了</span>
-        <span class="badge">乙種第4類危険物取扱者</span>
-        <span class="badge">防災WEBデザイナー</span>
-        <span class="badge">手話奉仕員養成講座 受講中</span>
-        <span class="badge">障害福祉関連資格 多数所持</span>
+        </details>
+
       </div>
     </section>
 
