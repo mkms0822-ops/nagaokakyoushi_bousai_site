@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>近くを探す｜DWA防災情報センター</title>
+<meta name="description" content="現在地から、近くの交番・消防署・病院・避難所・AED・公衆電話などを探せます。">
+<style>
+  :root{
+    --ink:#16212b; --sub:#5b6b78; --line:#e2e8ee; --bg:#eef2f5; --panel:#ffffff;
+    --navy:#0f2c4a; --navy2:#173e63; --teal:#2f7d78; --flame:#e8541e; --green:#3f8a54; --blue:#1667c0;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;color:var(--ink);background:var(--bg);line-height:1.7}
+  .bar{position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:10px;padding:11px 16px;background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff}
+  .bar a.back{text-decoration:none;color:#fff;font-weight:800;font-size:14px;display:inline-flex;align-items:center;gap:6px}
+  .bar .name{margin-left:auto;font-size:12px;color:#bfe0dd;font-weight:700}
+  main{max-width:720px;margin:0 auto;padding:16px 16px 60px}
+  h1{font-size:20px;color:var(--navy);margin-bottom:4px}
+  .lead{font-size:13px;color:var(--sub);margin-bottom:14px;line-height:1.6}
+  .loc{background:var(--panel);border:1.5px solid var(--line);border-radius:12px;padding:14px 15px;margin-bottom:8px}
+  .loc.ok{border-color:var(--green);background:#eef7f0}
+  .loc.ng{border-color:var(--flame);background:#fdf0ec}
+  .loc .st{font-size:13px;line-height:1.6}
+  .loc .st b{color:var(--navy)}
+  .locbtn{display:inline-flex;align-items:center;gap:6px;margin-top:10px;background:var(--teal);color:#fff;border:0;border-radius:9px;padding:10px 16px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit}
+  .coord{display:none;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap}
+  .coord .ll{font-size:13px;font-weight:800;color:var(--navy);font-variant-numeric:tabular-nums}
+  .coord button{background:#fff;border:1.5px solid var(--line);border-radius:8px;padding:7px 11px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--ink)}
+  .note119{font-size:12px;color:#a06a00;background:#fff4e0;border-radius:9px;padding:9px 12px;margin:10px 0 4px;line-height:1.55}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}
+  .cat{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:12px 13px;text-decoration:none;color:var(--ink);cursor:pointer;transition:.12s}
+  .cat:hover{border-color:var(--teal)}
+  .cat:active{transform:scale(.98)}
+  .cat .ic{font-size:22px;flex:none;width:30px;text-align:center}
+  .cat .t{font-size:14px;font-weight:800;color:var(--navy)}
+  .cat .d{font-size:10.5px;color:var(--sub);margin-top:1px;line-height:1.4}
+  .cat.emg{border-left:4px solid var(--flame)}
+  .sec-t{font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em;margin:18px 0 4px}
+  .foot-note{font-size:11.5px;color:var(--sub);line-height:1.6;margin-top:20px;border-top:1px solid var(--line);padding-top:14px}
+  .foot-note a{color:var(--teal)}
+  @media(max-width:520px){ .grid{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+  <div class="bar">
+    <a class="back" href="index.html">← ホームへ</a>
+    <span class="name">DWA防災情報センター</span>
+  </div>
+  <main>
+    <h1>📍 近くを探す</h1>
+    <p class="lead">いまいる場所から、交番・消防署・病院・避難所・AEDなどを探せます。まず「現在地を取得」を押してください。取得しなくても、各項目から地図アプリで検索できます。</p>
+
+    <div class="loc" id="locBox">
+      <div class="st" id="locSt">現在地を取得すると、近い順に探しやすくなります。</div>
+      <button class="locbtn" onclick="locate()">📡 現在地を取得</button>
+      <div class="coord" id="coord">
+        <span class="ll" id="ll"></span>
+        <button onclick="copyLL()">📋 コピー</button>
+        <button onclick="openHere()">🗺️ 地図で開く</button>
+      </div>
+    </div>
+    <div class="note119">💡 119番・110番で場所をうまく説明できないときは、上の「現在地を取得」で出る<b>緯度・経度</b>を読み上げると、位置が正確に伝わります。</div>
+
+    <div class="sec-t">🚨 緊急時にまず探す</div>
+    <div class="grid" id="gridEmg"></div>
+
+    <div class="sec-t">🏥 医療・救護</div>
+    <div class="grid" id="gridMed"></div>
+
+    <div class="sec-t">🏢 生活・その他</div>
+    <div class="grid" id="gridLife"></div>
+
+    <div class="foot-note">
+      各項目をタップすると、地図アプリ（Googleマップ）で現在地周辺を検索します。現在地を取得している場合はその周辺を、していない場合は「長岡京市」を基準に検索します。<br>
+      避難所の一覧・危険区域は <a href="map.html">防災マップ</a> でも確認できます。緊急時は必ず市の避難情報にも従ってください。
+    </div>
+  </main>
+
+<script>
+  var LAT=null, LNG=null;
+  var CATS = {
+    emg:[
+      {ic:"👮",n:"交番・警察署",q:"交番 警察署",d:"事件・事故・道案内"},
+      {ic:"🚒",n:"消防署",q:"消防署",d:"火災・救急の拠点"},
+      {ic:"🏫",n:"避難所",q:"避難所 指定緊急避難場所",d:"身を守る避難先"},
+      {ic:"❤️",n:"AED",q:"AED 設置場所",d:"心停止の救命に"},
+      {ic:"📞",n:"公衆電話",q:"公衆電話",d:"通信が使えないとき"},
+      {ic:"🏛️",n:"市役所・窓口",q:"長岡京市役所 支所",d:"各種手続き・相談"}
+    ],
+    med:[
+      {ic:"🏥",n:"救急病院",q:"救急病院",d:"急な体調不良・けが"},
+      {ic:"💊",n:"薬局",q:"薬局",d:"薬・衛生用品"},
+      {ic:"🌙",n:"夜間・休日診療",q:"夜間 休日 診療所",d:"時間外の受診"},
+      {ic:"🦷",n:"歯科",q:"歯科",d:"歯の痛み・けが"}
+    ],
+    life:[
+      {ic:"🏪",n:"コンビニ",q:"コンビニ",d:"24時間・物資調達"},
+      {ic:"⛽",n:"ガソリンスタンド",q:"ガソリンスタンド",d:"給油・情報拠点"},
+      {ic:"🚉",n:"駅",q:"駅",d:"移動・帰宅の起点"},
+      {ic:"🚻",n:"公衆トイレ",q:"公衆トイレ",d:"衛生の確保"},
+      {ic:"♨️",n:"入浴施設",q:"銭湯 入浴施設",d:"避難生活の衛生に"},
+      {ic:"🏛️",n:"公民館",q:"公民館 コミュニティセンター",d:"地域の拠点"}
+    ]
+  };
+
+  function render(){
+    fill('gridEmg', CATS.emg, true);
+    fill('gridMed', CATS.med, false);
+    fill('gridLife', CATS.life, false);
+  }
+  function fill(id, list, emg){
+    var el=document.getElementById(id); el.innerHTML='';
+    list.forEach(function(c){
+      var a=document.createElement('a');
+      a.className='cat'+(emg?' emg':'');
+      a.href='#'; a.onclick=function(e){e.preventDefault(); search(c.q);};
+      a.innerHTML='<span class="ic">'+c.ic+'</span><span><span class="t">'+c.n+'</span><span class="d">'+c.d+'</span></span>';
+      el.appendChild(a);
+    });
+  }
+  function search(q){
+    var url;
+    if(LAT!=null){
+      url='https://www.google.com/maps/search/'+encodeURIComponent(q)+'/@'+LAT+','+LNG+',15z';
+    } else {
+      url='https://www.google.com/maps/search/'+encodeURIComponent(q+' 長岡京市');
+    }
+    window.open(url,'_blank','noopener');
+  }
+  function locate(){
+    var box=document.getElementById('locBox'), st=document.getElementById('locSt');
+    if(!navigator.geolocation){
+      box.className='loc ng'; st.innerHTML='この端末では現在地を取得できません。<b>各項目は「長岡京市」を基準に検索します。</b>';
+      return;
+    }
+    st.textContent='現在地を確認しています…';
+    navigator.geolocation.getCurrentPosition(function(p){
+      LAT=p.coords.latitude.toFixed(6); LNG=p.coords.longitude.toFixed(6);
+      var acc=Math.round(p.coords.accuracy||0);
+      box.className='loc ok';
+      st.innerHTML='現在地を取得しました。<b>おおよそ'+acc+'メートル</b>の精度です。各項目は現在地の周辺を検索します。';
+      var co=document.getElementById('coord'); co.style.display='flex';
+      document.getElementById('ll').textContent='北緯 '+LAT+' / 東経 '+LNG;
+    }, function(err){
+      box.className='loc ng';
+      document.getElementById('locSt').innerHTML = (err&&err.code===1)
+        ? '位置情報の利用が許可されていません。<b>設定から許可すると、近い順に探せます。</b>許可しない場合も、各項目から検索できます。'
+        : '現在地を取得できませんでした。<b>各項目は「長岡京市」を基準に検索します。</b>';
+    }, {enableHighAccuracy:true, timeout:10000, maximumAge:60000});
+  }
+  function copyLL(){
+    if(LAT==null) return;
+    var t=LAT+','+LNG;
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(t).then(function(){alert('位置をコピーしました：'+t);}).catch(function(){window.prompt('この数字をお使いください',t);});
+    } else window.prompt('この数字をお使いください',t);
+  }
+  function openHere(){
+    if(LAT==null) return;
+    window.open('https://www.google.com/maps/search/?api=1&query='+LAT+','+LNG,'_blank','noopener');
+  }
+  render();
+</script>
+</body>
+</html>
