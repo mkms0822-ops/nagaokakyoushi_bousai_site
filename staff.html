@@ -64,13 +64,15 @@
   /* スタッフ アコーディオン */
   .staff details{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff}
   .staff details[open]{border-color:var(--teal)}
-  .staff summary{display:flex;align-items:center;gap:14px;padding:13px 15px;cursor:pointer;list-style:none;user-select:none}
+  .staff summary{display:flex;align-items:center;gap:12px;padding:13px 15px;cursor:pointer;list-style:none;user-select:none}
+  .staff summary .av{flex:none}
+  .staff summary .who{display:flex;flex-direction:column;min-width:0;flex:1}
   .staff summary::-webkit-details-marker{display:none}
   .staff summary .av{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--navy2));color:#fff;font-weight:800;font-size:18px;display:flex;align-items:center;justify-content:center;flex:none}
-  .staff summary .role{font-size:11.5px;color:var(--teal);font-weight:800;letter-spacing:.03em}
-  .staff summary .pname{font-size:15px;font-weight:800;color:var(--navy);margin-top:1px}
-  .staff summary .chev{margin-left:auto;color:var(--sub);font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px}
-  .staff summary .chev .tap{font-size:10.5px;background:var(--teal);color:#fff;border-radius:12px;padding:2px 9px}
+  .staff summary .role{font-size:11px;color:var(--teal);font-weight:800;letter-spacing:.02em;line-height:1.35}
+  .staff summary .pname{font-size:15px;font-weight:800;color:var(--navy);margin-top:2px;white-space:nowrap}
+  .staff summary .chev{margin-left:auto;color:var(--sub);font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px;flex:none}
+  .staff summary .chev .tap{font-size:10.5px;background:var(--teal);color:#fff;border-radius:12px;padding:3px 10px;white-space:nowrap}
   .staff details[open] summary .chev .arr{transform:rotate(180deg)}
   .staff summary .chev .arr{transition:transform .2s;display:inline-block}
   .detail{padding:0 15px 16px}
@@ -107,7 +109,7 @@
         <details>
           <summary>
             <span class="av">古</span>
-            <span>
+            <span class="who">
               <span class="role">運営責任者・システム開発</span>
               <span class="pname">古谷 浩二</span>
             </span>
@@ -134,7 +136,7 @@
         <details>
           <summary>
             <span class="av">古</span>
-            <span>
+            <span class="who">
               <span class="role">広報・マーケティング担当</span>
               <span class="pname">古谷 優希</span>
             </span>

@@ -5,6 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DWA防災情報センター｜長岡京市認定 市民活動団体</title>
 <meta name="description" content="長岡京市認定 市民活動団体 DWA防災情報センター。タップで助かる、災害時デジタル後方支援。防災マップ・緊急対応マニュアル・SOSビーコンを提供します。">
+<!-- PWA / アプリとしてインストール -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#e3392e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="DWA防災">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-192.png">
 <style>
   :root{
     --ink:#16212b; --sub:#5b6b78; --line:#e2e8ee; --bg:#eef2f5; --panel:#ffffff;
@@ -181,6 +189,7 @@
       <a class="mi" href="https://www.city.nagaokakyo.lg.jp/" target="_blank" rel="noopener"><span class="ic">🏙️</span><span>長岡京市<span class="sub">市の防災・避難情報</span></span></a>
 
       <div class="grp">このサイトについて</div>
+      <button type="button" class="mi" id="installMenuBtn" onclick="onInstallClick()"><span class="ic">📲</span><span>アプリとしてインストール<span class="sub">ホーム画面に追加して使う</span></span></button>
       <a class="mi" href="privacy.html"><span class="ic">🔒</span><span>プライバシーポリシー<span class="sub">個人情報の取り扱い</span></span></a>
     </nav>
     <div class="mfoot">
@@ -758,6 +767,110 @@ function closeMenuThenSOS(){
        document.body.style.overflow=''; }catch(e){}
   try{ sosOpenPanel(); }catch(e){}
 }
+</script>
+<!-- ===== アプリとしてインストール：iPhone案内モーダル ===== -->
+<div id="iosInstall" style="display:none;position:fixed;inset:0;z-index:3000;background:rgba(10,20,30,.55);align-items:center;justify-content:center;padding:18px">
+  <div style="background:#fff;border-radius:16px;max-width:400px;width:100%;max-height:88vh;overflow-y:auto;box-shadow:0 18px 50px rgba(0,0,0,.3)">
+    <div style="display:flex;align-items:center;gap:10px;padding:18px 18px 8px">
+      <span style="font-size:24px">📲</span>
+      <h2 style="font-size:17px;margin:0;font-weight:800;color:#0f2c4a">ホーム画面に追加</h2>
+      <button onclick="closeIosGuide()" style="margin-left:auto;background:none;border:0;font-size:24px;line-height:1;color:#5b6b78;cursor:pointer" aria-label="閉じる">×</button>
+    </div>
+    <div style="padding:6px 18px 20px">
+      <p style="font-size:13px;color:#5b6b78;margin:0 0 12px;line-height:1.6">iPhone・iPadでは、Safariの共有メニューからホーム画面に追加できます。次の手順で操作してください。</p>
+      <div style="display:flex;gap:11px;padding:9px 0;border-bottom:1px solid #f0f4f7">
+        <div style="flex:0 0 26px;height:26px;border-radius:50%;background:#e3392e;color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center">1</div>
+        <div style="font-size:13.5px;line-height:1.6"><b style="color:#1f6f8b">Safari</b>でこのサイトを開きます（Chrome等では追加できないことがあります）。</div>
+      </div>
+      <div style="display:flex;gap:11px;padding:9px 0;border-bottom:1px solid #f0f4f7">
+        <div style="flex:0 0 26px;height:26px;border-radius:50%;background:#e3392e;color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center">2</div>
+        <div style="font-size:13.5px;line-height:1.6">画面下の中央にある<b style="color:#1f6f8b">共有ボタン</b>（□に↑の矢印マーク）をタップします。</div>
+      </div>
+      <div style="display:flex;gap:11px;padding:9px 0;border-bottom:1px solid #f0f4f7">
+        <div style="flex:0 0 26px;height:26px;border-radius:50%;background:#e3392e;color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center">3</div>
+        <div style="font-size:13.5px;line-height:1.6">メニューを下にスクロールし、<b style="color:#1f6f8b">「ホーム画面に追加」</b>をタップします。</div>
+      </div>
+      <div style="display:flex;gap:11px;padding:9px 0">
+        <div style="flex:0 0 26px;height:26px;border-radius:50%;background:#e3392e;color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center">4</div>
+        <div style="font-size:13.5px;line-height:1.6">右上の<b style="color:#1f6f8b">「追加」</b>をタップすれば完了です。ホーム画面にDWAのアイコンが追加されます。</div>
+      </div>
+      <div style="font-size:12px;color:#a06a00;background:#fff4e0;border-radius:9px;padding:10px 12px;margin-top:12px;line-height:1.55">💡 共有ボタンが見当たらないときは、画面を一度上にスクロールするか、Safari下部のバーをタップすると表示されます。</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== PWA：サービスワーカー登録 =====
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('sw.js').catch(function(){});
+  });
+}
+
+// ===== インストールプロンプト（Android/対応ブラウザ）=====
+var deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', function(e){
+  e.preventDefault();
+  deferredPrompt = e;
+});
+
+function isIos(){
+  var ua = window.navigator.userAgent || '';
+  return /iphone|ipad|ipod/i.test(ua);
+}
+function isStandalone(){
+  return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
+}
+
+function onInstallClick(){
+  // メニューを閉じる
+  try{
+    document.getElementById('menu').classList.remove('open');
+    document.getElementById('scrim').classList.remove('open');
+    document.getElementById('burger').classList.remove('open');
+    document.body.style.overflow='';
+  }catch(e){}
+
+  // すでにインストール済み（アプリとして起動中）
+  if (isStandalone()){
+    alert('すでにアプリとして利用中です。ホーム画面のアイコンから起動できます。');
+    return;
+  }
+
+  // Androidなど：インストールプロンプトが使える場合はそのまま実行
+  if (deferredPrompt){
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(function(){ deferredPrompt = null; });
+    return;
+  }
+
+  // iPhone：手順を案内
+  if (isIos()){
+    openIosGuide();
+    return;
+  }
+
+  // その他（プロンプト未発火のAndroid/PC等）：手動手順を案内
+  alert('お使いのブラウザのメニューから「ホーム画面に追加」または「アプリをインストール」を選んでください。');
+}
+
+function openIosGuide(){
+  var m=document.getElementById('iosInstall');
+  m.style.display='flex';
+  document.body.style.overflow='hidden';
+}
+function closeIosGuide(){
+  document.getElementById('iosInstall').style.display='none';
+  document.body.style.overflow='';
+}
+document.getElementById('iosInstall').addEventListener('click', function(e){
+  if(e.target===this) closeIosGuide();
+});
+
+// インストール完了時
+window.addEventListener('appinstalled', function(){
+  deferredPrompt = null;
+});
 </script>
 </body>
 </html>
