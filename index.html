@@ -24,17 +24,45 @@
   body{min-height:100vh;min-height:100dvh}
 
   /* トップバー */
-  .bar{position:sticky;top:0;z-index:1200;display:flex;align-items:center;gap:10px;
-    padding:10px 16px;background:rgba(255,255,255,.92);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+  .bar{position:sticky;top:0;z-index:1200;background:rgba(255,255,255,.95);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+  .bar-in{max-width:1200px;margin:0 auto;display:flex;align-items:center;gap:12px;padding:9px 20px}
+  .bar .brand{display:flex;align-items:center;gap:9px;text-decoration:none;color:var(--ink)}
   .bar .mark{font-size:20px}
   .bar .name{font-size:15px;font-weight:800;letter-spacing:.02em;line-height:1.2}
   .bar .name small{display:block;font-size:10.5px;color:var(--sub);font-weight:600;margin-top:1px}
-  .burger{margin-left:auto;display:inline-flex;flex-direction:column;justify-content:center;gap:4px;
+  .utils{margin-left:auto;display:flex;align-items:center;gap:8px}
+  .util{background:#fff;border:1.5px solid var(--line);border-radius:8px;padding:7px 11px;font-size:12.5px;font-weight:700;cursor:pointer;color:var(--ink);font-family:inherit;white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
+  .util:hover{border-color:var(--sub)}
+  .util.fs{gap:2px;padding:5px 8px}
+  .util.fs .fs-label{font-size:11px;color:var(--sub);margin-right:3px}
+  .util.fs button{background:none;border:0;font-weight:800;font-size:12px;cursor:pointer;color:var(--sub);padding:3px 5px;border-radius:5px;font-family:inherit}
+  .util.fs button.on{background:var(--brand2,#1f6f8b);color:#fff}
+  .searchbar{display:none;border-top:1px solid var(--line);background:#f6f9fb}
+  .searchbar.open{display:block}
+  .searchbar form{max-width:1200px;margin:0 auto;padding:10px 20px;display:flex;gap:8px}
+  .searchbar input{flex:1;border:1.5px solid var(--line);border-radius:8px;padding:9px 12px;font-size:14px;font-family:inherit}
+  .searchbar button{background:var(--brand2,#1f6f8b);color:#fff;border:0;border-radius:8px;padding:9px 18px;font-weight:700;cursor:pointer;font-family:inherit}
+  .burger{display:inline-flex;flex-direction:column;justify-content:center;gap:4px;
     width:44px;height:40px;border:1.5px solid var(--line);border-radius:9px;background:#fff;cursor:pointer;padding:0 10px}
   .burger span{display:block;height:2.5px;background:var(--ink);border-radius:2px;transition:.25s}
   .burger.open span:nth-child(1){transform:translateY(6.5px) rotate(45deg)}
   .burger.open span:nth-child(2){opacity:0}
   .burger.open span:nth-child(3){transform:translateY(-6.5px) rotate(-45deg)}
+  /* スマホでは文字サイズ・検索ラベルを省スペースに */
+  @media(max-width:600px){
+    .bar-in{padding:8px 10px;gap:6px}
+    .bar .name{font-size:12.5px;line-height:1.15}
+    .bar .name small{font-size:9px}
+    .bar .mark{font-size:17px}
+    .util{padding:6px 7px;font-size:11.5px}
+    .util .util-tx{display:none}
+    .util#langBtn{font-size:0}
+    .util#langBtn::before{content:"🌐EN";font-size:11.5px}
+    .util.fs{padding:4px 6px}
+    .util.fs .fs-label{display:none}
+    .util.fs button{padding:3px 4px;font-size:11px}
+    .burger{width:40px;height:36px;padding:0 9px}
+  }
 
   /* ヒーロー（ポスター） */
   .hero{display:flex;justify-content:center;padding:20px 16px 8px}
@@ -46,7 +74,8 @@
   .q:active{transform:scale(.98)}
   .q .qi{font-size:20px}
   .q.map{background:#eaf3f6;border-color:#a9d0dc;color:#155}
-  .q.sos{background:var(--brand);border-color:var(--brand);color:#fff;grid-column:1 / -1;justify-content:center;font-size:16px}
+  .q.sos{background:var(--brand);border-color:var(--brand);color:#fff;grid-column:1 / -1;justify-content:center;font-size:16px;flex-direction:column;gap:3px;text-align:center;line-height:1.3}
+  .q.sos .q-sub{font-size:12px;font-weight:700;opacity:.92;letter-spacing:.02em}
   .q.manual{background:#fff4e6;border-color:#f0c185;color:#9a5410}
   .q.near{background:#eaf0fb;border-color:#accbf0;color:#234f9e}
 
@@ -129,11 +158,31 @@
 </head>
 <body>
   <div class="bar">
-    <span class="mark">🛡️</span>
-    <div class="name">DWA防災情報センター<small>長岡京市認定 市民活動団体</small></div>
-    <button class="burger" id="burger" aria-label="メニューを開く" onclick="toggleMenu()">
-      <span></span><span></span><span></span>
-    </button>
+    <div class="bar-in">
+      <a class="brand" href="index.html">
+        <span class="mark">🛡️</span>
+        <span class="name">DWA防災情報センター<small>長岡京市認定 市民活動団体</small></span>
+      </a>
+      <div class="utils">
+        <button type="button" class="util" onclick="toggleLang()" id="langBtn" title="English / 日本語">🌐 English</button>
+        <div class="util fs" title="文字サイズ変更">
+          <span class="fs-label">文字</span>
+          <button type="button" onclick="setFont('s')" aria-label="小">小</button>
+          <button type="button" onclick="setFont('m')" aria-label="中" class="on" id="fsM">中</button>
+          <button type="button" onclick="setFont('l')" aria-label="大">大</button>
+        </div>
+        <button type="button" class="util" onclick="toggleSearch()" id="searchBtn" title="サイト内検索">🔍 <span class="util-tx">検索</span></button>
+        <button class="burger" id="burger" aria-label="メニューを開く" onclick="toggleMenu()">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+    <div class="searchbar" id="searchbar">
+      <form onsubmit="return doSearch(event)">
+        <input type="search" id="siteq" placeholder="サイト内をGoogleで検索…" aria-label="サイト内検索">
+        <button type="submit">検索</button>
+      </form>
+    </div>
   </div>
 
   <main>
@@ -142,7 +191,7 @@
     </div>
 
     <div class="quick">
-      <button type="button" class="q sos" onclick="sosOpenPanel()">🆘 SOSビーコンを発信</button>
+      <button type="button" class="q sos" onclick="sosOpenPanel()">🆘 SOSビーコンを発信<span class="q-sub">音と光で助けを呼ぶ</span></button>
       <a class="q map" href="map.html"><span class="qi">🗺️</span>防災マップ</a>
       <a class="q near" href="near.html"><span class="qi">📍</span>近くを探す</a>
       <a class="q manual" href="Manual.html"><span class="qi">📖</span>緊急対応<br>マニュアル</a>
@@ -205,6 +254,36 @@
   </aside>
 
 <script>
+  // 文字サイズ変更
+  function setFont(size){
+    var root=document.documentElement;
+    root.style.fontSize = size==='s' ? '90%' : size==='l' ? '118%' : '100%';
+    document.querySelectorAll('.util.fs button').forEach(function(b){b.classList.remove('on');});
+    var map={s:0,m:1,l:2};
+    var btns=document.querySelectorAll('.util.fs button');
+    if(btns[map[size]]) btns[map[size]].classList.add('on');
+  }
+  // サイト内検索（Googleでこのサイト内を検索）
+  function toggleSearch(){
+    var s=document.getElementById('searchbar');
+    s.classList.toggle('open');
+    if(s.classList.contains('open')){ var i=document.getElementById('siteq'); if(i) i.focus(); }
+  }
+  function doSearch(e){
+    e.preventDefault();
+    var q=document.getElementById('siteq').value.trim();
+    if(!q) return false;
+    var host=location.hostname || 'bousai0111.info';
+    var url='https://www.google.com/search?q=site:'+encodeURIComponent(host)+' '+encodeURIComponent(q);
+    window.open(url,'_blank','noopener');
+    return false;
+  }
+  // 言語切替（Google翻訳で英語版を開く）
+  function toggleLang(){
+    var url='https://translate.google.com/translate?sl=ja&tl=en&u='+encodeURIComponent(location.href);
+    window.open(url,'_blank','noopener');
+  }
+
   function toggleMenu(){
     const m=document.getElementById('menu'), s=document.getElementById('scrim'), b=document.getElementById('burger');
     const open=m.classList.toggle('open'); s.classList.toggle('open',open); b.classList.toggle('open',open);
