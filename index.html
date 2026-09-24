@@ -107,8 +107,8 @@
     /* PC：ランディングページ構成。全幅で縦に積む */
     main{max-width:none;margin:0;display:block;padding:0}
     /* 勝竜寺城の画像を画面いっぱいに大きく */
-    .hero{padding:0 100px;display:block}
-    .hero img{max-width:none;width:100%;height:auto;display:block;margin:0}
+    .hero{padding:24px 100px 8px;display:flex;justify-content:center}
+    .hero img{max-width:70%;width:100%;height:auto;display:block;margin:0 auto}
     /* 緊急スイッチを画像の下に全幅で横並び */
     .quick{max-width:1100px;margin:36px auto 0;padding:0 24px;grid-template-columns:repeat(4,1fr);gap:16px}
     .quick .q{padding:20px;font-size:15px}
@@ -179,6 +179,12 @@
   #sosFlashStop.show{ display:block; }
 
   .menu .grp{padding:14px 18px 6px;font-size:11px;font-weight:800;color:var(--sub);letter-spacing:.04em;background:#f6f9fb;border-bottom:1px solid #eef2f6}
+
+  /* 文字サイズ 大中小（px指定のためズームで拡縮。ヒーロー画像は元サイズを維持） */
+  html.fs-s body{zoom:0.9}
+  html.fs-l body{zoom:1.18}
+  html.fs-s .hero img{zoom:1.1112}
+  html.fs-l .hero img{zoom:0.8475}
 </style>
 </head>
 <body>
@@ -312,13 +318,16 @@
 <script>
   // 文字サイズ変更
   function setFont(size){
-    var root=document.documentElement;
-    root.style.fontSize = size==='s' ? '90%' : size==='l' ? '118%' : '100%';
+    var el=document.documentElement;
+    el.classList.remove('fs-s','fs-m','fs-l');
+    el.classList.add('fs-'+size);
+    try{ localStorage.setItem('dwa-fs', size); }catch(e){}
     document.querySelectorAll('.util.fs button').forEach(function(b){b.classList.remove('on');});
     var map={s:0,m:1,l:2};
     var btns=document.querySelectorAll('.util.fs button');
     if(btns[map[size]]) btns[map[size]].classList.add('on');
   }
+  (function(){ try{ var s=localStorage.getItem('dwa-fs'); if(s){ setFont(s); } }catch(e){} })();
   // サイト内検索（Googleでこのサイト内を検索）
   function toggleSearch(){
     var s=document.getElementById('searchbar');
