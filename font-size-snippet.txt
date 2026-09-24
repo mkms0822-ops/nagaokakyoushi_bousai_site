@@ -1,0 +1,46 @@
+【使い方】
+下の <script>〜</script> を、対象ページ（activity.html / contact.html など）の
+</body> の直前に貼り付けて保存するだけです。
+・トップページ等で選んだ文字サイズ（小・中・大）が自動で反映されます。
+・右下に小さな「文字 小 中 大」ボタンが出て、そのページでも変更できます。
+・設定は全ページ共通（localStorage: dwa-fs）で記憶されます。
+========================================================
+
+<script>
+(function(){
+  // 1) 文字ズーム用のCSSを注入
+  var css = 'html.fs-s body{zoom:0.9}\n'
+          + 'html.fs-l body{zoom:1.18}\n'
+          + '#dwaFs{position:fixed;right:12px;bottom:12px;z-index:99999;display:flex;align-items:center;gap:3px;'
+          + 'background:#0f2c4a;color:#fff;border-radius:999px;padding:5px 9px;box-shadow:0 4px 14px rgba(0,0,0,.25);'
+          + 'font-family:inherit}\n'
+          + '#dwaFs .l{font-size:10px;opacity:.85;margin-right:2px}\n'
+          + '#dwaFs button{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.45);color:#fff;'
+          + 'font-weight:800;font-size:12px;cursor:pointer;padding:3px 8px;border-radius:999px;font-family:inherit}\n'
+          + '#dwaFs button.on{background:#fff;color:#0f2c4a}\n';
+  var st=document.createElement('style'); st.textContent=css; document.head.appendChild(st);
+
+  // 2) 文字サイズを適用する関数（全ページ共通のキー dwa-fs を使用）
+  window.setFont = function(size){
+    var el=document.documentElement;
+    el.classList.remove('fs-s','fs-m','fs-l');
+    el.classList.add('fs-'+size);
+    try{ localStorage.setItem('dwa-fs', size); }catch(e){}
+    document.querySelectorAll('#dwaFs button').forEach(function(b){b.classList.remove('on');});
+    var map={s:0,m:1,l:2}, btns=document.querySelectorAll('#dwaFs button');
+    if(btns[map[size]]) btns[map[size]].classList.add('on');
+  };
+
+  // 3) 右下のミニ操作ボタンを設置
+  var box=document.createElement('div'); box.id='dwaFs';
+  box.innerHTML='<span class="l">文字</span>'
+    +'<button type="button" aria-label="小" onclick="setFont(\'s\')">小</button>'
+    +'<button type="button" aria-label="中" onclick="setFont(\'m\')">中</button>'
+    +'<button type="button" aria-label="大" onclick="setFont(\'l\')">大</button>';
+  document.body.appendChild(box);
+
+  // 4) 保存済みサイズを読み込んで反映（他ページでの選択もここに反映）
+  var s='m'; try{ s=localStorage.getItem('dwa-fs')||'m'; }catch(e){}
+  setFont(s);
+})();
+</script>

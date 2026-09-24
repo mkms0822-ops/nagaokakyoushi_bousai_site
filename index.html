@@ -179,6 +179,15 @@
   #sosFlashStop.show{ display:block; }
 
   .menu .grp{padding:14px 18px 6px;font-size:11px;font-weight:800;color:var(--sub);letter-spacing:.04em;background:#f6f9fb;border-bottom:1px solid #eef2f6}
+  .menu .sk{border:0}
+  .menu .sk>summary{list-style:none;display:flex;align-items:center;gap:12px;padding:14px 18px;cursor:pointer;color:var(--ink);font-size:14.5px;font-weight:800;border-bottom:1px solid #f2f5f8;background:#f6f9fb}
+  .menu .sk>summary::-webkit-details-marker{display:none}
+  .menu .sk>summary:hover{background:#eef4f8}
+  .menu .sk>summary .ic{font-size:19px;width:24px;text-align:center}
+  .menu .sk>summary .sub{display:block;font-size:11px;color:var(--sub);font-weight:500;margin-top:2px}
+  .menu .sk>summary .arr{margin-left:auto;color:var(--sub);font-size:12px;transition:transform .2s}
+  .menu .sk[open]>summary .arr{transform:rotate(180deg)}
+  .menu .sksub a.mi{padding-left:40px;border-left:3px solid var(--teal,#2f7d78);background:#fff}
 
   /* 文字サイズ 大中小（px指定のためズームで拡縮。ヒーロー画像は元サイズを維持） */
   html.fs-s body{zoom:0.9}
@@ -298,6 +307,13 @@
       <div class="grp">セルフ診断</div>
       <a class="mi" href="https://mkms0822-ops.github.io/anatano-bousai-shindan/" target="_blank" rel="noopener"><span class="ic">📝</span><span>あなたの防災意識診断<span class="sub">13の質問で備えと行動力をチェック</span></span></a>
 
+      <details class="sk">
+        <summary><span class="ic">🎓</span><span>防災 skill up<span class="sub">タップして訓練ツール一覧を開く</span></span><span class="arr">▾</span></summary>
+        <div class="sksub">
+          <a class="mi" href="https://mkms0822-ops.github.io/sct_speed.correct.training/" target="_blank" rel="noopener"><span class="ic">⚡</span><span>SCT ― 状況判断訓練ツール<span class="sub">防災士向け・状況判断のスピードと正確性を鍛える</span></span></a>
+        </div>
+      </details>
+
       <div class="grp">公式情報サイト</div>
       <a class="mi" href="https://www.jma.go.jp/jma/index.html" target="_blank" rel="noopener"><span class="ic">🌦️</span><span>気象庁<span class="sub">天気・警報・地震・台風</span></span></a>
       <a class="mi" href="https://www.bousai.go.jp/" target="_blank" rel="noopener"><span class="ic">🏛️</span><span>内閣府 防災情報<span class="sub">国の防災対策・支援制度</span></span></a>
@@ -305,6 +321,8 @@
       <a class="mi" href="https://www.npa.go.jp/" target="_blank" rel="noopener"><span class="ic">👮</span><span>警察庁<span class="sub">安全・防犯・交通の情報</span></span></a>
       <a class="mi" href="https://www.pref.kyoto.jp/" target="_blank" rel="noopener"><span class="ic">📍</span><span>京都府<span class="sub">府の防災・災害情報</span></span></a>
       <a class="mi" href="https://www.city.nagaokakyo.lg.jp/" target="_blank" rel="noopener"><span class="ic">🏙️</span><span>長岡京市<span class="sub">市の防災・避難情報</span></span></a>
+      <a class="mi" href="https://nagaokakyoshi-bousaishikai.jimdofree.com/" target="_blank" rel="noopener"><span class="ic">🛡️</span><span>長岡京市防災士の会<span class="sub">地域の防災士による活動</span></span></a>
+      <a class="mi" href="https://team-bousai-nagaokakyo.jimdofree.com/" target="_blank" rel="noopener"><span class="ic">🤝</span><span>チーム乙訓<span class="sub">乙訓地域の防災ネットワーク</span></span></a>
 
       <div class="grp">このサイトについて</div>
       <button type="button" class="mi" id="installMenuBtn" onclick="onInstallClick()"><span class="ic">📲</span><span>アプリとしてインストール<span class="sub">ホーム画面に追加して使う</span></span></button>
