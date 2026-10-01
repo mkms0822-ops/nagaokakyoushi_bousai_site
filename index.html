@@ -352,6 +352,66 @@
   html.fs-l body{zoom:1.18}
   html.fs-s .hero-stage{zoom:1.1112}
   html.fs-l .hero-stage{zoom:0.8475}
+
+/* ============================================================
+   説明部分のライズアップ（スクロールで下から現れる）
+   ============================================================ */
+.rise{
+  opacity:0;
+  transform:translateY(34px);
+  transition:opacity .85s cubic-bezier(.16,1,.3,1),
+             transform .85s cubic-bezier(.16,1,.3,1);
+  will-change:opacity, transform;
+}
+.rise.up{
+  opacity:1;
+  transform:translateY(0);
+}
+
+/* 中の要素を少しずつ遅らせて、順に立ち上がらせる */
+.rise .rise-i{
+  opacity:0;
+  transform:translateY(22px);
+  transition:opacity .75s cubic-bezier(.16,1,.3,1),
+             transform .75s cubic-bezier(.16,1,.3,1);
+}
+.rise.up .rise-i{ opacity:1; transform:translateY(0); }
+.rise.up .rise-i:nth-child(1){ transition-delay:.06s; }
+.rise.up .rise-i:nth-child(2){ transition-delay:.14s; }
+.rise.up .rise-i:nth-child(3){ transition-delay:.22s; }
+.rise.up .rise-i:nth-child(4){ transition-delay:.30s; }
+.rise.up .rise-i:nth-child(5){ transition-delay:.38s; }
+.rise.up .rise-i:nth-child(6){ transition-delay:.46s; }
+
+/* 写真の列は横に流しながら現れる */
+.ia-imgs.rise{ transform:translateY(30px) scale(.985); }
+.ia-imgs.rise.up{ transform:translateY(0) scale(1); }
+.ia-imgs.rise img{
+  opacity:0; transform:translateY(16px);
+  transition:opacity .7s cubic-bezier(.16,1,.3,1), transform .7s cubic-bezier(.16,1,.3,1);
+}
+.ia-imgs.rise.up img{ opacity:1; transform:translateY(0); }
+.ia-imgs.rise.up img:nth-child(1){ transition-delay:.08s; }
+.ia-imgs.rise.up img:nth-child(2){ transition-delay:.18s; }
+.ia-imgs.rise.up img:nth-child(3){ transition-delay:.28s; }
+
+/* 見出しの下に細い線が伸びる */
+.rise-line{ position:relative; }
+.rise-line::after{
+  content:''; position:absolute; left:0; bottom:-8px;
+  width:0; height:2px; border-radius:2px;
+  background:linear-gradient(90deg,var(--brand),var(--brand2));
+  transition:width .9s cubic-bezier(.16,1,.3,1) .25s;
+}
+.rise.up .rise-line::after{ width:56px; }
+
+@media (prefers-reduced-motion: reduce){
+  .rise, .rise .rise-i, .ia-imgs.rise img{
+    opacity:1 !important; transform:none !important; transition:none !important;
+  }
+  .rise-line::after{ width:56px !important; transition:none !important; }
+}
+
 </style>
 </head>
 <body>
@@ -586,6 +646,69 @@
     ready();
   }
 })();
+
+/* ============================================================
+   説明部分のライズアップ
+   画面に入ったブロックから順に立ち上げる（一度だけ）
+   ============================================================ */
+(function(){
+  /* ヒーローとボタン群より下の説明部分だけを対象にする */
+  var targets = [];
+  function add(sel){
+    var ns = document.querySelectorAll(sel);
+    for(var i=0;i<ns.length;i++){
+      if(targets.indexOf(ns[i]) === -1) targets.push(ns[i]);
+    }
+  }
+  add('.tagline');
+  add('.intro-article .ia-msg .ia-in');
+  add('.intro-article .ia-vision .ia-in');
+  add('.intro-article .ia-imgs');
+  add('.intro-article .ia-more');
+
+  if(!targets.length) return;
+
+  for(var i=0;i<targets.length;i++){
+    targets[i].classList.add('rise');
+    /* 直下の子を順番に立ち上げる対象として印をつける */
+    var kids = targets[i].children;
+    for(var k=0;k<kids.length;k++){
+      if(kids[k].tagName !== 'IMG') kids[k].classList.add('rise-i');
+    }
+    /* 見出しには線を引く */
+    var h = targets[i].querySelector('h2, h3');
+    if(h) h.classList.add('rise-line');
+  }
+
+  function show(el){ el.classList.add('up'); }
+
+  if(!('IntersectionObserver' in window)){
+    for(var j=0;j<targets.length;j++) show(targets[j]);
+    return;
+  }
+
+  var io = new IntersectionObserver(function(entries){
+    for(var i=0;i<entries.length;i++){
+      if(!entries[i].isIntersecting) continue;
+      show(entries[i].target);
+      io.unobserve(entries[i].target);
+    }
+  }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+
+  for(var n=0;n<targets.length;n++) io.observe(targets[n]);
+
+  /* 読み込み直後にすでに画面内にあるものは、待たずに出す */
+  setTimeout(function(){
+    for(var m=0;m<targets.length;m++){
+      var r = targets[m].getBoundingClientRect();
+      if(r.top < window.innerHeight * 0.92 && r.bottom > 0){
+        show(targets[m]);
+        io.unobserve(targets[m]);
+      }
+    }
+  }, 60);
+})();
+
 
 </script>
 
