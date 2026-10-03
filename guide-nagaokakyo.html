@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ご利用ガイド｜DWA防災情報センター（長岡京市認定 市民活動団体）</title>
+<meta name="description" content="DWA防災情報センターの使い方ガイド。SOSビーコン、防災マップ、緊急対応マニュアル、緊急連絡カード、各種診断ツールの使い方を場面別にまとめました。">
+<meta property="og:type" content="website">
+<meta property="og:title" content="ご利用ガイド｜DWA防災情報センター">
+<meta property="og:description" content="長岡京市認定 市民活動団体が運営する防災サイトの使い方ガイドです。">
+<meta property="og:site_name" content="DWA防災情報センター">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#1f6f8b">
+<style>
+
+:root{
+  --ink:#16212b; --sub:#5b6b78; --line:#e2e8ee; --bg:#eef2f5; --panel:#ffffff;
+  --brand:#e3392e; --brand2:#1f6f8b; --accent:#d1541f;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:70px}
+body{
+  font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+  background:var(--bg);color:var(--ink);line-height:1.8;
+  -webkit-text-size-adjust:100%;
+}
+a{color:var(--brand2)}
+
+/* ---- 上部 ---- */
+.top{
+  position:sticky;top:0;z-index:100;
+  background:linear-gradient(135deg,#1f6f8b,#16212b);
+  color:#fff;padding:13px 16px;
+  box-shadow:0 2px 14px rgba(22,33,43,.2);
+}
+.top-in{
+  max-width:860px;margin:0 auto;
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+}
+.top-badge{
+  background:rgba(255,255,255,.16);border-radius:99px;
+  padding:5px 13px;font-size:12px;font-weight:700;white-space:nowrap;
+}
+.top h1{font-size:17px;font-weight:700;line-height:1.4}
+.top .org{font-size:11.5px;opacity:.8;font-weight:400;display:block}
+.top-home{
+  margin-left:auto;background:var(--brand);color:#fff;
+  border-radius:99px;padding:8px 16px;font-size:13px;font-weight:700;
+  text-decoration:none;white-space:nowrap;
+}
+.top-home:hover{filter:brightness(1.08)}
+
+.wrap{max-width:860px;margin:0 auto;padding:20px 16px 60px}
+
+/* ---- 目次 ---- */
+.toc{
+  background:var(--panel);border:1px solid var(--line);
+  border-radius:14px;margin-bottom:20px;overflow:hidden;
+}
+.toc>summary{
+  padding:15px 18px;font-size:15px;font-weight:700;cursor:pointer;
+  list-style:none;display:flex;align-items:center;gap:8px;
+}
+.toc>summary::-webkit-details-marker{display:none}
+.toc>summary::after{content:'▾';margin-left:auto;color:var(--sub);font-size:12px}
+.toc[open]>summary::after{content:'▴'}
+.toc-list{padding:0 12px 14px;display:grid;gap:4px}
+.toc-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;border-radius:9px;text-decoration:none;color:var(--ink);
+  font-size:13.5px;
+}
+.toc-item:hover{background:var(--bg)}
+.toc-num{
+  font-size:11px;font-weight:700;color:var(--brand2);
+  min-width:22px;font-variant-numeric:tabular-nums;
+}
+.toc-ic{font-size:15px}
+
+/* ---- セクション ---- */
+.sec{
+  background:var(--panel);border:1px solid var(--line);
+  border-radius:14px;padding:22px 20px;margin-bottom:16px;
+}
+.sec-num{
+  font-size:10.5px;font-weight:700;letter-spacing:.14em;
+  color:var(--brand2);display:block;margin-bottom:5px;
+}
+.sec-title{
+  font-size:19px;font-weight:700;line-height:1.4;
+  display:flex;align-items:center;gap:9px;margin-bottom:7px;
+}
+.sec-lead{
+  font-size:13px;color:var(--sub);line-height:1.8;
+  padding-bottom:14px;margin-bottom:4px;border-bottom:1px solid var(--line);
+}
+.p{font-size:14.5px;line-height:1.95;margin:0 0 12px}
+.p.note{font-size:12.5px;color:var(--sub);line-height:1.8}
+.ul{margin:0 0 12px 20px}
+.ul li{font-size:14px;line-height:1.95;margin-bottom:6px}
+
+/* ---- 枠 ---- */
+.box{
+  background:var(--bg);border:1px solid var(--line);
+  border-radius:11px;padding:14px 16px;margin:14px 0;
+}
+.box-t{font-size:14px;font-weight:700;color:var(--brand2);margin-bottom:7px}
+.box .p:last-child,.box .ul:last-child{margin-bottom:0}
+.box.blue{background:#eaf3f7;border-color:#c5dde7}
+.box.warn{background:#fdeeec;border-color:#f3c8c3}
+.box.warn .box-t{color:var(--brand)}
+.box.tip{background:#fdf3ea;border-color:#f3dcc3}
+.box.tip .box-t{color:var(--accent)}
+
+/* ---- 表 ---- */
+.tbl{
+  width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px;
+  border:1px solid var(--line);border-radius:10px;overflow:hidden;
+}
+.tbl th,.tbl td{
+  border-bottom:1px solid var(--line);padding:10px 12px;
+  text-align:left;line-height:1.75;vertical-align:top;
+}
+.tbl th{background:var(--bg);font-weight:700;font-size:12.5px;color:var(--brand2)}
+.tbl tr:last-child th,.tbl tr:last-child td{border-bottom:none}
+
+/* ---- FAQ ---- */
+.qa{
+  background:var(--panel);border:1px solid var(--line);
+  border-radius:11px;margin-bottom:8px;overflow:hidden;
+}
+.qa>summary{
+  padding:14px 16px;font-size:14.5px;font-weight:700;cursor:pointer;
+  list-style:none;display:flex;align-items:center;gap:9px;
+}
+.qa>summary::-webkit-details-marker{display:none}
+.qa>summary::before{content:'Q';color:var(--brand);font-weight:900;flex-shrink:0}
+.qa>summary::after{content:'＋';margin-left:auto;color:var(--sub)}
+.qa[open]>summary::after{content:'−'}
+.qa[open]>summary{background:var(--bg)}
+.qa .p{padding:14px 16px 16px;margin:0}
+
+/* ---- 下部 ---- */
+.foot{
+  text-align:center;padding:26px 16px;margin-top:10px;
+  border-top:1px solid var(--line);
+}
+.foot .p{margin-bottom:10px}
+.foot .top-home{display:inline-block;margin:8px 0 0}
+
+@media(max-width:520px){
+  .top h1{font-size:15px}
+  .sec{padding:18px 15px}
+  .sec-title{font-size:17px}
+  .tbl{font-size:12.5px}
+  .tbl th,.tbl td{padding:8px 9px}
+}
+@media(prefers-reduced-motion:reduce){ html{scroll-behavior:auto} }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-in">
+    <span class="top-badge">📖 ご利用ガイド</span>
+    <h1>使い方マニュアル<span class="org">長岡京市認定 市民活動団体 DWA防災情報センター</span></h1>
+    <a class="top-home" href="index.html">サイトへ戻る ›</a>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="sec">
+    <p class="p">このガイドは、<b>困ったときに引ける</b>よう場面ごとに並べてあります。
+    上から順に読む必要はありません。</p>
+    <div class="box blue">
+      <div class="box-t">目的から探す</div>
+      <ul class="ul">
+        <li><b>いますぐ助けが要る</b> → 02 SOSビーコン</li>
+        <li><b>どこへ逃げるか知りたい</b> → 03 防災マップ</li>
+        <li><b>何をすべきか確かめたい</b> → 04 緊急対応マニュアル</li>
+        <li><b>いまのうちに備えたい</b> → 05〜07</li>
+        <li><b>うまく動かない</b> → 12 よくある質問</li>
+      </ul>
+    </div>
+  </section>
+
+  <details class="toc" open>
+    <summary>📑 目次</summary>
+    <div class="toc-list">
+      <a class="toc-item" href="#s01"><span class="toc-num">01</span><span class="toc-ic">🏠</span><span>このサイトについて</span></a>
+      <a class="toc-item" href="#s02"><span class="toc-num">02</span><span class="toc-ic">🆘</span><span>SOSビーコン</span></a>
+      <a class="toc-item" href="#s03"><span class="toc-num">03</span><span class="toc-ic">🗺️</span><span>防災マップ・近くを探す</span></a>
+      <a class="toc-item" href="#s04"><span class="toc-num">04</span><span class="toc-ic">📖</span><span>緊急対応マニュアル</span></a>
+      <a class="toc-item" href="#s05"><span class="toc-num">05</span><span class="toc-ic">🪪</span><span>緊急連絡カード</span></a>
+      <a class="toc-item" href="#s06"><span class="toc-num">06</span><span class="toc-ic">🧠</span><span>診断とクイズで備えを測る</span></a>
+      <a class="toc-item" href="#s07"><span class="toc-num">07</span><span class="toc-ic">🎓</span><span>訓練で力をつける</span></a>
+      <a class="toc-item" href="#s08"><span class="toc-num">08</span><span class="toc-ic">🏛️</span><span>公式情報を確かめる</span></a>
+      <a class="toc-item" href="#s09"><span class="toc-num">09</span><span class="toc-ic">👥</span><span>私たちについて</span></a>
+      <a class="toc-item" href="#s10"><span class="toc-num">10</span><span class="toc-ic">📲</span><span>使いやすくする</span></a>
+      <a class="toc-item" href="#s11"><span class="toc-num">11</span><span class="toc-ic">🔒</span><span>プライバシーについて</span></a>
+      <a class="toc-item" href="#faq"><span class="toc-num">12</span><span class="toc-ic">❓</span><span>よくある質問</span></a>
+    </div>
+  </details>
+
+<section class="sec" id="s01">
+  <span class="sec-num">SECTION 01</span>
+  <h2 class="sec-title"><span>🏠</span><span>このサイトについて</span></h2>
+  <p class="sec-lead">長岡京市認定の市民活動団体が運営する、地域のための防災サイトです。</p>
+<p class="p">DWA防災情報センターは、長岡京市が認定した市民活動団体です。
+「<b>タップで助かる 災害時デジタル後方支援</b>」を掲げ、
+いざという時に手を動かせる道具をまとめています。</p>
+
+<div class="box blue">
+  <div class="box-t">このサイトでできること</div>
+  <ul class="ul">
+    <li><b>助けを呼ぶ</b> ― SOSビーコンで音と光の救助信号を出す</li>
+    <li><b>逃げ場所を知る</b> ― 防災マップと「近くを探す」で避難所を確認する</li>
+    <li><b>手順を確かめる</b> ― 緊急対応マニュアルで行動を確認する</li>
+    <li><b>備えを測る</b> ― 各種診断で、いまの備えの状態を知る</li>
+    <li><b>力をつける</b> ― クイズや訓練ツールで判断力を鍛える</li>
+  </ul>
+</div>
+
+<p class="p">会員登録もアプリのインストールも必要ありません。
+ブラウザで開くだけで、すべての機能が無料で使えます。</p>
+
+<div class="box warn">
+  <div class="box-t">⚠️ はじめにお読みください</div>
+  <p class="p">このサイトは公的な救助要請システムとは<b>つながっていません</b>。
+  命に関わる場面では、必ず<b>119番（消防・救急）</b>または<b>110番（警察）</b>へ直接通報してください。
+  このサイトの機能は、通報が難しい状況での補助とお考えください。</p>
+</div>
+</section>
+
+<section class="sec" id="s02">
+  <span class="sec-num">SECTION 02</span>
+  <h2 class="sec-title"><span>🆘</span><span>SOSビーコン</span></h2>
+  <p class="sec-lead">声が出せない、電波が届かない。そんなときに居場所を知らせます。</p>
+<p class="p">画面上部の赤い<b>「SOS」</b>ボタン、またはメニューの
+<b>「SOSビーコン」</b>から開きます。
+がれきの下や暗い場所など、声や身振りで気づいてもらえない状況を想定した機能です。</p>
+
+<div class="box">
+  <div class="box-t">① 音と光のビーコン（通信不要）</div>
+  <p class="p">画面を国際救難信号「SOS」のモールス信号
+  （・・・ －－－ ・・・）で点滅させ、同時に高音のアラームを鳴らします。</p>
+  <ul class="ul">
+    <li><b>光</b>：暗所や夜間に、遠くからでも見つけてもらえます</li>
+    <li><b>音</b>：視界が利かない場所でも位置を伝えられます</li>
+  </ul>
+  <p class="p note">通信が切れていても動きます。
+  電池を長くもたせたいときは、音だけ・光だけに切り替えてください。</p>
+</div>
+
+<div class="box">
+  <div class="box-t">② 電話で通報（推奨）</div>
+  <p class="p">通報できる状況なら、こちらが確実です。
+  パネル内のボタンから<b>119</b>と<b>110</b>へ1タップで発信できます。</p>
+</div>
+
+<div class="box tip">
+  <div class="box-t">💡 先に試しておいてください</div>
+  <p class="p">パネル内の<b>「音のテスト（1秒だけ鳴らす）」</b>で、
+  音量と鳴り方を確かめておきましょう。
+  いざという時に操作で迷わずに済みます。周囲に人がいる場所では音量にご注意ください。</p>
+  <p class="p note">鳴り続けているときは、画面下の「■ 停止」ボタンで止められます。</p>
+</div>
+</section>
+
+<section class="sec" id="s03">
+  <span class="sec-num">SECTION 03</span>
+  <h2 class="sec-title"><span>🗺️</span><span>防災マップ・近くを探す</span></h2>
+  <p class="sec-lead">どこへ逃げるかを、あらかじめ知っておくための地図です。</p>
+<div class="box">
+  <div class="box-t">🗺️ 防災マップ</div>
+  <p class="p">長岡京市周辺の避難所、危険箇所、病院、備蓄拠点を地図上で確認できます。
+  平常時に開いて、自宅や職場から<b>どの避難所がいちばん近いか</b>、
+  <b>そこまでの道に危険な場所がないか</b>を確かめておいてください。</p>
+</div>
+
+<div class="box">
+  <div class="box-t">📍 近くを探す</div>
+  <p class="p">現在地から近い避難所を探します。
+  外出先で災害に遭ったときなど、土地勘のない場所で役立ちます。</p>
+  <p class="p note">位置情報の利用許可を求められます。許可しない場合は使えません。
+  許可した位置情報が外部に保存されることはありません。</p>
+</div>
+
+<div class="box tip">
+  <div class="box-t">💡 一度は歩いてみる</div>
+  <p class="p">地図で見た経路と、実際に歩ける経路は違うことがあります。
+  塀や川、坂道の状況は現地でしか分かりません。
+  晴れた日に一度、家族で歩いてみることをお勧めします。</p>
+</div>
+</section>
+
+<section class="sec" id="s04">
+  <span class="sec-num">SECTION 04</span>
+  <h2 class="sec-title"><span>📖</span><span>緊急対応マニュアル</span></h2>
+  <p class="sec-lead">その場で何をすべきかを、場面別にまとめています。</p>
+<p class="p">メニューの<b>「緊急対応マニュアル」</b>から開きます。
+慌てている時でも読めるよう、手順を短く区切ってあります。</p>
+<ul class="ul">
+  <li><b>地震</b>：揺れている最中・収まった直後・避難するときの3段階</li>
+  <li><b>火災</b>：初期消火の判断と、逃げるときの注意</li>
+  <li><b>豪雨・台風</b>：浸水のおそれがある場合の行動</li>
+  <li><b>停電・断水</b>：生活を維持するための手順</li>
+  <li><b>応急手当</b>：止血、心肺蘇生、AEDの使い方</li>
+</ul>
+<div class="box tip">
+  <div class="box-t">💡 災害が起きてからでは遅い</div>
+  <p class="p">探している余裕はありません。
+  落ち着いているうちに一度目を通し、家族で話し合っておいてください。</p>
+</div>
+</section>
+
+<section class="sec" id="s05">
+  <span class="sec-num">SECTION 05</span>
+  <h2 class="sec-title"><span>🪪</span><span>緊急連絡カード</span></h2>
+  <p class="sec-lead">必要な情報を1枚にまとめて、すぐ見せられる状態にします。</p>
+<p class="p">家族の連絡先、持病、服用している薬、血液型、
+かかりつけ医などを1枚のカードにまとめられます。</p>
+
+<div class="box">
+  <div class="box-t">こんな場面で役立ちます</div>
+  <ul class="ul">
+    <li>救急隊員や医療者に、持病や薬をすぐ伝えたいとき</li>
+    <li>本人が答えられない状態のとき</li>
+    <li>子どもや高齢の家族が、ひとりでいるとき</li>
+    <li>避難所で家族と合流する手がかりが要るとき</li>
+  </ul>
+</div>
+
+<div class="box tip">
+  <div class="box-t">💡 紙にも残しておく</div>
+  <p class="p">端末の電池が切れると見られません。
+  印刷して財布や避難袋に入れておくと確実です。
+  家族それぞれが持つようにしてください。</p>
+</div>
+</section>
+
+<section class="sec" id="s06">
+  <span class="sec-num">SECTION 06</span>
+  <h2 class="sec-title"><span>🧠</span><span>診断とクイズで備えを測る</span></h2>
+  <p class="sec-lead">いまの備えがどの程度か、短い質問で確かめられます。</p>
+<div class="box">
+  <div class="box-t">📝 あなたの防災意識診断</div>
+  <p class="p">13の質問で、備えと行動力をチェックします。
+  結果とあわせて、次にやるべきことが示されます。</p>
+</div>
+
+<div class="box">
+  <div class="box-t">🧠 防災診断・防災クイズ</div>
+  <p class="p">知識を楽しみながら確認できます。
+  家族でやって、結果を見比べてみてください。
+  大人が間違える問題も入っています。</p>
+</div>
+
+<div class="box">
+  <div class="box-t">🔋 バッテリー診断</div>
+  <p class="p">モバイルバッテリーの発火リスクを確認します。
+  膨らんでいる、熱くなる、古い。こうしたバッテリーは発火の危険があります。
+  避難袋に入れっぱなしのものこそ、点検が必要です。</p>
+</div>
+
+<p class="p">どれも数分で終わります。
+やって終わりにせず、<b>結果で指摘されたことを1つだけでも実行する</b>ことをお勧めします。</p>
+</section>
+
+<section class="sec" id="s07">
+  <span class="sec-num">SECTION 07</span>
+  <h2 class="sec-title"><span>🎓</span><span>訓練で力をつける</span></h2>
+  <p class="sec-lead">知識から一歩進んで、判断する力を鍛えます。</p>
+<div class="box">
+  <div class="box-t">🚨 デジタル避難訓練</div>
+  <p class="p">オンラインで参加できる避難訓練です。
+  実際に体を動かす訓練に参加できない方でも、手順を体験できます。</p>
+</div>
+
+<div class="box">
+  <div class="box-t">⚡ SCT ― 状況判断訓練ツール</div>
+  <p class="p">メニューの「セルフ診断」にある
+  <b>「🎓 防災 skill up」</b>をタップすると開きます。</p>
+  <p class="p">SCTは Speed &amp; Correct Training の略で、
+  <b>判断の速さと正確さ</b >を同時に鍛えるツールです。
+  災害時は、正しい判断を<b>短い時間で</b>下さなければなりません。
+  防災士の方や、地域で指揮をとる立場の方に向いています。</p>
+</div>
+
+<div class="box tip">
+  <div class="box-t">💡 くり返すほど意味があります</div>
+  <p class="p">一度やって終わりでは身につきません。
+  月に一度でも続けると、とっさの判断が変わってきます。</p>
+</div>
+</section>
+
+<section class="sec" id="s08">
+  <span class="sec-num">SECTION 08</span>
+  <h2 class="sec-title"><span>🏛️</span><span>公式情報を確かめる</span></h2>
+  <p class="sec-lead">最終的な判断は、公式の発表でご確認ください。</p>
+<p class="p">メニューの<b>「公式情報サイト」</b>から、
+主要な機関のページへ直接開けます。</p>
+<table class="tbl">
+  <tr><th>機関</th><th>見られる情報</th></tr>
+  <tr><td><b>気象庁</b></td><td>天気・警報・地震・台風</td></tr>
+  <tr><td><b>内閣府 防災情報</b></td><td>国の防災対策・支援制度</td></tr>
+  <tr><td><b>総務省消防庁</b></td><td>火災・救急・防災の情報</td></tr>
+  <tr><td><b>警察庁</b></td><td>安全・防犯・交通の情報</td></tr>
+  <tr><td><b>京都府</b></td><td>府の防災・災害情報</td></tr>
+  <tr><td><b>長岡京市</b></td><td>市の防災・避難情報、避難所の開設状況</td></tr>
+  <tr><td><b>チーム乙訓</b></td><td>乙訓地域の防災ネットワーク</td></tr>
+</table>
+<div class="box warn">
+  <div class="box-t">⚠️ 避難の判断は公式情報で</div>
+  <p class="p">避難所が実際に開いているか、どの地域に避難指示が出ているか。
+  こうした情報は<b>長岡京市の公式発表</b>が最も確実です。
+  このサイトの情報と食い違う場合は、必ず公式発表を優先してください。</p>
+</div>
+</section>
+
+<section class="sec" id="s09">
+  <span class="sec-num">SECTION 09</span>
+  <h2 class="sec-title"><span>👥</span><span>私たちについて</span></h2>
+  <p class="sec-lead">どんな団体が運営しているかを知っていただくために。</p>
+<ul class="ul">
+  <li><b>🎯 活動と目標</b>：代表メッセージ、これまでの歩み、2030年に向けたビジョン</li>
+  <li><b>👤 スタッフ紹介</b>：経歴と保有資格</li>
+  <li><b>📞 問い合わせ窓口</b>：電話・メールでのご連絡先</li>
+  <li><b>✉️ お問い合わせ</b>：フォームからのご質問・ご連絡</li>
+</ul>
+<p class="p">防災講座や訓練のご依頼、地域での連携についても、
+お問い合わせからご相談ください。</p>
+</section>
+
+<section class="sec" id="s10">
+  <span class="sec-num">SECTION 10</span>
+  <h2 class="sec-title"><span>📲</span><span>使いやすくする</span></h2>
+  <p class="sec-lead">ホーム画面に追加しておくと、緊急時に素早く開けます。</p>
+<p class="p">インストールは不要ですが、ホーム画面に追加しておくと
+アプリのように1タップで開けます。
+<b>緊急時にURLを入力する余裕はありません。</b>先に追加しておいてください。</p>
+<ul class="ul">
+  <li><b>Android（Chrome）</b>：メニュー（⋮）→「ホーム画面に追加」</li>
+  <li><b>iPhone（Safari）</b>：共有ボタン → 「ホーム画面に追加」</li>
+</ul>
+<div class="box tip">
+  <div class="box-t">💡 家族の端末にも</div>
+  <p class="p">自分だけでなく、家族全員の端末に入れておくと、
+  離れていても同じ情報を見られます。
+  高齢のご家族の端末にも、ぜひ追加してあげてください。</p>
+</div>
+</section>
+
+<section class="sec" id="s11">
+  <span class="sec-num">SECTION 11</span>
+  <h2 class="sec-title"><span>🔒</span><span>プライバシーについて</span></h2>
+  <p class="sec-lead">入力した情報がどう扱われるかを明記しています。</p>
+<p class="p">診断ツールで選んだ内容や、位置情報の利用は、
+お使いの端末のブラウザ内で処理されます。
+これらが運営者を含む第三者に渡ることはありません。</p>
+<p class="p">詳しくはメニューの<b>「プライバシーポリシー」</b>をご覧ください。</p>
+<p class="p note">外部のツール（緊急連絡カード、防災意識診断、SCT）は別のサイトで提供されています。
+それぞれのサイトの方針が適用されます。</p>
+</section>
+
+<section class="sec" id="faq">
+  <span class="sec-num">SECTION 12</span>
+  <h2 class="sec-title"><span>❓</span><span>よくある質問</span></h2>
+  <p class="sec-lead">お問い合わせの多いものをまとめました。</p>
+  <details class="qa"><summary>SOSの音が鳴りません</summary><p class="p">端末がマナーモードになっていないかご確認ください。また、画面を一度タップしてからでないと音が出ないブラウザがあります。パネル内の「音のテスト」で、事前に確認しておいてください。</p></details>
+  <details class="qa"><summary>このサイトから119番に通報されますか</summary><p class="p">いいえ。電話ボタンはお使いの端末の電話機能を呼び出すだけで、自動的に通報されることはありません。このサイトは公的な救助要請システムとは連動していません。</p></details>
+  <details class="qa"><summary>「近くを探す」が使えません</summary><p class="p">位置情報の利用を許可する必要があります。ブラウザの設定で、このサイトの位置情報がブロックされていないかご確認ください。屋内では位置の精度が落ちることがあります。</p></details>
+  <details class="qa"><summary>地図が表示されません</summary><p class="p">地図の画像は通信で取得しています。電波の状況をご確認ください。通信制限がかかっている場合も表示が遅くなります。</p></details>
+  <details class="qa"><summary>画面が古いまま更新されません</summary><p class="p">ブラウザが前回の内容を記憶しているためです。ページを再読み込みするか、ブラウザの閲覧データを削除してください。ホーム画面に追加している場合は、一度削除して追加し直すと直ることがあります。</p></details>
+  <details class="qa"><summary>電波がない場所でも使えますか</summary><p class="p">一度開いたページは、ある程度表示できます。SOSビーコンの音と光は通信なしで動きます。ただし地図の表示と、外部サイトの診断ツールには通信が必要です。</p></details>
+  <details class="qa"><summary>費用はかかりますか</summary><p class="p">すべて無料です。会員登録も不要です。通信料はお客さまのご負担となります。</p></details>
+  <details class="qa"><summary>防災講座を依頼できますか</summary><p class="p">ご相談を承っています。メニューの「お問い合わせ」または「問い合わせ窓口」からご連絡ください。</p></details>
+</section>
+
+  <div class="foot">
+    <p class="p note">記載の内容と実際の画面が異なる場合は、実際の画面を優先してください。<br>
+    避難に関する最終的な判断は、長岡京市の公式発表をご確認ください。</p>
+    <p class="p note">長岡京市認定 市民活動団体<br><b>DWA防災情報センター</b></p>
+    <a class="top-home" href="index.html">サイトへ戻る ›</a>
+  </div>
+
+</main>
+</body>
+</html>

@@ -568,6 +568,7 @@
       <a class="mi" href="map.html"><span class="ic">🗺️</span><span>防災マップ<span class="sub">避難所・危険箇所・病院・備蓄</span></span></a>
       <a class="mi" href="near.html"><span class="ic">📍</span><span>近くを探す<span class="sub">現在地の近くの避難所</span></span></a>
       <a class="mi" href="Manual.html"><span class="ic">📖</span><span>緊急対応マニュアル<span class="sub">いざというときの手順</span></span></a>
+      <a class="mi" href="https://mkms0822-ops.github.io/kinkyurenrakuka-do/" target="_blank" rel="noopener"><span class="ic">🪪</span><span>緊急連絡カード<span class="sub">家族の連絡先・持病・血液型を1枚に</span></span></a>
       <a class="mi" href="https://bousai0111.info/drill.html"><span class="ic">🚨</span><span>デジタル避難訓練<span class="sub">オンラインで参加する訓練</span></span></a>
       <a class="mi" href="quiz.html"><span class="ic">🧠</span><span>防災診断・防災クイズ<span class="sub">いっしょに知識を身につける</span></span></a>
       <a class="mi" href="battery-diagnosis.html"><span class="ic">🔋</span><span>バッテリー診断<span class="sub">発火リスクをチェック</span></span></a>
@@ -592,6 +593,7 @@
       <a class="mi" href="https://team-bousai-nagaokakyo.jimdofree.com/" target="_blank" rel="noopener"><span class="ic">🤝</span><span>チーム乙訓<span class="sub">乙訓地域の防災ネットワーク</span></span></a>
 
       <div class="grp">このサイトについて</div>
+      <a class="mi" href="guide-nagaokakyo.html"><span class="ic">📖</span><span>ご利用ガイド<span class="sub">このサイトの使い方・よくある質問</span></span></a>
       <button type="button" class="mi" id="installMenuBtn" onclick="onInstallClick()"><span class="ic">📲</span><span>アプリとしてインストール<span class="sub">ホーム画面に追加して使う</span></span></button>
       <a class="mi" href="privacy.html"><span class="ic">🔒</span><span>プライバシーポリシー<span class="sub">個人情報の取り扱い</span></span></a>
     </nav>
@@ -836,15 +838,6 @@
       <div class="sos-row">
         <a class="sos-btn red" style="text-align:center;text-decoration:none;box-sizing:border-box;line-height:1.3" href="tel:119">📞 119へ電話<br><span style="font-size:11px;font-weight:400">火事・救急・救助</span></a>
         <a class="sos-btn blue" style="text-align:center;text-decoration:none;box-sizing:border-box;line-height:1.3" href="tel:110">📞 110へ電話<br><span style="font-size:11px;font-weight:400">事件・事故</span></a>
-      </div>
-    </div>
-
-    <div class="sos-sec" style="border-style:dashed">
-      <h3>③ GPS位置発信・安否登録 <span style="color:#ffd54f">（10月1日 提供開始予定）</span></h3>
-      <div class="sos-note">
-        現在地をワンタップで発信して、ご家族や運営と共有できる「GPS位置発信」と「安否登録」は、
-        <b style="color:#ffd54f">プレミアム会員限定機能</b>として <b>10月1日</b> に提供を開始する予定です。<br>
-        ※無料会員登録は8月開始予定。詳細は追ってサイト内のお知らせでご案内します。
       </div>
     </div>
 
@@ -1135,7 +1128,7 @@
   };
 
   // ============================================================
-  // ② SOS位置発信 ③ 安否登録（GASへ記録）
+  // 位置情報と安否状態の記録（GASへ送信する内部処理）
   // ============================================================
   function nowStr() {
     var d = new Date();
