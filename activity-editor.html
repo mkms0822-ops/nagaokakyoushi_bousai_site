@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>活動記録の作成ツール｜DWA防災情報センター</title>
+<style>
+  :root{--ink:#16212b;--sub:#5b6b78;--line:#e2e8ee;--bg:#eef2f5;--brand:#e3392e;--brand2:#1f6f8b}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;color:var(--ink);background:var(--bg)}
+  header{background:#fff;border-bottom:1px solid var(--line);padding:12px 16px;position:sticky;top:0;z-index:10}
+  header .in{max-width:880px;margin:0 auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  header h1{font-size:16px;margin:0;font-weight:800}
+  header h1 small{display:block;font-size:11px;color:var(--sub);font-weight:600}
+  header .sp{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+  main{max-width:880px;margin:0 auto;padding:16px}
+  .box{background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:16px;margin-bottom:16px}
+  .box h2{font-size:15px;margin:0 0 10px;font-weight:800}
+  .note{font-size:12.5px;color:var(--sub);line-height:1.7;margin:0 0 10px}
+  label.f{display:block;font-size:13px;font-weight:800;margin:12px 0 5px}
+  label.f .req{color:var(--brand);font-size:11px;margin-left:4px}
+  input[type=date],input[type=text],textarea{width:100%;border:1.5px solid var(--line);border-radius:9px;padding:10px 12px;font-size:15px;font-family:inherit;background:#fff}
+  textarea{min-height:150px;line-height:1.7;resize:vertical}
+  input:focus,textarea:focus{outline:none;border-color:var(--brand2);box-shadow:0 0 0 3px rgba(31,111,139,.15)}
+  .cnt{font-size:11.5px;color:var(--sub);text-align:right;margin-top:3px}
+  .btn{appearance:none;border:1.5px solid var(--line);background:#fff;color:var(--ink);border-radius:9px;padding:9px 14px;font-weight:800;font-size:13.5px;cursor:pointer;font-family:inherit}
+  .btn:hover{border-color:var(--sub)}
+  .btn.pri{background:var(--brand2);border-color:var(--brand2);color:#fff}
+  .btn.red{color:var(--brand);border-color:#f2b9b4}
+  .btn.big{padding:13px 20px;font-size:15px}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .drop{border:2px dashed #b9c8d4;border-radius:12px;padding:18px;text-align:center;color:var(--sub);font-size:13px;line-height:1.7;cursor:pointer;background:#f8fbfd}
+  .drop.over{border-color:var(--brand2);background:#eef6f9}
+  .thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-top:12px}
+  .th{position:relative;border:1.5px solid var(--line);border-radius:10px;overflow:hidden;background:#f2f5f8}
+  .th img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block}
+  .th .meta{font-size:10.5px;color:var(--sub);padding:4px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .th .ops{position:absolute;top:4px;left:4px;right:4px;display:flex;gap:4px}
+  .th .ops button{background:rgba(15,30,45,.72);color:#fff;border:0;border-radius:7px;width:28px;height:28px;font-size:13px;cursor:pointer}
+  .th .ops .x{margin-left:auto;background:rgba(227,57,46,.9)}
+  .th .no{position:absolute;bottom:26px;left:6px;background:rgba(255,255,255,.9);border-radius:6px;font-size:11px;font-weight:800;padding:1px 6px}
+  .th.busy::after{content:"圧縮中…";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.8);font-size:12px;font-weight:800;color:var(--brand2)}
+  .msg{font-size:13px;line-height:1.7;margin-top:10px;min-height:1.2em}
+  .msg.err{color:var(--brand)} .msg.ok{color:#2e7d32}
+  .list{display:flex;flex-direction:column;gap:8px}
+  .item{display:flex;gap:10px;align-items:center;border:1.5px solid var(--line);border-radius:10px;padding:8px 10px;background:#fff}
+  .item img,.item .ph{width:64px;height:48px;object-fit:cover;border-radius:6px;flex:0 0 auto;background:#e6edf2}
+  .item .tx{flex:1;min-width:0}
+  .item .tx b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .item .tx span{font-size:12px;color:var(--sub)}
+  .item.new{border-color:#9fd3b0;background:#f3fbf5}
+  .item.editing{border-color:var(--brand2);box-shadow:0 0 0 3px rgba(31,111,139,.15)}
+  .badge{font-size:10.5px;font-weight:800;border-radius:6px;padding:1px 6px;margin-left:6px;vertical-align:1px}
+  .badge.n{background:#2e7d32;color:#fff} .badge.e{background:#f0a020;color:#fff}
+  .steps{font-size:13px;line-height:1.9;margin:0;padding-left:20px}
+  .steps code{background:#f2f5f8;border-radius:5px;padding:1px 5px;font-size:12px}
+  .opt{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--sub);margin-top:8px}
+  .opt select{font-family:inherit;font-size:12.5px;border:1.5px solid var(--line);border-radius:7px;padding:4px 6px}
+  @media(max-width:560px){ header .sp .btn{padding:8px 10px;font-size:12.5px} }
+</style>
+</head>
+<body>
+<header>
+  <div class="in">
+    <h1>📝 活動記録の作成ツール<small>DWA防災情報センター（管理用・このページは公開されません）</small></h1>
+    <div class="sp">
+      <button class="btn" type="button" id="btnLoad">📂 activity-log.js を開く</button>
+      <button class="btn pri" type="button" id="btnExport" disabled>⬇️ 公開用ファイルを書き出す</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="box">
+    <h2 id="formTitle">新しい記録を作る</h2>
+    <p class="note">写真はこのブラウザの中で自動的に縮小・圧縮されます（長辺1600px・WebP形式）。位置情報などの撮影データも取り除かれるので、そのまま公開して大丈夫です。写真はどこにも送信されません。</p>
+
+    <label class="f" for="fDate">日付<span class="req">必須</span></label>
+    <input type="date" id="fDate">
+
+    <label class="f" for="fTitle">タイトル<span class="req">必須</span></label>
+    <input type="text" id="fTitle" maxlength="80" placeholder="例:長岡京市防災フェアに出展しました">
+    <div class="cnt"><span id="cTitle">0</span> / 80</div>
+
+    <label class="f" for="fText">活動内容</label>
+    <textarea id="fText" maxlength="3000" placeholder="活動の内容・参加人数・感想など。改行はそのまま表示されます。URLは自動でリンクになります。"></textarea>
+    <div class="cnt"><span id="cText">0</span> / 3000</div>
+
+    <label class="f">写真<span style="font-weight:600;color:var(--sub);font-size:12px">（1つの記録に10枚まで・<span id="cImg">0</span>/10）</span></label>
+    <div class="drop" id="drop" tabindex="0" role="button">📷 ここをタップして写真を選ぶ<br><span style="font-size:12px">（パソコンは写真をドラッグして入れることもできます）</span></div>
+    <input type="file" id="fFiles" accept="image/*" multiple hidden>
+    <div class="opt">
+      <label>画質 <select id="optQ"><option value="0.86">高め（容量大）</option><option value="0.8" selected>標準</option><option value="0.72">軽め（容量小）</option></select></label>
+      <label>長辺 <select id="optSide"><option value="2048">2048px</option><option value="1600" selected>1600px</option><option value="1280">1280px</option></select></label>
+    </div>
+    <div class="thumbs" id="thumbs"></div>
+
+    <div class="row" style="margin-top:16px">
+      <button class="btn pri big" type="button" id="btnSave">✅ この記録を追加する</button>
+      <button class="btn" type="button" id="btnCancel" hidden>編集をやめる</button>
+    </div>
+    <div class="msg" id="msg"></div>
+  </div>
+
+  <div class="box">
+    <h2>記録の一覧 <span style="font-size:12px;color:var(--sub);font-weight:600" id="listInfo"></span></h2>
+    <p class="note">新しい順に並びます。「編集」で内容や写真を直せます。ここで変えた内容は、「公開用ファイルを書き出す」まではサイトに反映されません。</p>
+    <div class="list" id="list"></div>
+  </div>
+
+  <div class="box">
+    <h2>サイトに反映する手順</h2>
+    <ol class="steps">
+      <li>上の「⬇️ 公開用ファイルを書き出す」を押すと、ZIPファイルがダウンロードされます。</li>
+      <li>ZIPを開くと、<code>activity-log.js</code> と <code>activity</code> フォルダ（新しい写真）が入っています。</li>
+      <li>GitHubのリポジトリの一番上（<code>index.html</code> と同じ場所）に <code>activity-log.js</code> を上書きでアップロードします。</li>
+      <li><code>activity</code> フォルダの中の写真を、リポジトリの <code>activity</code> フォルダにアップロードします（初回はフォルダごと）。</li>
+      <li>記録や写真を削除した場合は、ZIPの中の「アップロード手順.txt」に、消してよい写真の名前が書いてあります。</li>
+    </ol>
+    <p class="note" style="margin-top:10px">次に記録を追加するときは、このページをサイト上で開けば今の記録が自動で読み込まれます。パソコンに保存したファイルから続けるときは「📂 activity-log.js を開く」を使ってください。</p>
+  </div>
+</main>
+<input type="file" id="fLog" accept=".js,.json,text/javascript,application/json" hidden>
+
+<script>
+(function(){
+  var MAX = 10;
+  var $ = function(id){ return document.getElementById(id); };
+  var records = [];          /* 公開中＋編集中の全記録 */
+  var blobs = {};            /* 新しく作った写真ファイル（パス → Blob） */
+  var removed = [];          /* 公開済みで、消してよくなった写真のパス */
+  var original = {};         /* 読み込んだ時点で公開されていた写真のパス */
+  var draft = [];            /* フォームの写真 [{src,thumb,w,h, isNew, mainBlob, thumbBlob, url, name, busy}] */
+  var editingId = null, dirty = false;
+
+  /* ---------- 入力欄 ---------- */
+  function today(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  $('fDate').value = today();
+  $('fTitle').addEventListener('input', function(){ $('cTitle').textContent = this.value.length; });
+  $('fText').addEventListener('input', function(){ $('cText').textContent = this.value.length; });
+  function msg(t, cls){ var m=$('msg'); m.textContent=t; m.className='msg'+(cls?' '+cls:''); }
+
+  /* ---------- 既存データの読み込み ---------- */
+  function setData(arr, from){
+    records = (Array.isArray(arr)?arr:[]).map(function(r){
+      return { id:String(r.id||mkId(r.date||today())), date:String(r.date||''), title:String(r.title||''), text:String(r.text||''),
+               images:(r.images||[]).map(function(im){ return typeof im==='string'?{src:im}:im; }) };
+    });
+    original = {};
+    records.forEach(function(r){ r.images.forEach(function(im){ original[im.src]=1; if(im.thumb) original[im.thumb]=1; }); });
+    blobs = {}; removed = []; dirty = false;
+    renderList();
+    msg(records.length ? from+'から'+records.length+'件の記録を読み込みました。' : '記録はまだありません。新しく作りましょう。', 'ok');
+    updateExport();
+  }
+  /* サイト上で開いたときは、公開中のデータを自動で読み込む */
+  (function(){
+    var s=document.createElement('script');
+    s.src='activity-log.js?v='+Date.now();
+    s.onload=function(){ setData(window.DWA_ACTIVITY||[], 'サイト上の activity-log.js '); };
+    s.onerror=function(){ renderList(); msg('activity-log.js が見つからないため、空の状態から始めます。続きから作る場合は「📂 activity-log.js を開く」を使ってください。'); };
+    document.head.appendChild(s);
+  })();
+  $('btnLoad').addEventListener('click', function(){
+    if(dirty && !confirm('書き出していない変更があります。別のファイルを開くと失われます。続けますか?')) return;
+    $('fLog').click();
+  });
+  $('fLog').addEventListener('change', function(){
+    var f=this.files[0]; this.value=''; if(!f) return;
+    var rd=new FileReader();
+    rd.onload=function(){
+      var t=String(rd.result), a=t.indexOf('['), b=t.lastIndexOf(']');
+      try{ setData(JSON.parse(t.slice(a,b+1)), '「'+f.name+'」'); }
+      catch(e){ msg('ファイルを読み取れませんでした。activity-log.js を選んでください。','err'); }
+    };
+    rd.readAsText(f,'utf-8');
+  });
+
+  /* ---------- 写真の取り込みと圧縮 ---------- */
+  var webpOK = (function(){ try{ var c=document.createElement('canvas'); c.width=c.height=1; return c.toDataURL('image/webp').indexOf('data:image/webp')===0; }catch(e){ return false; } })();
+  function loadImage(file){
+    return new Promise(function(res, rej){
+      var url=URL.createObjectURL(file), img=new Image();
+      img.onload=function(){ res({img:img, url:url}); };
+      img.onerror=function(){ URL.revokeObjectURL(url); rej(new Error('decode')); };
+      img.src=url;
+    });
+  }
+  function encode(img, side, q){
+    var w=img.naturalWidth, h=img.naturalHeight, s=Math.min(1, side/Math.max(w,h));
+    var cw=Math.max(1,Math.round(w*s)), ch=Math.max(1,Math.round(h*s));
+    var c=document.createElement('canvas'); c.width=cw; c.height=ch;
+    var x=c.getContext('2d'); x.imageSmoothingEnabled=true; x.imageSmoothingQuality='high';
+    x.fillStyle='#fff'; x.fillRect(0,0,cw,ch);   /* 透過PNGの背景を白に */
+    x.drawImage(img,0,0,cw,ch);
+    var type = webpOK ? 'image/webp' : 'image/jpeg';
+    return new Promise(function(res){ c.toBlob(function(b){ res({blob:b, w:cw, h:ch, ext: (b && b.type==='image/webp') ? 'webp' : 'jpg'}); }, type, q); });
+  }
+  function addFiles(files){
+    var list=[].slice.call(files).filter(function(f){ return /^image\//.test(f.type) || /\.(heic|heif)$/i.test(f.name); });
+    var room=MAX-draft.length;
+    if(!list.length) return;
+    if(room<=0){ msg('写真は1つの記録に10枚までです。','err'); return; }
+    if(list.length>room){ msg('10枚を超えた分（'+(list.length-room)+'枚）は追加しませんでした。','err'); list=list.slice(0,room); }
+    var side=+$('optSide').value, q=+$('optQ').value;
+    list.forEach(function(f){
+      var d={isNew:true, busy:true, name:f.name};
+      draft.push(d); renderThumbs();
+      loadImage(f).then(function(r){
+        return Promise.all([encode(r.img, side, q), encode(r.img, 800, Math.min(q,0.74))]).then(function(o){
+          URL.revokeObjectURL(r.url);
+          d.mainBlob=o[0].blob; d.thumbBlob=o[1].blob; d.w=o[0].w; d.h=o[0].h; d.ext=o[0].ext;
+          d.url=URL.createObjectURL(o[1].blob); d.busy=false; d.kb=Math.round((o[0].blob.size+o[1].blob.size)/1024);
+          renderThumbs();
+        });
+      }).catch(function(){
+        draft.splice(draft.indexOf(d),1); renderThumbs();
+        msg('「'+f.name+'」はこのブラウザで読み込めない形式です。JPEGかPNGにしてから選んでください。','err');
+      });
+    });
+    dirty=true;
+  }
+  $('drop').addEventListener('click', function(){ $('fFiles').click(); });
+  $('drop').addEventListener('keydown', function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); $('fFiles').click(); } });
+  $('fFiles').addEventListener('change', function(){ addFiles(this.files); this.value=''; });
+  ['dragenter','dragover'].forEach(function(ev){ $('drop').addEventListener(ev, function(e){ e.preventDefault(); this.classList.add('over'); }); });
+  ['dragleave','drop'].forEach(function(ev){ $('drop').addEventListener(ev, function(e){ e.preventDefault(); this.classList.remove('over'); }); });
+  $('drop').addEventListener('drop', function(e){ addFiles(e.dataTransfer.files); });
+
+  function renderThumbs(){
+    var el=$('thumbs'); el.innerHTML='';
+    draft.forEach(function(d,i){
+      var div=document.createElement('div'); div.className='th'+(d.busy?' busy':'');
+      var src=d.url || d.thumb || d.src || '';
+      div.innerHTML='<img alt="" src="'+src+'"><span class="no">'+(i+1)+'</span>'
+        +'<div class="ops"><button type="button" title="前へ" data-a="l">◀</button><button type="button" title="後ろへ" data-a="r">▶</button><button type="button" class="x" title="外す" data-a="x">✕</button></div>'
+        +'<div class="meta">'+(d.isNew ? (d.busy?'圧縮中':'新規 '+d.w+'×'+d.h+'・'+d.kb+'KB') : '公開済みの写真')+'</div>';
+      div.querySelector('.ops').addEventListener('click', function(e){
+        var a=e.target.getAttribute('data-a'); if(!a) return;
+        if(a==='x'){ var r=draft.splice(i,1)[0]; if(r.url) URL.revokeObjectURL(r.url); }
+        if(a==='l' && i>0){ draft.splice(i-1,0,draft.splice(i,1)[0]); }
+        if(a==='r' && i<draft.length-1){ draft.splice(i+1,0,draft.splice(i,1)[0]); }
+        dirty=true; renderThumbs();
+      });
+      el.appendChild(div);
+    });
+    $('cImg').textContent=draft.length;
+    $('drop').style.display = draft.length>=MAX ? 'none' : '';
+  }
+
+  /* ---------- 保存（一覧に入れる） ---------- */
+  function mkId(date){ return String(date).replace(/-/g,'')+'-'+Math.random().toString(36).slice(2,6); }
+  function resetForm(){
+    editingId=null; draft.forEach(function(d){ if(d.url) URL.revokeObjectURL(d.url); }); draft=[];
+    $('fDate').value=today(); $('fTitle').value=''; $('fText').value=''; $('cTitle').textContent='0'; $('cText').textContent='0';
+    $('formTitle').textContent='新しい記録を作る'; $('btnSave').textContent='✅ この記録を追加する'; $('btnCancel').hidden=true;
+    renderThumbs(); renderList();
+  }
+  $('btnCancel').addEventListener('click', function(){ resetForm(); msg('編集をやめました。'); });
+  $('btnSave').addEventListener('click', function(){
+    var date=$('fDate').value, title=$('fTitle').value.trim(), text=$('fText').value.replace(/\s+$/,'');
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(date)){ msg('日付を入れてください。','err'); $('fDate').focus(); return; }
+    if(!title){ msg('タイトルを入れてください。','err'); $('fTitle').focus(); return; }
+    if(draft.some(function(d){ return d.busy; })){ msg('写真の圧縮が終わるまでお待ちください。','err'); return; }
+    var rec = editingId ? records.filter(function(r){ return r.id===editingId; })[0] : null;
+    var id = rec ? rec.id : mkId(date);
+    /* 使われなくなった写真を整理 */
+    var keep={}; draft.forEach(function(d){ if(!d.isNew){ keep[d.src]=1; } });
+    if(rec) rec.images.forEach(function(im){
+      if(keep[im.src]) return;
+      [im.src, im.thumb].forEach(function(p){ if(!p) return; if(original[p]){ if(removed.indexOf(p)<0) removed.push(p); } delete blobs[p]; });
+    });
+    /* 新しい写真に名前をつける（同じ記録の中で番号が重ならないように） */
+    var used={}; draft.forEach(function(d){ if(!d.isNew){ var m=/-(\d{2})\.\w+$/.exec(d.src); if(m) used[m[1]]=1; } });
+    var no=1;
+    var images=draft.map(function(d){
+      if(!d.isNew) return {src:d.src, thumb:d.thumb, w:d.w, h:d.h};
+      while(used[String(no).padStart(2,'0')]) no++;
+      var nn=String(no).padStart(2,'0'); used[nn]=1;
+      var base='activity/'+id+'-'+nn, src=base+'.'+d.ext, th=base+'-t.'+d.ext;
+      blobs[src]=d.mainBlob; blobs[th]=d.thumbBlob;
+      d.isNew=false; d.src=src; d.thumb=th;
+      return {src:src, thumb:th, w:d.w, h:d.h};
+    });
+    var obj={id:id, date:date, title:title, text:text, images:images, _new: rec ? rec._new : true, _edit: !!rec};
+    if(rec){ records[records.indexOf(rec)]=obj; } else { records.push(obj); }
+    dirty=true;
+    msg((rec?'記録を更新しました':'記録を追加しました')+'。サイトに反映するには「⬇️ 公開用ファイルを書き出す」を押してください。','ok');
+    resetForm(); updateExport();
+  });
+
+  /* ---------- 一覧 ---------- */
+  function sorted(){ return records.slice().sort(function(a,b){ return a.date<b.date?1:a.date>b.date?-1:0; }); }
+  function thumbUrl(im){
+    if(!im) return '';
+    var p=im.thumb||im.src;
+    if(blobs[p]){ if(!blobs[p]._u) blobs[p]._u=URL.createObjectURL(blobs[p]); return blobs[p]._u; }
+    return p;
+  }
+  function renderList(){
+    var el=$('list'); el.innerHTML='';
+    $('listInfo').textContent='（'+records.length+'件）';
+    if(!records.length){ el.innerHTML='<p class="note">まだ記録はありません。</p>'; return; }
+    sorted().forEach(function(r){
+      var div=document.createElement('div');
+      div.className='item'+(r._new?' new':'')+(r.id===editingId?' editing':'');
+      var t=thumbUrl(r.images[0]);
+      div.innerHTML=(t?'<img alt="" src="'+t+'">':'<span class="ph"></span>')
+        +'<div class="tx"><b></b><span>'+r.date+'・写真'+r.images.length+'枚'+(r._new?'<span class="badge n">未公開</span>':(r._edit?'<span class="badge e">変更あり</span>':''))+'</span></div>'
+        +'<button class="btn" type="button" data-a="e">編集</button><button class="btn red" type="button" data-a="d">削除</button>';
+      div.querySelector('b').textContent=r.title;
+      div.addEventListener('click', function(e){
+        var a=e.target.getAttribute('data-a');
+        if(a==='e') edit(r.id);
+        if(a==='d') del(r.id);
+      });
+      el.appendChild(div);
+    });
+  }
+  function edit(id){
+    var r=records.filter(function(x){ return x.id===id; })[0]; if(!r) return;
+    if(draft.some(function(d){ return d.isNew; }) && !confirm('入力中の写真が外れます。この記録の編集に切り替えますか?')) return;
+    draft.forEach(function(d){ if(d.url) URL.revokeObjectURL(d.url); });
+    editingId=id;
+    $('fDate').value=r.date; $('fTitle').value=r.title; $('fText').value=r.text;
+    $('cTitle').textContent=r.title.length; $('cText').textContent=r.text.length;
+    draft=r.images.map(function(im){ return {src:im.src, thumb:im.thumb, w:im.w, h:im.h, isNew:false, url: blobs[im.thumb||im.src] ? thumbUrl(im) : ''}; });
+    $('formTitle').textContent='記録を編集する'; $('btnSave').textContent='✅ 変更を保存する'; $('btnCancel').hidden=false;
+    renderThumbs(); renderList(); msg('');
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+  function del(id){
+    var r=records.filter(function(x){ return x.id===id; })[0]; if(!r) return;
+    if(!confirm('「'+r.title+'」を削除しますか?')) return;
+    r.images.forEach(function(im){ [im.src, im.thumb].forEach(function(p){ if(!p) return; if(original[p] && removed.indexOf(p)<0) removed.push(p); delete blobs[p]; }); });
+    records.splice(records.indexOf(r),1);
+    if(editingId===id) resetForm();
+    dirty=true; renderList(); updateExport();
+    msg('削除しました。「⬇️ 公開用ファイルを書き出す」で反映されます。','ok');
+  }
+  function updateExport(){ $('btnExport').disabled = !dirty; }
+
+  /* ---------- 書き出し（ZIP） ---------- */
+  var CRC=(function(){ var t=new Uint32Array(256); for(var n=0;n<256;n++){ var c=n; for(var k=0;k<8;k++) c=c&1?0xEDB88320^(c>>>1):c>>>1; t[n]=c>>>0; } return t; })();
+  function crc32(u8){ var c=0xFFFFFFFF; for(var i=0;i<u8.length;i++) c=CRC[(c^u8[i])&255]^(c>>>8); return (c^0xFFFFFFFF)>>>0; }
+  function zip(files){   /* files: [{name, data:Uint8Array}] → Blob（無圧縮。写真はすでに圧縮済み） */
+    var enc=new TextEncoder(), parts=[], cen=[], off=0, d=new Date();
+    var dt=((d.getHours()<<11)|(d.getMinutes()<<5)|(d.getSeconds()>>1))&0xFFFF;
+    var dd=(((d.getFullYear()-1980)<<9)|((d.getMonth()+1)<<5)|d.getDate())&0xFFFF;
+    files.forEach(function(f){
+      var nm=enc.encode(f.name), crc=crc32(f.data), sz=f.data.length;
+      var h=new DataView(new ArrayBuffer(30));
+      h.setUint32(0,0x04034b50,true); h.setUint16(4,20,true); h.setUint16(6,0x0800,true); h.setUint16(8,0,true);
+      h.setUint16(10,dt,true); h.setUint16(12,dd,true); h.setUint32(14,crc,true); h.setUint32(18,sz,true); h.setUint32(22,sz,true);
+      h.setUint16(26,nm.length,true); h.setUint16(28,0,true);
+      parts.push(h.buffer, nm, f.data);
+      var c=new DataView(new ArrayBuffer(46));
+      c.setUint32(0,0x02014b50,true); c.setUint16(4,20,true); c.setUint16(6,20,true); c.setUint16(8,0x0800,true); c.setUint16(10,0,true);
+      c.setUint16(12,dt,true); c.setUint16(14,dd,true); c.setUint32(16,crc,true); c.setUint32(20,sz,true); c.setUint32(24,sz,true);
+      c.setUint16(28,nm.length,true); c.setUint16(30,0,true); c.setUint16(32,0,true); c.setUint16(34,0,true); c.setUint16(36,0,true);
+      c.setUint32(38,0,true); c.setUint32(42,off,true);
+      cen.push(c.buffer, nm);
+      off+=30+nm.length+sz;
+    });
+    var csz=cen.reduce(function(s,p){ return s+(p.byteLength||p.length); },0);
+    var e=new DataView(new ArrayBuffer(22));
+    e.setUint32(0,0x06054b50,true); e.setUint16(8,files.length,true); e.setUint16(10,files.length,true);
+    e.setUint32(12,csz,true); e.setUint32(16,off,true);
+    return new Blob(parts.concat(cen,[e.buffer]),{type:'application/zip'});
+  }
+  function buildLog(){
+    var out=sorted().map(function(r){
+      return {id:r.id, date:r.date, title:r.title, text:r.text, images:r.images.map(function(im){ var o={src:im.src}; if(im.thumb) o.thumb=im.thumb; if(im.w){ o.w=im.w; o.h=im.h; } return o; })};
+    });
+    return '/* DWA防災情報センター 活動記録データ（activity-editor.html で作成：'+new Date().toLocaleString('ja-JP')+'）\n'
+      +'   手で直す場合は形式を崩さないでください。 */\n'
+      +'window.DWA_ACTIVITY = '+JSON.stringify(out,null,1)+';\n';
+  }
+  $('btnExport').addEventListener('click', function(){
+    var btn=this; btn.disabled=true; btn.textContent='作成中…';
+    var enc=new TextEncoder();
+    var used={}; records.forEach(function(r){ r.images.forEach(function(im){ used[im.src]=1; if(im.thumb) used[im.thumb]=1; }); });
+    var names=Object.keys(blobs).filter(function(p){ return used[p]; });
+    Promise.all(names.map(function(p){ return blobs[p].arrayBuffer().then(function(b){ return {name:p, data:new Uint8Array(b)}; }); }))
+    .then(function(imgs){
+      var guide='【活動記録をサイトに反映する手順】\n\n'
+        +'1. activity-log.js を、リポジトリの一番上（index.html と同じ場所）に上書きでアップロードしてください。\n'
+        +(imgs.length ? '2. activity フォルダの中の写真 '+imgs.length+' ファイルを、リポジトリの activity フォルダにアップロードしてください。\n' : '2. 今回、新しい写真はありません。\n')
+        +(removed.length ? '3. 次の写真はもう使われていないので、リポジトリから削除してかまいません（残っていても表示には影響しません）。\n   - '+removed.join('\n   - ')+'\n' : '')
+        +'\n反映後、トップページの「📝 活動記録」タブで確認してください（反映まで数分かかることがあります）。\n';
+      var files=[{name:'activity-log.js', data:enc.encode(buildLog())}, {name:'アップロード手順.txt', data:enc.encode(guide)}].concat(imgs);
+      var z=zip(files), a=document.createElement('a'), d=new Date();
+      a.href=URL.createObjectURL(z);
+      a.download='activity-update-'+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'-'+String(d.getHours()).padStart(2,'0')+String(d.getMinutes()).padStart(2,'0')+'.zip';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function(){ URL.revokeObjectURL(a.href); }, 4000);
+      dirty=false; btn.textContent='⬇️ 公開用ファイルを書き出す'; updateExport();
+      msg('ZIPを書き出しました（'+Math.round(z.size/1024)+'KB）。中の「アップロード手順.txt」のとおりにアップロードしてください。','ok');
+    }).catch(function(){ btn.disabled=false; btn.textContent='⬇️ 公開用ファイルを書き出す'; msg('書き出しに失敗しました。もう一度お試しください。','err'); });
+  });
+
+  window.addEventListener('beforeunload', function(e){
+    if(dirty || draft.some(function(d){ return d.isNew; })){ e.preventDefault(); e.returnValue=''; }
+  });
+  renderThumbs();
+})();
+</script>
+</body>
+</html>
