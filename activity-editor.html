@@ -29,6 +29,7 @@
   .btn.pri{background:var(--brand2);border-color:var(--brand2);color:#fff}
   .btn.red{color:var(--brand);border-color:#f2b9b4}
   .btn.big{padding:13px 20px;font-size:15px}
+  .btn.sm{padding:6px 10px;font-size:12.5px}
   .btn:disabled{opacity:.45;cursor:not-allowed}
   .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
   .drop{border:2px dashed #b9c8d4;border-radius:12px;padding:18px;text-align:center;color:var(--sub);font-size:13px;line-height:1.7;cursor:pointer;background:#f8fbfd}
@@ -42,6 +43,12 @@
   .th .ops .x{margin-left:auto;background:rgba(227,57,46,.9)}
   .th .no{position:absolute;bottom:26px;left:6px;background:rgba(255,255,255,.9);border-radius:6px;font-size:11px;font-weight:800;padding:1px 6px}
   .th.busy::after{content:"圧縮中…";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.8);font-size:12px;font-weight:800;color:var(--brand2)}
+  .vbox{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-top:10px;border:1.5px solid var(--line);border-radius:10px;padding:10px;background:#f8fbfd}
+  .vbox img{width:200px;max-width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:8px;background:#0f1a24;display:block}
+  .vbox .vinfo{flex:1;min-width:180px;font-size:12.5px;color:var(--sub);line-height:1.8}
+  .vbox .vinfo b{color:var(--ink);font-size:13.5px}
+  .vbox.busy .vinfo b::after{content:"(表紙画像を作成中…)";color:var(--brand2);margin-left:6px;font-size:12px}
+  .warn{color:var(--brand);font-weight:700}
   .msg{font-size:13px;line-height:1.7;margin-top:10px;min-height:1.2em}
   .msg.err{color:var(--brand)} .msg.ok{color:#2e7d32}
   .list{display:flex;flex-direction:column;gap:8px}
@@ -75,7 +82,7 @@
 <main>
   <div class="box">
     <h2 id="formTitle">新しい記録を作る</h2>
-    <p class="note">写真はこのブラウザの中で自動的に縮小・圧縮されます（長辺1600px・WebP形式）。位置情報などの撮影データも取り除かれるので、そのまま公開して大丈夫です。写真はどこにも送信されません。</p>
+    <p class="note">写真はこのブラウザの中で自動的に縮小・圧縮されます（長辺1600px・WebP形式）。位置情報などの撮影データも取り除かれるので、そのまま公開して大丈夫です。動画は圧縮せず、そのまま使います（表紙画像は自動で作ります）。写真も動画もどこにも送信されません。</p>
 
     <label class="f" for="fDate">日付<span class="req">必須</span></label>
     <input type="date" id="fDate">
@@ -97,6 +104,12 @@
     </div>
     <div class="thumbs" id="thumbs"></div>
 
+    <label class="f">動画<span style="font-weight:600;color:var(--sub);font-size:12px">（1つの記録に1本・MP4形式・25MBまで推奨）</span></label>
+    <div class="drop" id="vdrop" tabindex="0" role="button">🎬 ここをタップして動画（MP4）を選ぶ</div>
+    <input type="file" id="fVideo" accept="video/mp4,.mp4" hidden>
+    <input type="file" id="fCap" accept=".vtt,.srt,text/vtt" hidden>
+    <div id="vbox"></div>
+
     <div class="row" style="margin-top:16px">
       <button class="btn pri big" type="button" id="btnSave">✅ この記録を追加する</button>
       <button class="btn" type="button" id="btnCancel" hidden>編集をやめる</button>
@@ -106,7 +119,7 @@
 
   <div class="box">
     <h2>記録の一覧 <span style="font-size:12px;color:var(--sub);font-weight:600" id="listInfo"></span></h2>
-    <p class="note">新しい順に並びます。「編集」で内容や写真を直せます。ここで変えた内容は、「公開用ファイルを書き出す」まではサイトに反映されません。</p>
+    <p class="note">新しい順に並びます。「編集」で内容や写真・動画を直せます。ここで変えた内容は、「公開用ファイルを書き出す」まではサイトに反映されません。</p>
     <div class="list" id="list"></div>
   </div>
 
@@ -114,10 +127,10 @@
     <h2>サイトに反映する手順</h2>
     <ol class="steps">
       <li>上の「⬇️ 公開用ファイルを書き出す」を押すと、ZIPファイルがダウンロードされます。</li>
-      <li>ZIPを開くと、<code>activity-log.js</code> と <code>activity</code> フォルダ（新しい写真）が入っています。</li>
+      <li>ZIPを開くと、<code>activity-log.js</code> と <code>activity</code> フォルダ（新しい写真・動画）が入っています。</li>
       <li>GitHubのリポジトリの一番上（<code>index.html</code> と同じ場所）に <code>activity-log.js</code> を上書きでアップロードします。</li>
-      <li><code>activity</code> フォルダの中の写真を、リポジトリの <code>activity</code> フォルダにアップロードします（初回はフォルダごと）。</li>
-      <li>記録や写真を削除した場合は、ZIPの中の「アップロード手順.txt」に、消してよい写真の名前が書いてあります。</li>
+      <li><code>activity</code> フォルダの中のファイルを、リポジトリの <code>activity</code> フォルダにアップロードします（初回はフォルダごと）。GitHubの画面からアップロードできるのは1ファイル25MBまでです。</li>
+      <li>記録や写真・動画を削除した場合は、ZIPの中の「アップロード手順.txt」に、消してよいファイルの名前が書いてあります。</li>
     </ol>
     <p class="note" style="margin-top:10px">次に記録を追加するときは、このページをサイト上で開けば今の記録が自動で読み込まれます。パソコンに保存したファイルから続けるときは「📂 activity-log.js を開く」を使ってください。</p>
   </div>
@@ -127,12 +140,14 @@
 <script>
 (function(){
   var MAX = 10;
+  var VMAX = 25 * 1024 * 1024;   /* GitHubのWeb画面でアップロードできる上限 */
   var $ = function(id){ return document.getElementById(id); };
   var records = [];          /* 公開中＋編集中の全記録 */
-  var blobs = {};            /* 新しく作った写真ファイル（パス → Blob） */
-  var removed = [];          /* 公開済みで、消してよくなった写真のパス */
-  var original = {};         /* 読み込んだ時点で公開されていた写真のパス */
+  var blobs = {};            /* 新しく作ったファイル（パス → Blob） */
+  var removed = [];          /* 公開済みで、消してよくなったファイルのパス */
+  var original = {};         /* 読み込んだ時点で公開されていたファイルのパス */
   var draft = [];            /* フォームの写真 [{src,thumb,w,h, isNew, mainBlob, thumbBlob, url, name, busy}] */
+  var dvid = null;           /* フォームの動画 {isNew, blob, posterBlob, capBlob, src, poster, captions, w, h, duration, url, busy, name, size} */
   var editingId = null, dirty = false;
 
   /* ---------- 入力欄 ---------- */
@@ -141,15 +156,21 @@
   $('fTitle').addEventListener('input', function(){ $('cTitle').textContent = this.value.length; });
   $('fText').addEventListener('input', function(){ $('cText').textContent = this.value.length; });
   function msg(t, cls){ var m=$('msg'); m.textContent=t; m.className='msg'+(cls?' '+cls:''); }
+  function escH(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function videoPaths(v){ return v ? [v.src, v.poster, v.captions].filter(Boolean) : []; }
 
   /* ---------- 既存データの読み込み ---------- */
   function setData(arr, from){
     records = (Array.isArray(arr)?arr:[]).map(function(r){
+      var v = (r.video && r.video.src) ? {src:String(r.video.src), poster:r.video.poster||'', captions:r.video.captions||'', w:r.video.w||0, h:r.video.h||0, duration:r.video.duration||0} : null;
       return { id:String(r.id||mkId(r.date||today())), date:String(r.date||''), title:String(r.title||''), text:String(r.text||''),
-               images:(r.images||[]).map(function(im){ return typeof im==='string'?{src:im}:im; }) };
+               images:(r.images||[]).map(function(im){ return typeof im==='string'?{src:im}:im; }), video:v };
     });
     original = {};
-    records.forEach(function(r){ r.images.forEach(function(im){ original[im.src]=1; if(im.thumb) original[im.thumb]=1; }); });
+    records.forEach(function(r){
+      r.images.forEach(function(im){ original[im.src]=1; if(im.thumb) original[im.thumb]=1; });
+      videoPaths(r.video).forEach(function(p){ original[p]=1; });
+    });
     blobs = {}; removed = []; dirty = false;
     renderList();
     msg(records.length ? from+'から'+records.length+'件の記録を読み込みました。' : '記録はまだありません。新しく作りましょう。', 'ok');
@@ -189,7 +210,7 @@
     });
   }
   function encode(img, side, q){
-    var w=img.naturalWidth, h=img.naturalHeight, s=Math.min(1, side/Math.max(w,h));
+    var w=img.naturalWidth||img.videoWidth, h=img.naturalHeight||img.videoHeight, s=Math.min(1, side/Math.max(w,h));
     var cw=Math.max(1,Math.round(w*s)), ch=Math.max(1,Math.round(h*s));
     var c=document.createElement('canvas'); c.width=cw; c.height=ch;
     var x=c.getContext('2d'); x.imageSmoothingEnabled=true; x.imageSmoothingQuality='high';
@@ -250,27 +271,109 @@
     $('drop').style.display = draft.length>=MAX ? 'none' : '';
   }
 
+  /* ---------- 動画の取り込み(圧縮せず、そのまま使う) ---------- */
+  function fmtDur(sec){ sec=Math.round(+sec||0); return sec ? Math.floor(sec/60)+'分'+String(sec%60).padStart(2,'0')+'秒' : ''; }
+  function fmtMB(b){ return (b/1024/1024).toFixed(1)+'MB'; }
+  /* 動画の途中の1コマを表紙画像にする */
+  function makePoster(file){
+    return new Promise(function(res, rej){
+      var url=URL.createObjectURL(file), v=document.createElement('video');
+      v.muted=true; v.playsInline=true; v.preload='auto'; v.src=url;
+      var tm=setTimeout(function(){ URL.revokeObjectURL(url); rej(new Error('timeout')); }, 20000);
+      v.addEventListener('loadedmetadata', function(){
+        var t=Math.min(6, (v.duration||10)/3);
+        v.currentTime = isFinite(t) ? t : 1;
+      });
+      v.addEventListener('seeked', function(){
+        clearTimeout(tm);
+        encode(v, 1280, 0.82).then(function(o){
+          var info={blob:o.blob, ext:o.ext, w:v.videoWidth, h:v.videoHeight, duration:Math.round(v.duration||0)};
+          URL.revokeObjectURL(url); res(info);
+        });
+      }, {once:true});
+      v.addEventListener('error', function(){ clearTimeout(tm); URL.revokeObjectURL(url); rej(new Error('decode')); });
+    });
+  }
+  function addVideo(file){
+    if(!file) return;
+    if(!/\.mp4$/i.test(file.name) && file.type!=='video/mp4'){ msg('動画はMP4形式を選んでください。','err'); return; }
+    if(dvid && dvid.url) URL.revokeObjectURL(dvid.url);
+    dvid={isNew:true, busy:true, blob:file, name:file.name, size:file.size, capBlob: dvid && dvid.isNew ? dvid.capBlob : null};
+    renderVideo(); dirty=true;
+    makePoster(file).then(function(p){
+      dvid.posterBlob=p.blob; dvid.posterExt=p.ext; dvid.w=p.w; dvid.h=p.h; dvid.duration=p.duration;
+      dvid.url=URL.createObjectURL(p.blob); dvid.busy=false; renderVideo();
+    }).catch(function(){
+      dvid.busy=false; dvid.noPoster=true; renderVideo();
+      msg('このブラウザでは動画の表紙画像を作れませんでした。動画はそのまま使えます（再生前は黒い画面になります）。','err');
+    });
+  }
+  function srtToVtt(t){
+    t=t.replace(/\r/g,'').trim();
+    if(/^WEBVTT/.test(t)) return t+'\n';
+    return 'WEBVTT\n\n'+t.replace(/^\d+\n(?=\d\d:)/gm,'').replace(/(\d\d:\d\d:\d\d),(\d\d\d)/g,'$1.$2')+'\n';
+  }
+  function addCaptions(file){
+    if(!file || !dvid) return;
+    var rd=new FileReader();
+    rd.onload=function(){ dvid.capBlob=new Blob([srtToVtt(String(rd.result))],{type:'text/vtt'}); dvid.capName=file.name; dvid.capChanged=true; dirty=true; renderVideo(); };
+    rd.readAsText(file,'utf-8');
+  }
+  function renderVideo(){
+    var el=$('vbox');
+    $('vdrop').style.display = dvid ? 'none' : '';
+    if(!dvid){ el.innerHTML=''; return; }
+    var img = dvid.url || dvid.poster || '';
+    var hasCap = !!(dvid.capBlob || dvid.captions);
+    el.innerHTML='<div class="vbox'+(dvid.busy?' busy':'')+'">'
+      +(img?'<img alt="" src="'+escH(img)+'">':'<img alt="">')
+      +'<div class="vinfo"><b>'+(dvid.isNew ? '新しい動画' : '公開済みの動画')+'</b><br>'
+      +(dvid.isNew ? escH(dvid.name)+'・'+fmtMB(dvid.size)+(dvid.size>VMAX?'<br><span class="warn">25MBを超えています。GitHubの画面からはアップロードできないので、短く切るか圧縮してから選び直してください。</span>':'') : escH(dvid.src))
+      +(dvid.w ? '<br>'+dvid.w+'×'+dvid.h : '')+(dvid.duration ? '・'+fmtDur(dvid.duration) : '')
+      +'<br>字幕：'+(hasCap ? (dvid.capName ? escH(dvid.capName) : 'あり') : 'なし（任意）')
+      +'<div class="row" style="margin-top:6px"><button type="button" class="btn sm" data-a="rep">動画を差し替える</button>'
+      +'<button type="button" class="btn sm" data-a="cap">'+(hasCap?'字幕を差し替える':'字幕ファイル（.vtt / .srt）を付ける')+'</button>'
+      +(hasCap?'<button type="button" class="btn sm" data-a="capx">字幕を外す</button>':'')
+      +'<button type="button" class="btn sm red" data-a="x">動画を外す</button></div></div></div>';
+    el.querySelector('.row').addEventListener('click', function(e){
+      var a=e.target.getAttribute('data-a'); if(!a) return;
+      if(a==='rep') $('fVideo').click();
+      if(a==='cap') $('fCap').click();
+      if(a==='capx'){ dvid.capBlob=null; dvid.capName=''; dvid.captions=''; dvid.capChanged=true; dirty=true; renderVideo(); }
+      if(a==='x'){ if(dvid.url) URL.revokeObjectURL(dvid.url); dvid=null; dirty=true; renderVideo(); }
+    });
+  }
+  $('vdrop').addEventListener('click', function(){ $('fVideo').click(); });
+  $('vdrop').addEventListener('keydown', function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); $('fVideo').click(); } });
+  $('fVideo').addEventListener('change', function(){ addVideo(this.files[0]); this.value=''; });
+  $('fCap').addEventListener('change', function(){ addCaptions(this.files[0]); this.value=''; });
+  ['dragenter','dragover'].forEach(function(ev){ $('vdrop').addEventListener(ev, function(e){ e.preventDefault(); this.classList.add('over'); }); });
+  ['dragleave','drop'].forEach(function(ev){ $('vdrop').addEventListener(ev, function(e){ e.preventDefault(); this.classList.remove('over'); }); });
+  $('vdrop').addEventListener('drop', function(e){ addVideo(e.dataTransfer.files[0]); });
+
   /* ---------- 保存（一覧に入れる） ---------- */
   function mkId(date){ return String(date).replace(/-/g,'')+'-'+Math.random().toString(36).slice(2,6); }
   function resetForm(){
     editingId=null; draft.forEach(function(d){ if(d.url) URL.revokeObjectURL(d.url); }); draft=[];
+    if(dvid && dvid.isNew && dvid.url) URL.revokeObjectURL(dvid.url); dvid=null;
     $('fDate').value=today(); $('fTitle').value=''; $('fText').value=''; $('cTitle').textContent='0'; $('cText').textContent='0';
     $('formTitle').textContent='新しい記録を作る'; $('btnSave').textContent='✅ この記録を追加する'; $('btnCancel').hidden=true;
-    renderThumbs(); renderList();
+    renderThumbs(); renderVideo(); renderList();
   }
+  function dropPath(p){ if(!p) return; if(original[p]){ if(removed.indexOf(p)<0) removed.push(p); } delete blobs[p]; }
   $('btnCancel').addEventListener('click', function(){ resetForm(); msg('編集をやめました。'); });
   $('btnSave').addEventListener('click', function(){
     var date=$('fDate').value, title=$('fTitle').value.trim(), text=$('fText').value.replace(/\s+$/,'');
     if(!/^\d{4}-\d{2}-\d{2}$/.test(date)){ msg('日付を入れてください。','err'); $('fDate').focus(); return; }
     if(!title){ msg('タイトルを入れてください。','err'); $('fTitle').focus(); return; }
-    if(draft.some(function(d){ return d.busy; })){ msg('写真の圧縮が終わるまでお待ちください。','err'); return; }
+    if(draft.some(function(d){ return d.busy; }) || (dvid && dvid.busy)){ msg('写真の圧縮・動画の表紙づくりが終わるまでお待ちください。','err'); return; }
     var rec = editingId ? records.filter(function(r){ return r.id===editingId; })[0] : null;
     var id = rec ? rec.id : mkId(date);
     /* 使われなくなった写真を整理 */
     var keep={}; draft.forEach(function(d){ if(!d.isNew){ keep[d.src]=1; } });
     if(rec) rec.images.forEach(function(im){
       if(keep[im.src]) return;
-      [im.src, im.thumb].forEach(function(p){ if(!p) return; if(original[p]){ if(removed.indexOf(p)<0) removed.push(p); } delete blobs[p]; });
+      [im.src, im.thumb].forEach(dropPath);
     });
     /* 新しい写真に名前をつける（同じ記録の中で番号が重ならないように） */
     var used={}; draft.forEach(function(d){ if(!d.isNew){ var m=/-(\d{2})\.\w+$/.exec(d.src); if(m) used[m[1]]=1; } });
@@ -284,7 +387,25 @@
       d.isNew=false; d.src=src; d.thumb=th;
       return {src:src, thumb:th, w:d.w, h:d.h};
     });
-    var obj={id:id, date:date, title:title, text:text, images:images, _new: rec ? rec._new : true, _edit: !!rec};
+    /* 動画 */
+    var oldV = rec ? rec.video : null, video = null;
+    if(dvid){
+      if(dvid.isNew){
+        /* 差し替えでもブラウザに古い動画が残らないよう、毎回ちがう名前にする */
+        var tag=Math.random().toString(36).slice(2,6), vb='activity/'+id+'-v'+tag;
+        video={src:vb+'.mp4', poster: dvid.posterBlob ? vb+'-poster.'+dvid.posterExt : '', captions: dvid.capBlob ? vb+'.vtt' : '', w:dvid.w||0, h:dvid.h||0, duration:dvid.duration||0};
+        blobs[video.src]=dvid.blob; if(video.poster) blobs[video.poster]=dvid.posterBlob; if(video.captions) blobs[video.captions]=dvid.capBlob;
+        videoPaths(oldV).forEach(dropPath);
+      } else {
+        video={src:dvid.src, poster:dvid.poster, captions:dvid.captions, w:dvid.w, h:dvid.h, duration:dvid.duration};
+        if(dvid.capChanged){
+          if(oldV && oldV.captions) dropPath(oldV.captions);
+          if(dvid.capBlob){ var cp=dvid.src.replace(/\.mp4$/i,'')+'-'+Math.random().toString(36).slice(2,5)+'.vtt'; blobs[cp]=dvid.capBlob; video.captions=cp; }
+          else video.captions='';
+        }
+      }
+    } else if(oldV){ videoPaths(oldV).forEach(dropPath); }
+    var obj={id:id, date:date, title:title, text:text, images:images, video:video, _new: rec ? rec._new : true, _edit: !!rec};
     if(rec){ records[records.indexOf(rec)]=obj; } else { records.push(obj); }
     dirty=true;
     msg((rec?'記録を更新しました':'記録を追加しました')+'。サイトに反映するには「⬇️ 公開用ファイルを書き出す」を押してください。','ok');
@@ -293,12 +414,12 @@
 
   /* ---------- 一覧 ---------- */
   function sorted(){ return records.slice().sort(function(a,b){ return a.date<b.date?1:a.date>b.date?-1:0; }); }
-  function thumbUrl(im){
-    if(!im) return '';
-    var p=im.thumb||im.src;
+  function fileUrl(p){
+    if(!p) return '';
     if(blobs[p]){ if(!blobs[p]._u) blobs[p]._u=URL.createObjectURL(blobs[p]); return blobs[p]._u; }
     return p;
   }
+  function thumbUrl(im){ return im ? fileUrl(im.thumb||im.src) : ''; }
   function renderList(){
     var el=$('list'); el.innerHTML='';
     $('listInfo').textContent='（'+records.length+'件）';
@@ -306,9 +427,9 @@
     sorted().forEach(function(r){
       var div=document.createElement('div');
       div.className='item'+(r._new?' new':'')+(r.id===editingId?' editing':'');
-      var t=thumbUrl(r.images[0]);
+      var t = r.video && r.video.poster ? fileUrl(r.video.poster) : thumbUrl(r.images[0]);
       div.innerHTML=(t?'<img alt="" src="'+t+'">':'<span class="ph"></span>')
-        +'<div class="tx"><b></b><span>'+r.date+'・写真'+r.images.length+'枚'+(r._new?'<span class="badge n">未公開</span>':(r._edit?'<span class="badge e">変更あり</span>':''))+'</span></div>'
+        +'<div class="tx"><b></b><span>'+r.date+(r.video?'・🎬動画あり':'')+'・写真'+r.images.length+'枚'+(r._new?'<span class="badge n">未公開</span>':(r._edit?'<span class="badge e">変更あり</span>':''))+'</span></div>'
         +'<button class="btn" type="button" data-a="e">編集</button><button class="btn red" type="button" data-a="d">削除</button>';
       div.querySelector('b').textContent=r.title;
       div.addEventListener('click', function(e){
@@ -321,20 +442,23 @@
   }
   function edit(id){
     var r=records.filter(function(x){ return x.id===id; })[0]; if(!r) return;
-    if(draft.some(function(d){ return d.isNew; }) && !confirm('入力中の写真が外れます。この記録の編集に切り替えますか?')) return;
+    if((draft.some(function(d){ return d.isNew; }) || (dvid && dvid.isNew)) && !confirm('入力中の写真・動画が外れます。この記録の編集に切り替えますか?')) return;
     draft.forEach(function(d){ if(d.url) URL.revokeObjectURL(d.url); });
     editingId=id;
     $('fDate').value=r.date; $('fTitle').value=r.title; $('fText').value=r.text;
     $('cTitle').textContent=r.title.length; $('cText').textContent=r.text.length;
     draft=r.images.map(function(im){ return {src:im.src, thumb:im.thumb, w:im.w, h:im.h, isNew:false, url: blobs[im.thumb||im.src] ? thumbUrl(im) : ''}; });
+    dvid = r.video ? {isNew:false, src:r.video.src, poster: fileUrl(r.video.poster), captions:r.video.captions, w:r.video.w, h:r.video.h, duration:r.video.duration} : null;
+    if(dvid) dvid.poster = r.video.poster, dvid.url = fileUrl(r.video.poster);
     $('formTitle').textContent='記録を編集する'; $('btnSave').textContent='✅ 変更を保存する'; $('btnCancel').hidden=false;
-    renderThumbs(); renderList(); msg('');
+    renderThumbs(); renderVideo(); renderList(); msg('');
     window.scrollTo({top:0, behavior:'smooth'});
   }
   function del(id){
     var r=records.filter(function(x){ return x.id===id; })[0]; if(!r) return;
     if(!confirm('「'+r.title+'」を削除しますか?')) return;
-    r.images.forEach(function(im){ [im.src, im.thumb].forEach(function(p){ if(!p) return; if(original[p] && removed.indexOf(p)<0) removed.push(p); delete blobs[p]; }); });
+    r.images.forEach(function(im){ [im.src, im.thumb].forEach(dropPath); });
+    videoPaths(r.video).forEach(dropPath);
     records.splice(records.indexOf(r),1);
     if(editingId===id) resetForm();
     dirty=true; renderList(); updateExport();
@@ -345,7 +469,7 @@
   /* ---------- 書き出し（ZIP） ---------- */
   var CRC=(function(){ var t=new Uint32Array(256); for(var n=0;n<256;n++){ var c=n; for(var k=0;k<8;k++) c=c&1?0xEDB88320^(c>>>1):c>>>1; t[n]=c>>>0; } return t; })();
   function crc32(u8){ var c=0xFFFFFFFF; for(var i=0;i<u8.length;i++) c=CRC[(c^u8[i])&255]^(c>>>8); return (c^0xFFFFFFFF)>>>0; }
-  function zip(files){   /* files: [{name, data:Uint8Array}] → Blob（無圧縮。写真はすでに圧縮済み） */
+  function zip(files){   /* files: [{name, data:Uint8Array}] → Blob（無圧縮。写真・動画はすでに圧縮済み） */
     var enc=new TextEncoder(), parts=[], cen=[], off=0, d=new Date();
     var dt=((d.getHours()<<11)|(d.getMinutes()<<5)|(d.getSeconds()>>1))&0xFFFF;
     var dd=(((d.getFullYear()-1980)<<9)|((d.getMonth()+1)<<5)|d.getDate())&0xFFFF;
@@ -372,7 +496,13 @@
   }
   function buildLog(){
     var out=sorted().map(function(r){
-      return {id:r.id, date:r.date, title:r.title, text:r.text, images:r.images.map(function(im){ var o={src:im.src}; if(im.thumb) o.thumb=im.thumb; if(im.w){ o.w=im.w; o.h=im.h; } return o; })};
+      var o={id:r.id, date:r.date, title:r.title, text:r.text, images:r.images.map(function(im){ var o={src:im.src}; if(im.thumb) o.thumb=im.thumb; if(im.w){ o.w=im.w; o.h=im.h; } return o; })};
+      if(r.video && r.video.src){
+        var v={src:r.video.src}; if(r.video.poster) v.poster=r.video.poster; if(r.video.captions) v.captions=r.video.captions;
+        if(r.video.w){ v.w=r.video.w; v.h=r.video.h; } if(r.video.duration) v.duration=r.video.duration;
+        o.video=v;
+      }
+      return o;
     });
     return '/* DWA防災情報センター 活動記録データ（activity-editor.html で作成：'+new Date().toLocaleString('ja-JP')+'）\n'
       +'   手で直す場合は形式を崩さないでください。 */\n'
@@ -381,14 +511,16 @@
   $('btnExport').addEventListener('click', function(){
     var btn=this; btn.disabled=true; btn.textContent='作成中…';
     var enc=new TextEncoder();
-    var used={}; records.forEach(function(r){ r.images.forEach(function(im){ used[im.src]=1; if(im.thumb) used[im.thumb]=1; }); });
+    var used={}; records.forEach(function(r){ r.images.forEach(function(im){ used[im.src]=1; if(im.thumb) used[im.thumb]=1; }); videoPaths(r.video).forEach(function(p){ used[p]=1; }); });
     var names=Object.keys(blobs).filter(function(p){ return used[p]; });
     Promise.all(names.map(function(p){ return blobs[p].arrayBuffer().then(function(b){ return {name:p, data:new Uint8Array(b)}; }); }))
     .then(function(imgs){
+      var big=imgs.filter(function(f){ return f.data.length>VMAX; }).map(function(f){ return f.name; });
       var guide='【活動記録をサイトに反映する手順】\n\n'
         +'1. activity-log.js を、リポジトリの一番上（index.html と同じ場所）に上書きでアップロードしてください。\n'
-        +(imgs.length ? '2. activity フォルダの中の写真 '+imgs.length+' ファイルを、リポジトリの activity フォルダにアップロードしてください。\n' : '2. 今回、新しい写真はありません。\n')
-        +(removed.length ? '3. 次の写真はもう使われていないので、リポジトリから削除してかまいません（残っていても表示には影響しません）。\n   - '+removed.join('\n   - ')+'\n' : '')
+        +(imgs.length ? '2. activity フォルダの中のファイル '+imgs.length+' 個（写真・動画など）を、リポジトリの activity フォルダにアップロードしてください。\n' : '2. 今回、新しい写真・動画はありません。\n')
+        +(big.length ? '   ※次のファイルは25MBを超えているため、GitHubの画面からはアップロードできません。短くするか圧縮してください。\n   - '+big.join('\n   - ')+'\n' : '')
+        +(removed.length ? '3. 次のファイルはもう使われていないので、リポジトリから削除してかまいません（残っていても表示には影響しません）。\n   - '+removed.join('\n   - ')+'\n' : '')
         +'\n反映後、トップページの「📝 活動記録」タブで確認してください（反映まで数分かかることがあります）。\n';
       var files=[{name:'activity-log.js', data:enc.encode(buildLog())}, {name:'アップロード手順.txt', data:enc.encode(guide)}].concat(imgs);
       var z=zip(files), a=document.createElement('a'), d=new Date();
@@ -402,9 +534,9 @@
   });
 
   window.addEventListener('beforeunload', function(e){
-    if(dirty || draft.some(function(d){ return d.isNew; })){ e.preventDefault(); e.returnValue=''; }
+    if(dirty || draft.some(function(d){ return d.isNew; }) || (dvid && dvid.isNew)){ e.preventDefault(); e.returnValue=''; }
   });
-  renderThumbs();
+  renderThumbs(); renderVideo();
 })();
 </script>
 </body>

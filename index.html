@@ -506,6 +506,11 @@
 .act-gal .more{position:absolute;inset:0;background:rgba(15,44,74,.55);color:#fff;font-size:22px;font-weight:800;display:flex;align-items:center;justify-content:center;letter-spacing:.02em}
 .act-gal button:focus-visible{outline:3px solid #fff;outline-offset:-3px}
 
+.act-video{position:relative;background:#0f1a24;aspect-ratio:16/9}
+.act-video video{display:block;width:100%;height:100%;background:#0f1a24}
+.act-video .vbadge{position:absolute;top:8px;left:8px;background:rgba(15,26,36,.78);color:#fff;font-size:11.5px;font-weight:800;border-radius:7px;padding:3px 8px;pointer-events:none;transition:opacity .2s}
+.act-video.playing .vbadge{opacity:0}
+.act-video + .act-gal{border-top:3px solid #fff}
 .act-empty{background:#fff;border:1.5px dashed var(--line);border-radius:14px;padding:26px 18px;text-align:center;color:var(--sub);font-size:13.5px;line-height:1.8}
 .act-loading{padding:22px;text-align:center;color:var(--sub);font-size:13px}
 .act-pager{text-align:center;margin:14px 0 4px}
@@ -604,7 +609,7 @@
 
     <div class="tabpanel" id="panelAct" role="tabpanel" aria-labelledby="tabAct" hidden>
       <section class="act" aria-label="活動記録">
-        <p class="act-lead">DWA防災情報センターの活動を、日付順にご報告します。写真をタップすると大きく表示されます。</p>
+        <p class="act-lead">DWA防災情報センターの活動を、日付順にご報告します。写真をタップすると大きく表示されます。動画は ▶ で再生できます(字幕は動画の設定から表示できます)。</p>
         <div class="act-list" id="actList"></div>
         <div class="act-pager" id="actPager"></div>
       </section>
@@ -948,6 +953,7 @@
       panels[k].hidden = !on;
     }
     if(focus) tabs[i].focus();
+    if(i !== 1){ var vs = listEl.querySelectorAll('video'); for(var q=0;q<vs.length;q++) vs[q].pause(); }
     if(i === 1) ensureLoaded().then(checkClamp);
   }
   tabs[0].addEventListener('click', function(){ select(0); if(location.hash==='#activity') history.replaceState(null,'',location.pathname+location.search); });
@@ -997,13 +1003,14 @@
     var out = [];
     for(var i=0;i<arr.length;i++){
       var a = arr[i] || {};
-      if(!a.title && !a.text) continue;
+      if(!a.title && !a.text && !(a.video && a.video.src)) continue;
       out.push({
         id: String(a.id || ('r' + i)),
         date: String(a.date || ''),
         title: String(a.title || ''),
         text: String(a.text || ''),
         images: Array.isArray(a.images) ? a.images.slice(0,10) : [],
+        video: (a.video && a.video.src) ? a.video : null,
         _i: i
       });
     }
@@ -1033,12 +1040,31 @@
     return (thumb && im.thumb) ? im.thumb : (im.src || '');
   }
 
+  function fmtDur(sec){
+    sec = Math.round(+sec || 0); if(!sec) return '';
+    return Math.floor(sec/60) + ':' + String(sec%60).padStart(2,'0');
+  }
+  /* 動画：最初は表紙画像だけ表示し、再生ボタンを押すまで動画は読み込まない */
+  function videoHtml(it){
+    var v = it.video;
+    var w = v.w || 16, h = v.h || 9;
+    return '<div class="act-video" style="aspect-ratio:' + w + '/' + h + '">'
+      + '<video controls playsinline preload="none"' + (v.poster ? ' poster="' + esc(v.poster) + '"' : '')
+      + ' width="' + w + '" height="' + h + '" aria-label="' + esc('動画：' + it.title) + '">'
+      + '<source src="' + esc(v.src) + '" type="video/mp4">'
+      + (v.captions ? '<track kind="captions" srclang="ja" label="日本語字幕" src="' + esc(v.captions) + '">' : '')
+      + 'お使いのブラウザでは動画を再生できません。<a href="' + esc(v.src) + '">動画ファイルを開く</a>'
+      + '</video>'
+      + '<span class="vbadge">🎬 動画' + (v.duration ? ' ' + fmtDur(v.duration) : '') + '</span>'
+      + '</div>';
+  }
+
   function card(it){
     var art = document.createElement('article');
     art.className = 'act-card';
     art.id = 'act-' + it.id;
     var n = it.images.length;
-    var html = '';
+    var html = it.video ? videoHtml(it) : '';
     if(n){
       var vis = Math.min(n, 4);
       html += '<div class="act-gal" data-n="' + vis + '">';
@@ -1058,8 +1084,19 @@
          +  '<h3 class="act-title">' + esc(it.title) + '</h3>'
          +  (it.text ? '<div class="act-text clamp">' + textHtml(it.text) + '</div><button type="button" class="act-more" hidden>続きを読む ▾</button>' : '')
          +  '</div>'
-         +  '<div class="act-foot">' + (n ? '📷 ' + n + '枚' : '') + '<button type="button" class="act-link">🔗 この記録のリンク</button></div>';
+         +  '<div class="act-foot">' + (it.video ? '🎬 動画' + (it.video.duration ? ' ' + fmtDur(it.video.duration) : '') : '') + (it.video && n ? '・' : '') + (n ? '📷 ' + n + '枚' : '') + '<button type="button" class="act-link">🔗 この記録のリンク</button></div>';
     art.innerHTML = html;
+
+    /* 動画：再生中は「動画」の表示を消す。ほかの動画を再生したら止める */
+    var vid = art.querySelector('video');
+    if(vid){
+      vid.addEventListener('play', function(){
+        vid.parentNode.classList.add('playing');
+        var all = listEl.querySelectorAll('video');
+        for(var q=0;q<all.length;q++) if(all[q] !== vid && !all[q].paused) all[q].pause();
+      });
+      vid.addEventListener('pause', function(){ vid.parentNode.classList.remove('playing'); });
+    }
 
     /* 写真：読み込めたらふわっと出す。拡大はクリックで */
     var imgs = art.querySelectorAll('.act-gal img');
