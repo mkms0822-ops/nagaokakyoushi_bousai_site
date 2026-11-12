@@ -510,7 +510,9 @@
 .act-video video{display:block;width:100%;height:100%;background:#0f1a24}
 .act-video .vbadge{position:absolute;top:8px;left:8px;background:rgba(15,26,36,.78);color:#fff;font-size:11.5px;font-weight:800;border-radius:7px;padding:3px 8px;pointer-events:none;transition:opacity .2s}
 .act-video.playing .vbadge{opacity:0}
-.act-video + .act-gal{border-top:3px solid #fff}
+.act-video + .act-gal,.act-vhelp + .act-gal{border-top:3px solid #fff}
+.act-vhelp{margin:0;padding:8px 16px;background:#fff6e5;border-bottom:1px solid #f3dcb0;font-size:12.5px;line-height:1.7;color:#6b4a00}
+.act-vhelp a{color:var(--brand2);font-weight:700}
 .act-empty{background:#fff;border:1.5px dashed var(--line);border-radius:14px;padding:26px 18px;text-align:center;color:var(--sub);font-size:13.5px;line-height:1.8}
 .act-loading{padding:22px;text-align:center;color:var(--sub);font-size:13px}
 .act-pager{text-align:center;margin:14px 0 4px}
@@ -1056,7 +1058,8 @@
       + 'お使いのブラウザでは動画を再生できません。<a href="' + esc(v.src) + '">動画ファイルを開く</a>'
       + '</video>'
       + '<span class="vbadge">🎬 動画' + (v.duration ? ' ' + fmtDur(v.duration) : '') + '</span>'
-      + '</div>';
+      + '</div>'
+      + '<p class="act-vhelp" hidden>動画の読み込みが止まっているようです。ページを再読み込みするか、<a href="' + esc(v.src) + '" target="_blank" rel="noopener">動画ファイルを直接開いて</a>ご覧ください。</p>';
   }
 
   function card(it){
@@ -1096,6 +1099,17 @@
         for(var q=0;q<all.length;q++) if(all[q] !== vid && !all[q].paused) all[q].pause();
       });
       vid.addEventListener('pause', function(){ vid.parentNode.classList.remove('playing'); });
+      /* 読み込みが10秒以上止まったとき・再生できないときは、代わりの見方を案内する */
+      var help = art.querySelector('.act-vhelp'), stallT = null;
+      function showHelp(){ if(help) help.hidden = false; }
+      function clearStall(){ clearTimeout(stallT); stallT = null; }
+      vid.addEventListener('waiting', function(){ clearStall(); stallT = setTimeout(showHelp, 10000); });
+      vid.addEventListener('stalled', function(){ if(!vid.paused){ clearStall(); stallT = setTimeout(showHelp, 10000); } });
+      vid.addEventListener('playing', function(){ clearStall(); if(help) help.hidden = true; });
+      vid.addEventListener('timeupdate', clearStall);
+      vid.addEventListener('error', showHelp);
+      var srcEl = vid.querySelector('source');
+      if(srcEl) srcEl.addEventListener('error', showHelp);
     }
 
     /* 写真：読み込めたらふわっと出す。拡大はクリックで */
@@ -1841,7 +1855,10 @@ function closeMenuThenSOS(){
 // ===== PWA：サービスワーカー登録 =====
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function(){
-    navigator.serviceWorker.register('sw.js').catch(function(){});
+    /* sw.js の更新をすぐ取りに行く（古い sw.js が動画の再生を止めていたため） */
+    navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
+      .then(function(reg){ try{ reg.update(); }catch(e){} })
+      .catch(function(){});
   });
 }
 
